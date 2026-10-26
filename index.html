@@ -57,6 +57,8 @@ button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 #gameCanvas { touch-action: none; }
 canvas { display: block; width: 100%; height: auto; border-radius: 14px; border: 2px solid var(--line); background: var(--sky); }
 .hud { position: absolute; right: 12px; top: 10px; background: var(--surface); border-radius: 10px; padding: 4px 12px; font-weight: 600; }
+.hud.alt { top: 46px; }
+.hud.alt[hidden] { display: none; }
 .result { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 8px 16px; font-weight: 600; text-align: center; max-width: 90%; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
 .result[hidden] { display: none; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
@@ -115,6 +117,7 @@ dialog { max-height: 92vh; overflow-y: auto; }
   main > :not(.stage) { display: none; }
   .stage { width: min(100%, calc((100vh - 8px) * 2)); width: min(100%, calc((100dvh - 8px) * 2)); }
   .hud { top: 6px; right: 8px; }
+  .hud.alt { top: 42px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -147,11 +150,13 @@ dialog { max-height: 92vh; overflow-y: auto; }
   <div class="stage">
     <canvas id="gameCanvas" width="800" height="400" data-i18n-aria="field.aria"></canvas>
     <div class="hud"><span id="live">0</span> m</div>
+    <div class="hud alt" id="alt-hud" hidden></div>
     <div class="result" id="result" role="status" hidden></div>
   </div>
 
   <div class="actions">
     <button id="reset-btn" class="small" type="button" data-i18n="reset"></button>
+    <button id="sound-btn" class="small" type="button" aria-pressed="true"></button>
     <label class="langsel"><span data-i18n="lang.label"></span> <select id="lang-select"></select></label>
     <span class="best" id="best-line"></span>
   </div>
@@ -257,6 +262,7 @@ const I18N = {
     "allTraining": "Alle deine Flieger trainieren gerade im Windkanal. Nimm einen heraus oder bastle einen neuen.",
     "reset": "Spielstand zurücksetzen", "reset.sure": "Wirklich zurücksetzen?", "reset.done": "Spielstand zurückgesetzt.",
     "best": "Bester Wurf: {n} Meter", "lang.label": "Sprache", "close": "Schließen",
+    "sound.on": "🔊 Ton an", "sound.off": "🔇 Ton aus",
     "login.title": "Willkommen!", "login.text": "Gib dir einen Spitznamen, bevor es losgeht. Du brauchst ihn, um zu spielen.",
     "login.ph": "Dein Spitzname", "login.aria": "Spitzname", "login.go": "Los geht’s", "login.err": "Der Spitzname braucht mindestens 2 Zeichen.",
     "login.lang": "Sprache wählen", "login.dlg": "Anmeldung",
@@ -330,6 +336,7 @@ const I18N = {
     "allTraining": "All your planes are training in the wind tunnel. Take one out or build a new one.",
     "reset": "Reset game", "reset.sure": "Really reset?", "reset.done": "Game reset.",
     "best": "Best throw: {n} meters", "lang.label": "Language", "close": "Close",
+    "sound.on": "🔊 Sound on", "sound.off": "🔇 Sound off",
     "login.title": "Welcome!", "login.text": "Pick a nickname before you start. You need it to play.",
     "login.ph": "Your nickname", "login.aria": "Nickname", "login.go": "Let’s go", "login.err": "The nickname needs at least 2 characters.",
     "login.lang": "Choose your language", "login.dlg": "Sign in",
@@ -403,6 +410,7 @@ const I18N = {
     "allTraining": "Todos tus aviones están entrenando en el túnel de viento. Saca uno o crea uno nuevo.",
     "reset": "Reiniciar partida", "reset.sure": "¿Reiniciar de verdad?", "reset.done": "Partida reiniciada.",
     "best": "Mejor lanzamiento: {n} metros", "lang.label": "Idioma", "close": "Cerrar",
+    "sound.on": "🔊 Sonido activado", "sound.off": "🔇 Sonido desactivado",
     "login.title": "¡Bienvenido!", "login.text": "Elige un apodo antes de empezar. Lo necesitas para jugar.",
     "login.ph": "Tu apodo", "login.aria": "Apodo", "login.go": "¡Vamos!", "login.err": "El apodo necesita al menos 2 caracteres.",
     "login.lang": "Elige tu idioma", "login.dlg": "Inicio",
@@ -476,6 +484,7 @@ const I18N = {
     "allTraining": "Tous tes avions s’entraînent dans la soufflerie. Sors-en un ou fabrique-en un nouveau.",
     "reset": "Réinitialiser la partie", "reset.sure": "Vraiment réinitialiser ?", "reset.done": "Partie réinitialisée.",
     "best": "Meilleur lancer : {n} mètres", "lang.label": "Langue", "close": "Fermer",
+    "sound.on": "🔊 Son activé", "sound.off": "🔇 Son coupé",
     "login.title": "Bienvenue !", "login.text": "Choisis un pseudo avant de commencer. Il te faut un pseudo pour jouer.",
     "login.ph": "Ton pseudo", "login.aria": "Pseudo", "login.go": "C’est parti", "login.err": "Le pseudo doit comporter au moins 2 caractères.",
     "login.lang": "Choisis ta langue", "login.dlg": "Connexion",
@@ -549,6 +558,7 @@ const I18N = {
     "allTraining": "Tutti i tuoi aerei si stanno allenando nella galleria del vento. Togline uno oppure costruiscine uno nuovo.",
     "reset": "Azzera la partita", "reset.sure": "Azzerare davvero?", "reset.done": "Partita azzerata.",
     "best": "Miglior lancio: {n} metri", "lang.label": "Lingua", "close": "Chiudi",
+    "sound.on": "🔊 Audio attivo", "sound.off": "🔇 Audio spento",
     "login.title": "Benvenuto!", "login.text": "Scegli un soprannome prima di iniziare. Ti serve per giocare.",
     "login.ph": "Il tuo soprannome", "login.aria": "Soprannome", "login.go": "Si parte", "login.err": "Il soprannome deve avere almeno 2 caratteri.",
     "login.lang": "Scegli la tua lingua", "login.dlg": "Accesso",
@@ -622,6 +632,7 @@ const I18N = {
     "allTraining": "Todos os seus aviões estão treinando no túnel de vento. Tire um de lá ou construa um novo.",
     "reset": "Reiniciar jogo", "reset.sure": "Reiniciar mesmo?", "reset.done": "Jogo reiniciado.",
     "best": "Melhor lançamento: {n} metros", "lang.label": "Idioma", "close": "Fechar",
+    "sound.on": "🔊 Som ligado", "sound.off": "🔇 Som desligado",
     "login.title": "Bem-vindo!", "login.text": "Escolha um apelido antes de começar. Você precisa dele para jogar.",
     "login.ph": "Seu apelido", "login.aria": "Apelido", "login.go": "Vamos lá", "login.err": "O apelido precisa de pelo menos 2 caracteres.",
     "login.lang": "Escolha seu idioma", "login.dlg": "Entrada",
@@ -695,6 +706,7 @@ const I18N = {
     "allTraining": "Tüm uçakların rüzgar tünelinde antrenman yapıyor. Birini çıkar ya da yeni bir tane yap.",
     "reset": "Oyunu sıfırla", "reset.sure": "Gerçekten sıfırlansın mı?", "reset.done": "Oyun sıfırlandı.",
     "best": "En iyi atış: {n} metre", "lang.label": "Dil", "close": "Kapat",
+    "sound.on": "🔊 Ses açık", "sound.off": "🔇 Ses kapalı",
     "login.title": "Hoş geldin!", "login.text": "Başlamadan önce bir takma ad seç. Oynamak için buna ihtiyacın var.",
     "login.ph": "Takma adın", "login.aria": "Takma ad", "login.go": "Başlayalım", "login.err": "Takma ad en az 2 karakter olmalı.",
     "login.lang": "Dilini seç", "login.dlg": "Giriş",
@@ -921,9 +933,112 @@ function showResult(t) {
   resultTimer = setTimeout(() => { resultEl.hidden = true; }, 4000);
 }
 
+// ---------- Höhe: Ballons, Wolken, Sterne ----------
+// Steigt der Flieger über den oberen Rand, fährt die Kamera mit (camY wird negativ). Weltkoordinaten: y = 0 ist der obere
+// Bildrand am Start, je kleiner y, desto höher. Schichten: Ballons (etwa 160 bis 900 über dem Rand), dicke Wolken
+// (800 bis 1800), darüber Sterne und Mond. Der Himmel wird dabei erst klarer, dann dunkel.
+let camY = 0;
+const BALLOON_COLORS = ["#ff6b6b", "#ffb347", "#ffe066", "#69db7c", "#4dabf7", "#b197fc", "#ff8ad8"];
+function hash2(i, j) {
+  let h = (Math.imul(i, 374761393) + Math.imul(j, 668265263)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+function rgbOf(c) {
+  if (c[0] === "#") { const n = parseInt(c.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+  return (c.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
+}
+function mixColor(a, b, k) {
+  const x = rgbOf(a), y = rgbOf(b);
+  return "rgb(" + x.map((v, i) => Math.round(v + (y[i] - v) * k)).join(",") + ")";
+}
+// Himmelsfarbe in Welt-Höhe y: unten Tageshimmel, höher ein sattes Blau, ganz oben Nacht
+function skyAt(y) {
+  const base = css("--sky"), clear = clamp((-y - 300) / 1200, 0, 1), night = clamp((-y - 1500) / 1500, 0, 1);
+  return mixColor(mixColor(base, "#5fa6e6", clear * 0.85), "#070d26", night);
+}
+function drawBalloon(x, y, s, color) {
+  ctx.save();
+  ctx.translate(x, y + Math.sin(performance.now() / 900 + x * 0.01) * 4);
+  ctx.scale(s, s);
+  ctx.strokeStyle = "rgba(60,40,30,0.75)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(-9, 40); ctx.lineTo(-6, 57); ctx.moveTo(9, 40); ctx.lineTo(6, 57); ctx.stroke();
+  ctx.fillStyle = "#8a5a2b"; ctx.fillRect(-8, 57, 16, 11);
+  ctx.beginPath(); ctx.moveTo(-10, 41); ctx.bezierCurveTo(-46, 18, -38, -36, 0, -38); ctx.bezierCurveTo(38, -36, 46, 18, 10, 41); ctx.closePath();
+  ctx.fillStyle = color; ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 3.5;
+  ctx.beginPath(); ctx.moveTo(0, -38); ctx.bezierCurveTo(-18, -14, -14, 22, -5, 41); ctx.moveTo(0, -38); ctx.bezierCurveTo(18, -14, 14, 22, 5, 41); ctx.stroke();
+  ctx.strokeStyle = "rgba(31,42,68,0.6)"; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.moveTo(-10, 41); ctx.bezierCurveTo(-46, 18, -38, -36, 0, -38); ctx.bezierCurveTo(38, -36, 46, 18, 10, 41); ctx.stroke();
+  ctx.restore();
+}
+function drawBigCloud(x, y, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  const puffs = [[-60, 6, 34], [-24, -10, 42], [20, -6, 46], [60, 8, 34], [0, 14, 52]];
+  ctx.fillStyle = "rgba(190,205,230,0.9)";
+  puffs.forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1] + 8, p[2], 0, 7); ctx.fill(); });
+  ctx.fillStyle = "rgba(255,255,255,0.97)";
+  puffs.forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1], p[2], 0, 7); ctx.fill(); });
+  ctx.restore();
+}
+function drawHighLayers() {
+  const top = camY, bottom = camY + canvas.height, now = performance.now();
+  // Sterne: tauchen mit der Höhe nach und nach auf und funkeln
+  if (top < -1200) {
+    const cell = 140, par = 0.08, j0 = Math.floor(top / cell), j1 = Math.floor(bottom / cell), i0 = Math.floor(camX * par / cell), i1 = i0 + Math.ceil(W / cell) + 1;
+    ctx.fillStyle = "#ffffff";
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) for (let s = 0; s < 3; s++) {
+      const hx = hash2(i * 3 + s, j), hy = hash2(i, j * 3 + s + 7), hz = hash2(i + s, j + 11);
+      const x = i * cell + hx * cell - camX * par, y = j * cell + hy * cell;
+      const a = clamp((-y - 1400) / 500, 0, 1) * (0.6 + 0.4 * Math.sin(now / 500 + hz * 30));
+      if (a < 0.03) continue;
+      ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, 0.7 + hz * 1.7, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Mond ganz oben
+  if (top < -2000) {
+    const mx = 560 - camX * 0.04, my = -2750, a = clamp((-bottom - 1800) / 600 + 1, 0, 1);
+    if (!drawHighLayers.moon) {   // Sichel einmal auf eine kleine Fläche malen
+      const m = document.createElement("canvas"); m.width = 80; m.height = 80;
+      const g = m.getContext("2d");
+      g.fillStyle = "#fff6d6"; g.beginPath(); g.arc(40, 40, 34, 0, 7); g.fill();
+      g.globalCompositeOperation = "destination-out"; g.beginPath(); g.arc(55, 33, 30, 0, 7); g.fill();
+      drawHighLayers.moon = m;
+    }
+    ctx.globalAlpha = a; ctx.drawImage(drawHighLayers.moon, mx - 40, my - 40); ctx.globalAlpha = 1;
+  }
+  // Dicke Wolken
+  if (bottom > -1900 && top < -700) {
+    const cell = 340, par = 0.5, i0 = Math.floor(camX * par / cell) - 1, i1 = i0 + Math.ceil(W / cell) + 3;
+    for (let i = i0; i <= i1; i++) for (let s = 0; s < 2; s++) {
+      if (hash2(i, 40 + s) > 0.8) continue;
+      const x = i * cell + hash2(i, 41 + s) * cell - camX * par, y = -800 - hash2(i, 42 + s) * 1000, k = 1.1 + hash2(i, 43 + s) * 1.1;
+      if (y + 100 * k < top || y - 100 * k > bottom) continue;
+      ctx.globalAlpha = clamp((-y - 700) / 200, 0, 1) * clamp((1900 + y) / 250, 0, 1);
+      drawBigCloud(x, y, k);
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Heißluftballons
+  if (bottom > -1000 && top < -100) {
+    const cell = 220, par = 0.6, i0 = Math.floor(camX * par / cell) - 1, i1 = i0 + Math.ceil(W / cell) + 3;
+    for (let i = i0; i <= i1; i++) for (let k = 0; k < 2; k++) {
+      if (hash2(i, 50 + k * 10) > 0.7) continue;
+      const x = i * cell + hash2(i, 51 + k * 10) * cell - camX * par, y = -170 - hash2(i, 52 + k * 10) * 520, s = 0.8 + hash2(i, 53 + k * 10) * 0.7;
+      if (y + 80 * s < top || y - 60 * s > bottom) continue;
+      drawBalloon(x, y, s, BALLOON_COLORS[Math.floor(hash2(i, 54 + k * 10) * BALLOON_COLORS.length)]);
+    }
+  }
+}
 function drawWorld() {
-  ctx.fillStyle = css("--sky");
+  const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  for (let i = 0; i <= 4; i++) sky.addColorStop(i / 4, skyAt(camY + canvas.height * i / 4));
+  ctx.fillStyle = sky;
   ctx.fillRect(0, 0, W, canvas.height);
+  ctx.save();
+  ctx.translate(0, -camY);   // ab hier Weltkoordinaten
+  if (camY < -60) drawHighLayers();
 
   // Wolken (laufen langsamer als die Kamera)
   ctx.fillStyle = css("--cloud");
@@ -955,6 +1070,7 @@ function drawWorld() {
   // Startrampe
   ctx.fillStyle = css("--ramp");
   ctx.fillRect(-camX, TERRACE_Y, SX * 2, groundY - TERRACE_Y);
+  ctx.restore();
 }
 
 function drawShape(ls, c, g) {
@@ -985,7 +1101,7 @@ function drawPlane() {
   const angle = isFlying ? Math.atan2(plane.vy, plane.vx) : 0;
   ctx.save();
   const dp = pullPos();
-  ctx.translate((dp ? dp[0] : plane.x) - camX, dp ? dp[1] : plane.y);
+  ctx.translate((dp ? dp[0] : plane.x) - camX, (dp ? dp[1] : plane.y) - camY);
   ctx.rotate(angle);
   const zoom = Math.max(1, 0.62 / viewScale());
   ctx.scale(zoom, zoom);
@@ -1132,11 +1248,18 @@ function animate() {
     plane.vy += flightGravity;
     // Kamera folgt, sobald der Flieger die Bildschirmmitte erreicht
     camX = Math.max(0, plane.x - W / 2);
+    // Steigt der Flieger über den oberen Rand, fährt die Kamera nach oben mit (und danach wieder zurück)
+    camY += (Math.min(0, plane.y - 160) - camY) * 0.15;
     document.getElementById("live").textContent = Math.max(0, Math.floor(plane.x - launchX));
+    const ah = document.getElementById("alt-hud"), hgt = Math.round(TERRACE_Y - plane.y);
+    ah.hidden = plane.y > 150;
+    if (!ah.hidden) ah.textContent = "↑ " + hgt + " m";
     // Die Terrasse ist fest: Wer sie von oben trifft, landet darauf
     if (plane.vy > 0 && plane.x < SX * 2 && plane.y >= TERRACE_Y - 4) { plane.y = TERRACE_Y - 4; finish(); }
     else if (plane.y >= groundY - 5) { plane.y = groundY - 5; finish(); }
   }
+  windTick();
+  if (!isFlying) { camY = 0; document.getElementById("alt-hud").hidden = true; }
   drawWorld();
   drawOverlay();
   drawPlane();
@@ -2070,6 +2193,99 @@ loginDlg.addEventListener("cancel", e => e.preventDefault());
 document.getElementById("nick-go").addEventListener("click", submitNick);
 document.getElementById("nick-in").addEventListener("keydown", e => { if (e.key === "Enter") submitNick(); });
 
+// ---------- Ton: leises Windpfeifen, solange der Flieger fliegt ----------
+// Erzeugt per Web Audio aus gefiltertem Rauschen (keine Audiodatei). Der Browser erlaubt Ton erst nach einer Berührung,
+// deshalb wird er beim ersten Antippen gestartet. Lautstärke und Tonhöhe wachsen mit dem Tempo des Fliegers.
+let soundOn = true, aud = null, windAt = 0;
+try { soundOn = localStorage.getItem("pf_sound") !== "0"; } catch (e) {}
+function ensureAudio() {
+  if (!soundOn) return;
+  if (aud) { if (aud.ctx.state === "suspended") aud.ctx.resume().catch(() => {}); return; }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  try {
+    const ctx = new AC(), len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination);
+    // Pfeifen: schmales Frequenzband, das leicht wabert
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 700; bp.Q.value = 9;
+    const whistle = ctx.createGain(); whistle.gain.value = 0;
+    const lfo = ctx.createOscillator(), lfoDepth = ctx.createGain(); lfo.frequency.value = 0.45; lfoDepth.gain.value = 60;
+    lfo.connect(lfoDepth); lfoDepth.connect(bp.frequency); lfo.start();
+    // Rauschen darunter: weiches Rauschen der Luft
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 450;
+    const air = ctx.createGain(); air.gain.value = 0;
+    src.connect(bp); bp.connect(whistle); whistle.connect(master);
+    src.connect(lp); lp.connect(air); air.connect(master);
+    src.start();
+    // kurzes Rauschen für das Klack (klingt in 40 ms aus)
+    const cb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate), cd = cb.getChannelData(0);
+    for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / cd.length, 3);
+    aud = { ctx, master, bp, whistle, air, clickBuf: cb };
+  } catch (e) { aud = null; }
+}
+// speed = Tempo des Fliegers, 0 = still. Wird beim Fliegen regelmäßig aufgerufen.
+function windSound(speed) {
+  if (!aud) return;
+  const now = aud.ctx.currentTime, k = clamp(speed / 7, 0, 1), on = speed > 0 && soundOn;
+  // Das schmale Frequenzband lässt vom Rauschen nur wenig übrig, darum die großen Werte
+  aud.whistle.gain.setTargetAtTime(on ? 0.35 + 0.55 * k : 0, now, on ? 0.2 : 0.3);
+  aud.air.gain.setTargetAtTime(on ? 0.12 + 0.2 * k : 0, now, on ? 0.2 : 0.3);
+  if (on) aud.bp.frequency.setTargetAtTime(650 + 650 * k, now, 0.25);
+}
+function windTick() {
+  const n = performance.now();
+  if (n - windAt < 80) return;
+  windAt = n;
+  windSound(isFlying && soundOn ? Math.hypot(plane.vx, plane.vy) : 0);
+}
+// Kleines „Klack“ beim Drücken eines Knopfs, wie eine Maustaste: ein scharfer, kurzer Plastik-Knacks mit etwas Körper
+// darunter, dazu ein leiseres Klicken beim Loslassen. Keine gleitenden Töne (die klingen nach Laser), nur Rauschen
+// durch Filter und ein kurzer, tiefer Sinus ohne Tonhöhenänderung.
+function klack() {
+  if (!soundOn || !aud) return;
+  const c = aud.ctx;
+  if (c.state !== "running") { c.resume().then(klack).catch(() => {}); return; }
+  const t0 = c.currentTime;
+  const tick = (t, amp, hi) => {
+    const part = (type, freq, q, gain, decay) => {
+      const n = c.createBufferSource(); n.buffer = aud.clickBuf;
+      const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+      const g = c.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.001, t + decay);
+      n.connect(f); f.connect(g); g.connect(aud.master); n.start(t);
+    };
+    part("bandpass", hi, 5, amp, 0.012);          // der Knacks
+    part("bandpass", 1100, 1.4, amp * 0.6, 0.02);  // Körper des Plastiks
+    const o = c.createOscillator(); o.type = "sine"; o.frequency.value = 160;   // tiefes Pochen der Taste
+    const og = c.createGain(); og.gain.setValueAtTime(amp * 0.35, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+    o.connect(og); og.connect(aud.master); o.start(t); o.stop(t + 0.04);
+  };
+  tick(t0, 0.3, 2800);          // Taste runter
+  tick(t0 + 0.065, 0.11, 2300); // Taste hoch, leiser und etwas dumpfer
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("button");
+  if (b && !b.disabled && b.id !== "sound-btn") klack();
+}, true);
+function updateSoundBtn() {
+  const b = document.getElementById("sound-btn");
+  b.textContent = t(soundOn ? "sound.on" : "sound.off");
+  b.setAttribute("aria-pressed", soundOn ? "true" : "false");
+}
+document.getElementById("sound-btn").addEventListener("click", () => {
+  soundOn = !soundOn;
+  try { localStorage.setItem("pf_sound", soundOn ? "1" : "0"); } catch (e) {}
+  if (soundOn) { ensureAudio(); klack(); } else windSound(0);   // beim Einschalten gleich ein Klack zur Probe
+  updateSoundBtn();
+});
+document.addEventListener("pointerdown", ensureAudio, true);
+document.addEventListener("keydown", ensureAudio, true);
+document.addEventListener("visibilitychange", () => {
+  if (!aud) return;
+  if (document.hidden) aud.ctx.suspend().catch(() => {}); else if (soundOn) aud.ctx.resume().catch(() => {});
+});
+
 // ---------- Sprache wechseln ----------
 // Namen der Papiere und Boosts folgen der Sprache; ein selbst vergebener Name des Schulheftpapiers (pupg.heft.name) bleibt.
 function refreshNames() {
@@ -2087,6 +2303,7 @@ function applyLang() {
   document.querySelectorAll("[data-i18n-ph]").forEach(e => { e.placeholder = t(e.dataset.i18nPh); });
   document.querySelectorAll("[data-i18n-aria]").forEach(e => { e.setAttribute("aria-label", t(e.dataset.i18nAria)); });
   refreshNames();
+  updateSoundBtn();
   document.getElementById("lang-select").value = lang;
   document.querySelectorAll("#lang-chips button").forEach(b => {
     const on = b.dataset.lang === lang;
