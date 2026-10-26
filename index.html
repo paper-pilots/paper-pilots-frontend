@@ -79,7 +79,10 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .sw.on, .stk.on { outline: 3px solid var(--accent); outline-offset: 1px; }
 #craft-style { margin-top: 12px; font-size: 0.9rem; }
 .name-row { display: flex; gap: 8px; margin: 4px 0 12px; }
+.name-row[hidden] { display: none; }
 #craft-name { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
+#pl-rename { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
+#pl-rename-save { padding: 8px 12px; font-size: 0.9rem; white-space: nowrap; }
 .name-row .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); font-weight: 400; padding: 8px 12px; white-space: nowrap; font-size: 0.9rem; }
 #view3d { display: block; width: 100%; max-width: 320px; margin: 0 auto 10px; border-radius: 12px; background: linear-gradient(var(--sky), var(--surface)); touch-action: pan-y; cursor: grab; }
 #tunnel-canvas { background: var(--sky); }
@@ -171,6 +174,12 @@ dialog { max-height: 92vh; overflow-y: auto; }
 
 <dialog id="plane-dialog" aria-label="Flugzeug">
   <h2 id="pl-name"></h2>
+  <div id="pl-rename-row" class="name-row" hidden>
+    <input id="pl-rename" type="text" maxlength="24" aria-label="Neuer Name des Fliegers" autocomplete="off">
+    <button id="pl-rename-roll" class="small" type="button" aria-label="Neuen Namen vorschlagen">🎲</button>
+    <button id="pl-rename-save" type="button">Umbenennen</button>
+  </div>
+  <p id="pl-rename-note" role="status" style="margin:-6px 0 8px;font-size:0.85rem;color:var(--muted);min-height:1.2em"></p>
   <canvas id="pl-canvas" width="640" height="320" aria-label="Dein Flugzeug"></canvas>
   <p id="pl-stats" style="margin:0 0 8px"></p>
   <div class="dlg-actions" style="margin-top:0"><button id="pl-select" type="button"></button></div>
@@ -231,6 +240,7 @@ const PAPERS = [
   { id: "order",  name: "Bestellter Flieger", cost: 0, speed: 1.2, gravity: 0.04, color: "#d5dcec" }
 ];
 
+const PAPER_DEFAULT = Object.fromEntries(PAPERS.map(p => [p.id, p.name]));   // ursprüngliche Namen (Papiere kann man umbenennen)
 let coins = 0, strength = 1, upgradeCost = 10, best = 0;
 let owned = ["heft"], equipped = "heft";
 let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
@@ -267,6 +277,7 @@ function load() {
       tunnel = s.tunnel && custom.some(c => c.id === s.tunnel.id) ? s.tunnel : null;
       if (tunnel && equipped === tunnel.id) equipped = "heft";
       pupg = s.pupg || {};
+      PAPERS.forEach(x => { const nm = pupg[x.id] && pupg[x.id].name; if (typeof nm === "string" && nm.trim()) x.name = nm.trim().slice(0, 24); });
       if (attached.length) {   // alte Version: Boosts gehörten zum ganzen Spiel, jetzt zum ausgewählten Flieger
         upOf(planeById(equipped) || PAPERS[0]).boosts = attached.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP);
         attached = [];
@@ -549,6 +560,7 @@ function resetGame() {
   }
   rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen";
   coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null; pupg = {};
+  PAPERS.forEach(x => { x.name = PAPER_DEFAULT[x.id]; });
   save(); updateUI(); showResult("Spielstand zurückgesetzt."); askNick();
 }
 
@@ -820,20 +832,23 @@ function analyze(ls, folds) {
 }
 // Coole Namen für neue Flieger: Vorsilbe + Tierchen oder Wort; schlanke Flieger bekommen Tempo-Namen,
 // Flieger mit viel Auftrieb Gleiter-Namen.
-const NAME_A = ["Blitz", "Sturm", "Wolken", "Silber", "Turbo", "Donner", "Stern", "Feuer", "Eis", "Wirbel", "Mond", "Sonnen", "Nebel", "Schatten", "Nacht", "Gold", "Düsen", "Zack", "Flitz", "Sause"];
-const NAME_FAST = ["pfeil", "jäger", "blitz", "rakete", "komet", "flitzer", "hai", "wolf"];
-const NAME_GLIDE = ["schwalbe", "adler", "möwe", "kolibri", "falke", "segler", "fuchs", "specht"];
-const NAME_ANY = NAME_FAST.concat(NAME_GLIDE, ["kobold", "drache", "geist", "wirbel"]);
+const NAME_A = ["Blitz", "Sturm", "Wolken", "Silber", "Turbo", "Donner", "Stern", "Feuer", "Eis", "Wirbel", "Mond", "Sonnen", "Nebel", "Schatten", "Nacht", "Gold", "Düsen", "Zack", "Flitz", "Sause",
+  "Regenbogen", "Gewitter", "Polar", "Kristall", "Rubin", "Smaragd", "Wüsten", "Dschungel", "Ozean", "Vulkan", "Nordlicht", "Morgen", "Abend", "Mitternacht", "Zucker", "Pfeffer", "Himmel", "Wind", "Funken", "Glitzer", "Kupfer", "Bernstein", "Lava", "Orkan", "Frost", "Zimt"];
+const NAME_FAST = ["pfeil", "jäger", "blitz", "rakete", "komet", "flitzer", "hai", "wolf", "panther", "gepard", "speer", "düse", "sprinter", "geschoss"];
+const NAME_GLIDE = ["schwalbe", "adler", "möwe", "kolibri", "falke", "segler", "fuchs", "specht", "eule", "kranich", "storch", "libelle", "pelikan", "schmetterling"];
+const NAME_ANY = NAME_FAST.concat(NAME_GLIDE, ["kobold", "drache", "geist", "wirbel", "phönix", "delfin", "pirat", "ritter", "zauberer", "känguru"]);
 let craftNameSet = false;
-function suggestName() {
-  const s = analyze(layers, hist.length);
+const usedNames = new Set();   // schon vorgeschlagene Namen: kommen erst wieder, wenn alle durch sind
+function suggestName(stats) {
+  const s = stats || analyze(layers, hist.length);
   const pool = s.slender > 0.45 ? NAME_FAST : s.lift > 0.6 ? NAME_GLIDE : NAME_ANY;
-  const pick = a => a[Math.floor(Math.random() * a.length)];
-  for (let i = 0; i < 40; i++) {
-    const a = pick(NAME_A), b = pick(pool), n = a + b;
-    if (a.toLowerCase() !== b && !custom.some(c => c.name === n)) return n;
-  }
-  return pick(NAME_A) + pick(pool) + " " + (custom.length + 1);
+  const all = [];
+  NAME_A.forEach(a => pool.forEach(b => { if (!b.startsWith(a.toLowerCase()) && !a.toLowerCase().startsWith(b)) all.push(a + b); }));
+  let free = all.filter(n => !usedNames.has(n) && !custom.some(c => c.name === n));
+  if (!free.length) { all.forEach(n => usedNames.delete(n)); free = all.filter(n => !custom.some(c => c.name === n)); }
+  const n = free.length ? free[Math.floor(Math.random() * free.length)] : NAME_A[0] + pool[0] + " " + (custom.length + 1);
+  usedNames.add(n);
+  return n;
 }
 function newSheet() {
   layers = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
@@ -1175,7 +1190,7 @@ function renderHangar() {
 // direkt am Flieger (c.boosts, c.pap), bei den Standardpapieren in pupg[id].
 const MAX_UP = 2;
 const planeDlg = document.getElementById("plane-dialog");
-let planeOpenId = null;
+let planeOpenId = null, renameDirty = false;
 const planeById = id => PAPERS.find(p => p.id === id) || custom.find(c => c.id === id) || null;
 function upOf(p) {
   if (p.custom) { p.boosts = p.boosts || []; p.pap = p.pap || "heft"; return p; }
@@ -1188,12 +1203,16 @@ function effStats(p) {
   u.boosts.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { speed *= b.speed; gravity *= b.gravity; lift += b.lift; } });
   return { speed, gravity, lift };
 }
-function openPlane(id) { planeOpenId = id; renderPlane(); if (!planeDlg.open) planeDlg.showModal(); }
+function openPlane(id) { planeOpenId = id; renameDirty = false; renderPlane(); if (!planeDlg.open) planeDlg.showModal(); }
 function renderPlane() {
   const p = planeById(planeOpenId);
   if (!p) { if (planeDlg.open) planeDlg.close(); return; }
   const u = upOf(p), e = effStats(p), away = !!tunnel && tunnel.id === p.id, on = equipped === p.id;
   document.getElementById("pl-name").textContent = p.name;
+  const rr = document.getElementById("pl-rename-row"), ri = document.getElementById("pl-rename");
+  rr.hidden = false;   // jedes Flugzeug kann umbenannt werden
+  // Ein noch nicht gespeicherter Name (getippt oder gewürfelt) bleibt stehen, auch wenn sich die Seite neu zeichnet
+  if (ri.dataset.id !== p.id || !renameDirty) { ri.value = p.name; ri.dataset.id = p.id; renameDirty = false; }
   const cv = document.getElementById("pl-canvas"), g = cv.getContext("2d"), k = cv.width / 320;
   g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, 320, 160);
   g.save(); g.translate(160, 80); g.rotate(-0.1); g.scale(2.6, 2.6);
@@ -1257,6 +1276,42 @@ document.getElementById("pl-select").addEventListener("click", () => {
   equipped = p.id; save(); updateUI(); renderPlane();
 });
 document.getElementById("pl-close").addEventListener("click", () => planeDlg.close());
+let renameNoteTimer = null;
+function renameNote(t) {
+  const note = document.getElementById("pl-rename-note");
+  note.textContent = t; clearTimeout(renameNoteTimer);
+  renameNoteTimer = setTimeout(() => { note.textContent = ""; }, 3500);
+}
+// Namen speichern: bei selbstgebauten Fliegern am Flieger, bei Standardpapieren in pupg[id].name
+function renamePlane() {
+  const p = planeById(planeOpenId), ri = document.getElementById("pl-rename"), btn = document.getElementById("pl-rename-save");
+  if (!p) return;
+  const n = ri.value.trim().replace(/\s+/g, " ").slice(0, 24);
+  if (!n) { ri.value = p.name; renameDirty = false; renameNote("Der Name darf nicht leer sein."); return; }
+  p.name = n; ri.value = n; renameDirty = false;
+  if (!p.custom) upOf(p).name = n;
+  save();
+  btn.textContent = "Gespeichert ✓";
+  renameNote("Gespeichert: " + n);
+  setTimeout(() => { btn.textContent = "Umbenennen"; }, 1500);
+  try { updateUI(); } catch (e) { console.error(e); }
+}
+document.getElementById("pl-rename-save").addEventListener("click", renamePlane);
+document.getElementById("pl-rename").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); renamePlane(); } });
+document.getElementById("pl-rename").addEventListener("input", () => { renameDirty = true; });
+// Wer einen Namen tippt und dann woanders hintippt, hat ihn trotzdem gespeichert (außer beim Würfeln)
+document.getElementById("pl-rename").addEventListener("blur", e => {
+  if (renameDirty && e.relatedTarget !== document.getElementById("pl-rename-roll") && document.getElementById("pl-rename").value.trim()) renamePlane();
+});
+document.getElementById("pl-rename-roll").addEventListener("click", () => {
+  const p = planeById(planeOpenId);
+  if (!p) return;
+  const ri = document.getElementById("pl-rename");
+  // etwas anderes als der aktuelle Name und als der letzte Vorschlag
+  let n = suggestName({ slender: p.speed >= 1.2 ? 1 : 0, lift: p.gravity < 0.04 ? 1 : 0 });
+  for (let i = 0; i < 10 && (n === ri.value || n === p.name); i++) n = suggestName({ slender: p.speed >= 1.2 ? 1 : 0, lift: p.gravity < 0.04 ? 1 : 0 });
+  ri.value = n; renameDirty = true;
+});
 
 // ---------- Windkanal ----------
 // Ein Flieger im Windkanal trainiert: Alle 3 Minuten steigt er eine Stufe auf (höchstens Stufe 20).
