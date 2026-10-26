@@ -36,6 +36,11 @@
 - 3D-Ansicht (`draw3d`): Canvas-Painter-Algorithmus, Lagen von unten nach oben, V-Flügel, Kiel, Perspektive. Schleife `loop3d` startet erst am Ende des Skripts (Falle bei `const`/`let` und Reihenfolge der Deklarationen beachten).
 - Katalog A1–Z20 und Flugzeug-Suche im Basteln-Fenster wurden entfernt (Wunsch des Nutzers). Nur `applyOrder`/`orderQ` bleiben, damit alte Spielstände mit bestellten Fliegern weiter geladen werden. Bereits bestellte Flieger liegen als normale `custom[]`-Einträge vor.
 
+## Meine Flugzeuge (früher „Hangar“)
+- Abschnitt „Meine Flugzeuge“ direkt über dem Flugfeld (`#hangar`, `renderHangar`, `drawHangar`; die Namen stammen noch aus der Hangar-Version, die Hallen selbst wurden auf Wunsch entfernt): Das Schulheftpapier und jeder selbstgebaute Flieger mit eigener Form steht als Karte mit dem Flugzeug (Lack, Sticker) da. Die anderen Standardpapiere (Glanz, Pergament, Carbon) und Flieger ohne Form werden bewusst nicht gezeigt, Auswählen geht weiter im Papier-Laden. Die Reihe scrollt seitlich.
+- Klick auf eine Karte wählt den Flieger aus (wie „Auswählen“ im Laden), gesperrt beim Fliegen und im Duell-Wurf. Ein Flieger im Windkanal ist blass mit „Im Windkanal“ markiert und nicht wählbar.
+- Wird mit `updateUI()` neu gezeichnet. Im Querformat am Handy ausgeblendet (nur das Spielfeld bleibt).
+
 ## Windkanal
 - Knopf „Windkanal“ zwischen „Duell“ und „Spieler“. Dialog `tunnel-dialog` mit Canvas (Glasröhre, Ventilator vorne und hinten, Flieger schwebt in der Mitte).
 - Ein selbstgebauter Flieger (`custom[]`) liegt im Windkanal (`tunnel = {id, since}`, gespeichert). Alle `TUNNEL_MS` (3 Minuten) steigt er eine Stufe (`lvl`, höchstens `TUNNEL_MAX` = 20): ungerade Stufen Tempo +0,03, gerade Stufen Gleitflug +5 % (`gravity × 0,95`, mindestens 0,02). Die Zeit läuft per Zeitstempel auch bei geschlossenem Fenster und beim Neuladen weiter (`tickTunnel`).

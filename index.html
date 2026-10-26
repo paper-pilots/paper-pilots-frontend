@@ -42,6 +42,16 @@ button { font: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; bord
 button:hover:not(:disabled) { filter: brightness(1.08); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.hangar-box { margin-bottom: 16px; }
+.hangar-box h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.hangar-row { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; scroll-snap-type: x proximity; }
+.hangar-house { flex: 0 0 auto; width: 136px; padding: 6px 6px 8px; border-radius: 14px; background: var(--surface); color: var(--ink); border: 2px solid transparent; font-weight: 400; text-align: center; scroll-snap-align: start; }
+.hangar-house:hover:not(:disabled) { filter: none; border-color: var(--muted); }
+.hangar-house:disabled { opacity: 1; cursor: default; }
+.hangar-house.on { border-color: var(--accent); }
+.hangar-house canvas { width: 120px; height: 100px; border: 0; border-radius: 0; background: none; margin: 0 auto; }
+.hangar-house .hn { display: block; font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hangar-house .hs { display: block; font-size: 0.8rem; color: var(--muted); }
 .stage { position: relative; }
 #gameCanvas { touch-action: none; }
 canvas { display: block; width: 100%; height: auto; border-radius: 14px; border: 2px solid var(--line); background: var(--sky); }
@@ -121,6 +131,11 @@ dialog { max-height: 92vh; overflow-y: auto; }
       <h2>Wurfstärke: Stufe <span id="strength-level">1</span></h2>
       <button id="upgrade-btn" type="button">Upgrade für <span id="upgrade-cost">10</span> Münzen</button>
     </div>
+  </section>
+
+  <section class="hangar-box" aria-label="Meine Flugzeuge">
+    <h2>Meine Flugzeuge</h2>
+    <div id="hangar" class="hangar-row"></div>
   </section>
 
   <div class="stage">
@@ -319,6 +334,7 @@ function updateUI() {
   renderBoosts();
   document.getElementById("upgrade-btn").disabled = coins < upgradeCost || isFlying;
   renderShop();
+  renderHangar();
 }
 
 function showResult(t) {
@@ -1167,6 +1183,55 @@ async function initDuel() {
   tryJoin();
 }
 document.getElementById("duel-new").addEventListener("click", () => { document.getElementById("duel-text").hidden = true; document.getElementById("duel-share").hidden = true; renderPick("create"); });
+
+// ---------- Meine Flugzeuge ----------
+// Reihe mit allen Fliegern (mit Lack und Stickern). Klick = auswählen.
+// Von den Standardfliegern (ohne eigene Form) steht nur das Schulheftpapier hier.
+function hangarItems() {
+  return PAPERS.filter(p => p.id === "heft").concat(custom.filter(c => Array.isArray(c.shape) && c.shape.length));
+}
+function drawHangar(cv, p, away) {
+  const g = cv.getContext("2d"), k = cv.width / 120;
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.clearRect(0, 0, 120, 100);
+  g.save(); g.translate(60, 50); g.rotate(-0.1);
+  g.scale(1.9, 1.9);
+  if (away) g.globalAlpha = 0.3;
+  if (!drawShape(p.shape, p, g)) {
+    g.scale(1.7, 1.7);
+    g.fillStyle = p.paint || p.color || "#ffffff"; g.strokeStyle = "#1f2a44"; g.lineWidth = 0.8; g.lineJoin = "round";
+    g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
+  }
+  g.restore();
+  if (away) {
+    g.fillStyle = css("--ink"); g.font = "700 11px Fredoka, sans-serif"; g.textAlign = "center";
+    g.fillText("Im Windkanal", 60, 54);
+  }
+}
+function renderHangar() {
+  const box = document.getElementById("hangar");
+  if (!box) return;
+  const scroll = box.scrollLeft;
+  box.innerHTML = "";
+  hangarItems().forEach(p => {
+    const away = !!tunnel && tunnel.id === p.id, on = equipped === p.id && !away;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "hangar-house" + (on ? " on" : "");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    const cv = document.createElement("canvas");
+    cv.width = 240; cv.height = 200;
+    cv.setAttribute("role", "img"); cv.setAttribute("aria-label", p.name);
+    const n = document.createElement("span"); n.className = "hn"; n.textContent = p.name;
+    const s = document.createElement("span"); s.className = "hs";
+    s.textContent = away ? "Trainiert gerade" : on ? "Ausgewählt" : (p.lvl ? "Stufe " + p.lvl + " · " : "") + "Tempo ×" + p.speed.toFixed(2);
+    b.append(cv, n, s);
+    b.disabled = away;
+    b.onclick = () => { if (!isFlying && !duelCtx && !away) { equipped = p.id; save(); updateUI(); } };
+    box.appendChild(b);
+    drawHangar(cv, p, away);
+  });
+  box.scrollLeft = scroll;
+}
 
 // ---------- Windkanal ----------
 // Ein Flieger im Windkanal trainiert: Alle 3 Minuten steigt er eine Stufe auf (höchstens Stufe 20).
