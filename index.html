@@ -70,38 +70,21 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .boost-row small { display: block; color: var(--muted); }
 .boost-row button { padding: 6px 12px; font-size: 0.9rem; white-space: nowrap; }
 #craft-boosts { margin-top: 14px; }
-.dlg-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
-.dlg-head h2 { margin: 0; white-space: nowrap; }
-.search { display: flex; gap: 6px; min-width: 0; }
-.search input { font: inherit; min-width: 0; width: 130px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
-.search button { padding: 6px 12px; font-size: 0.9rem; }
-#order-result { margin-bottom: 10px; font-size: 0.9rem; color: var(--muted); }
-#order-result:empty { display: none; }
 #paint-row, #sticker-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
 .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
 .stk { padding: 4px 8px; font-size: 1.1rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); }
 .sw.on, .stk.on { outline: 3px solid var(--accent); outline-offset: 1px; }
 #craft-style { margin-top: 12px; font-size: 0.9rem; }
 #view3d { display: block; width: 100%; max-width: 320px; margin: 0 auto 10px; border-radius: 12px; background: linear-gradient(var(--sky), var(--surface)); touch-action: pan-y; cursor: grab; }
-#catalog { margin-bottom: 10px; font-size: 0.9rem; }
-#catalog summary { cursor: pointer; font-weight: 600; }
-#catalog button { padding: 3px 7px; font-size: 0.8rem; margin: 2px; border-radius: 6px; }
-#cat-nums button { background: var(--bg); color: var(--ink); border: 1px solid var(--muted); font-weight: 400; }
-#order-result .card { background: var(--bg); color: var(--ink); display: flex; flex-direction: column; gap: 6px; }
 #craft-text { min-height: 3em; margin: 0 0 10px; color: var(--muted); }
 #craft-canvas { max-width: 320px; margin: 0 auto; touch-action: none; background: var(--sky); cursor: grab; }
 .dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .dlg-actions .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); font-weight: 400; padding: 8px 14px; }
 @media (max-width: 520px) {
   .panel { grid-template-columns: 1fr; } .best { margin-left: 0; width: 100%; }
-  .dlg-head { flex-wrap: wrap; }
-  .search { width: 100%; }
-  .search input { flex: 1; width: auto; padding: 10px 12px; }
-  .search button { padding: 10px 14px; }
   .paper button, .boost-row button, .dlg-actions button, .actions button { min-height: 44px; }
   .sw { width: 36px; height: 36px; }
   .stk { min-width: 40px; min-height: 40px; }
-  #catalog button { padding: 8px 10px; }
   #craft-canvas, #view3d { width: 80%; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -171,20 +154,8 @@ dialog { max-height: 92vh; overflow-y: auto; }
 </dialog>
 
 <dialog id="craft-dialog" aria-label="Flieger basteln">
-  <div class="dlg-head">
-    <h2>Flieger basteln</h2>
-    <div class="search">
-      <input id="plane-q" type="text" maxlength="40" placeholder="F-14 Kampfjet" aria-label="Flugzeug suchen">
-      <button id="plane-search" type="button">Suchen</button>
-    </div>
-  </div>
+  <h2>Flieger basteln</h2>
   <p id="craft-text">Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.</p>
-  <details id="catalog">
-    <summary>Katalog A–Z (je 20 Modelle, alle anders gefaltet)</summary>
-    <div id="cat-letters"></div>
-    <div id="cat-nums"></div>
-  </details>
-  <div id="order-result" role="status"></div>
   <canvas id="craft-canvas" width="320" height="400"></canvas>
   <p id="craft-stats" style="margin:8px 0 0;font-size:0.9rem;color:var(--muted)"></p>
   <div id="craft-style" hidden>
@@ -590,156 +561,6 @@ function applyOrder(o) {
   const p = PAPERS.find(x => x.id === "order");
   p.name = o.name; p.speed = o.speed; p.gravity = o.gravity;
 }
-const LOCAL = [
-  ["f-?14|kampfjet|tomcat", "F-14 Tomcat", 92],
-  ["concorde", "Concorde", 95],
-  ["segelflug|glider", "Segelflugzeug", 80],
-  ["shuttle", "Space Shuttle", 70],
-  ["airbus|boeing|jumbo|a380|737", "Verkehrsflugzeug", 55],
-  ["cessna", "Cessna 172", 45],
-  ["wright|doppeldecker", "Wright Flyer", 25]
-];
-async function findPlane(q) {
-  const cm = q.trim().match(/^([a-zA-Z])\s*-?\s*(\d{1,2})$/);
-  if (cm && +cm[2] >= 1 && +cm[2] <= 20) {
-    const code = cm[1].toUpperCase() + (+cm[2]);
-    const idx = (cm[1].toUpperCase().charCodeAt(0) - 65) * 20 + (+cm[2]);
-    return { ok: true, name: "Modell " + code, aero: clamp(Math.ceil(idx / 520 * 100), 1, 100), blurb: "Faltmodell " + code + " mit eigenem Faltmuster.", code };
-  }
-  let sample = null;
-  try { if (typeof claude !== "undefined") sample = await claude.use("sample"); } catch (e) {}
-  if (sample) {
-    try { return await sample.json("Du bewertest Flugzeuge für ein Papierflieger-Spiel. Anfrage des Spielers: '" + q.replace(/['"]/g, "").slice(0, 60) + "'. Ist das ein Flugzeug oder Fluggerät, gib genau dieses JSON zurück: {\"ok\":true,\"name\":\"offizieller Name, kurz\",\"aero\":Ganzzahl von 1 bis 100 für die Aerodynamik (Schnittigkeit, Tempo, Gleitfähigkeit; Kampfjet und Segelflugzeug hoch, Heißluftballon niedrig),\"blurb\":\"ein kurzer deutscher Satz zum Flugzeug\"}. Sonst gib {\"ok\":false} zurück. Antworte nur mit JSON."); } catch (e) { /* weiter mit dem Katalog */ }
-  }
-  const s = q.toLowerCase();
-  const m = LOCAL.find(x => new RegExp(x[0]).test(s));
-  return m ? { ok: true, name: m[1], aero: m[2], blurb: "Aus dem Katalog." } : { ok: false };
-}
-async function runSearch() {
-  if (animating) return;
-  const q = document.getElementById("plane-q").value.trim();
-  if (!q) return;
-  const box = document.getElementById("order-result");
-  box.textContent = "Suche läuft…";
-  let r;
-  try { r = await findPlane(q); } catch (e) { box.textContent = "Die Suche hat nicht geklappt. Versuch es gleich noch einmal."; return; }
-  if (!r || !r.ok) { box.textContent = "Dazu habe ich kein Flugzeug gefunden."; return; }
-  const aero = clamp(Math.round(Number(r.aero) || 1), 1, 100);
-  const steps = r.code ? genFolds(r.code) : null;
-  const o = { name: String(r.name || q).slice(0, 40), speed: +(1 + 0.6 * aero / 100).toFixed(2), gravity: +(0.05 - 0.026 * aero / 100).toFixed(4) };
-  const cost = Math.round((40 + aero * aero * 0.14) / 10) * 10;
-  box.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "card";
-  const t = document.createElement("strong"); t.textContent = o.name;
-  const d = document.createElement("span"); d.textContent = String(r.blurb || "").slice(0, 140);
-  const st = document.createElement("span");
-  st.textContent = "Aerodynamik " + aero + " von 100, Tempo ×" + o.speed.toFixed(2) + ", Gleitflug " + Math.round(0.05 / o.gravity * 100) + " %";
-  const b = document.createElement("button");
-  b.type = "button";
-  b.textContent = "Basteln lassen für " + cost + " Münzen";
-  b.disabled = coins < cost;
-  b.onclick = () => {
-    if (coins < cost || animating) return;
-    coins -= cost; orderQ = o;
-    let fin = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
-    (steps || DEFAULT_FOLDS).forEach(([fa, fb]) => { fin = foldLayers(fin, fa, fb); });
-    addCustom(o.name, o.speed, o.gravity, fin);
-    orderedId = custom[custom.length - 1].id;
-    box.textContent = "Dein Flieger wird gefaltet…";
-    foldAnim(steps).then(() => { box.textContent = o.name + " ist fertig. Drück auf „Flieger übernehmen“."; });
-  };
-  card.append(t, d, st, b);
-  box.appendChild(card);
-}
-let ordered = false, animating = false;
-const DEFAULT_FOLDS = [[[0, 0], [100, 100]], [[200, 0], [100, 100]], [[0, 260], [100, 278.6]], [[200, 260], [100, 278.6]]];
-const wait = ms => new Promise(r => setTimeout(r, ms));
-async function foldAnim(steps) {
-  newSheet();
-  animating = true;
-  refreshCraft();
-  const S = steps || [[[0, 0], [100, 100]], [[200, 0], [100, 100]], [[0, 260], [100, 278.6]], [[200, 260], [100, 278.6]]];
-  for (const [a, b] of S) {
-    await new Promise(res => {
-      let t0 = null;
-      requestAnimationFrame(function tick(now) {
-        if (t0 === null) t0 = now;
-        const k = clamp((now - t0) / (S.length > 4 ? 280 : 650), 0, 1), e = k * k * (3 - 2 * k);
-        from = a; drag = [a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e];
-        drawCraft();
-        if (k < 1) requestAnimationFrame(tick); else res();
-      });
-    });
-    hist.push(layers);
-    layers = foldLayers(layers, a, b);
-    drag = null; from = null;
-    drawCraft();
-    await wait(S.length > 4 ? 90 : 250);
-  }
-  animating = false;
-  ordered = true;
-  refreshCraft();
-}
-function rng(seed) {
-  return function () {
-    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-function coveredArea(ls) {
-  let n = 0;
-  for (let y = -100; y <= 380; y += 10) for (let x = -100; x <= 300; x += 10) if (ls.some(l => inside(l.pts, x, y))) n++;
-  return n * 100;
-}
-function nearestVertex(ls, p) {
-  let best = null, bd = 1e9;
-  ls.forEach(l => l.pts.forEach(v => { const d = Math.hypot(v[0] - p[0], v[1] - p[1]); if (d < bd) { bd = d; best = v; } }));
-  return best;
-}
-function genFolds(code) {
-  let h = 7;
-  for (const ch of code) h = (h * 31 + ch.charCodeAt(0)) | 0;
-  const rnd = rng(h);
-  let ls = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
-  const out = [], pairs = 3 + Math.floor(rnd() * 4);
-  for (let i = 0; i < pairs * 3 && out.length < pairs * 2; i++) {
-    const left = [];
-    ls.forEach(l => l.pts.forEach(p => { if (p[0] < 95) left.push(p); }));
-    if (!left.length) break;
-    const v = left[Math.floor(rnd() * left.length)];
-    const t = [70 + rnd() * 50, v[1] + (rnd() - 0.4) * 160];
-    const a = foldLayers(ls, v, t);
-    const v2 = nearestVertex(a, [200 - v[0], v[1]]);
-    const t2 = [200 - t[0], t[1]];
-    const b = foldLayers(a, v2, t2);
-    if (coveredArea(b) > 9000) { ls = b; out.push([v, t], [v2, t2]); }
-  }
-  return out.length ? out : [[[0, 0], [100, 100]], [[200, 0], [100, 100]]];
-}
-(function buildCatalog() {
-  const L = document.getElementById("cat-letters"), N = document.getElementById("cat-nums");
-  for (let i = 0; i < 26; i++) {
-    const ch = String.fromCharCode(65 + i);
-    const b = document.createElement("button");
-    b.type = "button"; b.textContent = ch;
-    b.onclick = () => {
-      N.innerHTML = "";
-      for (let n = 1; n <= 20; n++) {
-        const nb = document.createElement("button");
-        nb.type = "button"; nb.textContent = ch + n;
-        nb.onclick = () => { document.getElementById("plane-q").value = ch + n; runSearch(); };
-        N.appendChild(nb);
-      }
-    };
-    L.appendChild(b);
-  }
-})();
-document.getElementById("plane-search").addEventListener("click", runSearch);
-document.getElementById("plane-q").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
-
 // ---------- Lackieren & Sticker ----------
 const PAINTS = ["#ffffff", "#ff6b6b", "#ffb347", "#ffe066", "#69db7c", "#4dabf7", "#b197fc", "#ff8ad8", "#495057"];
 const STICKERS = ["⭐", "❤️", "⚡", "🔥", "🚀", "😎"];
@@ -959,14 +780,14 @@ function renderBoosts() {
 // ---------- Flieger basteln (freies Falten) ----------
 const OX = 60, OY = 70;
 let gstep = 0;
-let craftPaint = null, craftStickers = [], pendingSticker = null, orderedId = null;
+let craftPaint = null, craftStickers = [], pendingSticker = null;
 const GSTEPS = [
   { a: [0, 0],     b: [100, 100],   t: "Zieh die linke obere Ecke auf den Ring in der Mitte." },
   { a: [200, 0],   b: [100, 100],   t: "Jetzt die rechte obere Ecke auch auf den Ring ziehen." },
   { a: [0, 260],   b: [100, 278.6], t: "Zieh die linke untere Ecke zum Ring, sodass die Kante an der Mittellinie liegt." },
   { a: [200, 260], b: [100, 278.6], t: "Das Gleiche auf der rechten Seite." }
 ];
-function guideStep() { return !tutorialDone && !ordered && !animating && gstep < GSTEPS.length ? GSTEPS[gstep] : null; }
+function guideStep() { return !tutorialDone && gstep < GSTEPS.length ? GSTEPS[gstep] : null; }
 const dlg = document.getElementById("craft-dialog");
 const cc = document.getElementById("craft-canvas");
 const cx = cc.getContext("2d");
@@ -1034,20 +855,20 @@ function analyze(ls, folds) {
 }
 function newSheet() {
   layers = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
-  hist = []; drag = null; from = null; ordered = false; gstep = 0;
+  hist = []; drag = null; from = null; gstep = 0;
   craftPaint = null; craftStickers = []; pendingSticker = null;
   refreshCraft();
 }
 function refreshCraft() {
   const s = analyze(layers, hist.length), pc = v => Math.round(v * 100) + " %";
-  document.getElementById("craft-stats").textContent = ordered ? "Bestellt: " + orderQ.name + ", Tempo ×" + orderQ.speed.toFixed(2) : hist.length
+  document.getElementById("craft-stats").textContent = hist.length
     ? "Symmetrie " + pc(s.sym) + ", Schlankheit " + pc(s.slender) + ", Stabilität " + pc(s.stiff) + ", Auftrieb " + pc(s.lift) + ". Tempo ×" + s.speed.toFixed(2)
     : "Noch nicht gefaltet.";
-  const needGuide = !tutorialDone && !ordered && !animating;
+  const needGuide = !tutorialDone;
   document.getElementById("craft-text").textContent = needGuide
     ? (gstep < GSTEPS.length ? "Anleitung, Schritt " + (gstep + 1) + " von " + GSTEPS.length + ": " + GSTEPS[gstep].t : "Super, dein Flieger ist fertig gefaltet! Drück auf „Flieger übernehmen“.")
     : "Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.";
-  document.getElementById("craft-done").disabled = animating || (needGuide ? gstep < GSTEPS.length : (!hist.length && !ordered));
+  document.getElementById("craft-done").disabled = needGuide ? gstep < GSTEPS.length : !hist.length;
   document.getElementById("craft-style").hidden = document.getElementById("craft-done").disabled;
   refreshStyleUI();
   document.getElementById("craft-undo").disabled = !hist.length;
@@ -1092,7 +913,6 @@ function pick(p) {
   return best;
 }
 cc.addEventListener("pointerdown", e => {
-  if (animating) return;
   if (pendingSticker) { placeSticker(cpos(e)); return; }
   const p = cpos(e), g = guideStep();
   const v = g ? (Math.hypot(p[0] - g.a[0], p[1] - g.a[1]) < 28 ? g.a : null) : pick(p);
@@ -1106,7 +926,7 @@ cc.addEventListener("pointerup", e => {
     if (Math.hypot(p[0] - g.b[0], p[1] - g.b[1]) < 30) { hist.push(layers); layers = foldLayers(layers, g.a, g.b); gstep++; craftStickers = []; }
   } else if (Math.hypot(p[0] - from[0], p[1] - from[1]) > 14) {
     const next = foldLayers(layers, from, p);
-    if (next.length && next.length < 80) { hist.push(layers); layers = next; ordered = false; craftStickers = []; }
+    if (next.length && next.length < 80) { hist.push(layers); layers = next; craftStickers = []; }
   }
   drag = null; from = null;
   refreshCraft();
@@ -1114,16 +934,10 @@ cc.addEventListener("pointerup", e => {
 cc.addEventListener("pointercancel", () => { drag = null; from = null; drawCraft(); });
 
 document.getElementById("craft-btn").addEventListener("click", () => { if (!isFlying) { newSheet(); dlg.showModal(); } });
-document.getElementById("craft-close").addEventListener("click", () => { if (!animating) dlg.close(); });
-dlg.addEventListener("cancel", e => { if (animating) e.preventDefault(); });
-document.getElementById("craft-redo").addEventListener("click", () => { if (!animating) newSheet(); });
-document.getElementById("craft-undo").addEventListener("click", () => { if (hist.length && !animating) { layers = hist.pop(); craftStickers = []; if (!tutorialDone && gstep > 0) gstep--; refreshCraft(); } });
+document.getElementById("craft-close").addEventListener("click", () => dlg.close());
+document.getElementById("craft-redo").addEventListener("click", () => newSheet());
+document.getElementById("craft-undo").addEventListener("click", () => { if (hist.length) { layers = hist.pop(); craftStickers = []; if (!tutorialDone && gstep > 0) gstep--; refreshCraft(); } });
 document.getElementById("craft-done").addEventListener("click", () => {
-  if (ordered) {
-    const oc = custom.find(c => c.id === orderedId);
-    if (oc && (craftPaint || craftStickers.length)) { coins -= Math.min(coins, styleCost()); oc.paint = craftPaint; oc.stickers = craftStickers.slice(); if (craftPaint) oc.color = craftPaint; save(); updateUI(); }
-    dlg.close(); showResult(orderQ.name + " ist fertig! Tempo ×" + orderQ.speed.toFixed(2)); return;
-  }
   const s = analyze(layers, hist.length);
   if (!tutorialDone) { throwHint = true; practiceThrows = 0; }
   tutorialDone = true;
@@ -1142,7 +956,7 @@ function duelText() {
 document.getElementById("duel-btn").addEventListener("click", () => {
   if (duelCtx) { cancelDuelThrow(); return; }
   const ok = dbRef && myId;
-  openDuelDialog(ok ? "Setze einen deiner selbstgebauten oder bestellten Flieger ein. Wer weiter fliegt, gewinnt den Flieger des anderen." : "Für Einsatz-Duelle brauchst du ein claude.ai-Konto und Mitwirkenden-Zugriff auf diese Seite. Eine einfache Herausforderung kannst du trotzdem verschicken.");
+  openDuelDialog(ok ? "Setze einen deiner selbstgebauten Flieger ein. Wer weiter fliegt, gewinnt den Flieger des anderen." : "Für Einsatz-Duelle brauchst du ein claude.ai-Konto und Mitwirkenden-Zugriff auf diese Seite. Eine einfache Herausforderung kannst du trotzdem verschicken.");
   if (!ok) showPlainChallenge();
 });
 document.getElementById("duel-close").addEventListener("click", () => duelDlg.close());
@@ -1209,7 +1023,7 @@ function renderPick(mode, d, id) {
   const box = document.getElementById("duel-pick");
   box.innerHTML = "";
   if (mode === "create" && !(dbRef && myId)) { box.textContent = "Duelle mit Einsatz gehen hier nicht. Du brauchst ein claude.ai-Konto und Mitwirkenden-Zugriff."; return; }
-  if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten oder bestellten Flieger zum Einsetzen."; return; }
+  if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten Flieger zum Einsetzen."; return; }
   custom.forEach(c => {
     const row = document.createElement("div");
     row.className = "boost-row";
