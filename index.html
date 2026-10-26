@@ -92,19 +92,13 @@ dialog { max-height: 92vh; overflow-y: auto; }
   .stk { min-width: 40px; min-height: 40px; }
   #craft-canvas, #view3d { width: 80%; }
 }
-/* Handy im Querformat: Spielfeld füllt die Höhe, alles andere wird kompakt */
+/* Handy im Querformat: nur das Spielfeld, so groß wie der Bildschirm es zulässt */
 @media (orientation: landscape) and (max-height: 520px) {
-  main { max-width: none; padding: 6px max(12px, env(safe-area-inset-right)) 16px max(12px, env(safe-area-inset-left)); }
-  h1, main > .lead { display: none; }
-  .craft { margin-bottom: 6px; padding: 8px 14px; }
-  .panel { grid-template-columns: auto auto; justify-content: start; gap: 8px; margin-bottom: 6px; }
-  .panel .card { padding: 6px 14px; }
-  .card h2 { font-size: 0.8rem; margin: 0 0 2px; }
-  .big { font-size: 1.2rem; }
-  #upgrade-btn { padding: 6px 12px; font-size: 0.9rem; }
-  .stage { width: min(100%, calc((100vh - 118px) * 2)); width: min(100%, calc((100dvh - 118px) * 2)); margin: 0 auto; }
+  html, body { height: 100vh; height: 100dvh; overflow: hidden; }
+  main { max-width: none; height: 100%; padding: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left)); display: flex; align-items: center; justify-content: center; }
+  main > :not(.stage) { display: none; }
+  .stage { width: min(100%, calc((100vh - 8px) * 2)); width: min(100%, calc((100dvh - 8px) * 2)); }
   .hud { top: 6px; right: 8px; }
-  .actions { margin-top: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>

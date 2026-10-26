@@ -59,6 +59,7 @@
 ## Plattform-Einschränkungen (aus dem Artifact-Sandbox-Betrieb)
 - Kein `alert`, `confirm`, `prompt` (werden blockiert). Bestätigungen laufen über Zwei-Klick-Knöpfe.
 - Die Spielfläche hat `touch-action: none` (Ziehen am Handy; Scrollen nur außerhalb).
+- Handy im Querformat (`orientation: landscape` und `max-height: 520px`): Nur das Spielfeld (`.stage`) ist sichtbar, so groß wie die Höhe es zulässt, ohne Scrollen. Knöpfe, Laden und Anzeigen gibt es nur im Hochformat.
 - Hash-Links nur als einfaches Token (`#d_…`).
 
 ## Stand und offene Punkte
