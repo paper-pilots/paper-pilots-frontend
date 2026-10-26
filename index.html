@@ -228,7 +228,7 @@ const BOOSTS = [
   { id: "rocket", name: "Raketenstart",     cost: 300, desc: "Höherer Abwurf, Tempo ×1,05", speed: 1.05, gravity: 1,    lift: 0.7 },
   { id: "sail",   name: "Windsegel",        cost: 700, desc: "Tempo ×1,2, Fall ×0,9",       speed: 1.2,  gravity: 0.9,  lift: 0 }
 ];
-const SX = 150;
+const SX = 150, TERRACE_Y = 300;   // Terrasse: Oberkante bei y = 300, reicht von x = 0 bis 2·SX
 let launchX = SX, throwNote = "";
 const plane = { x: SX, y: 300, vx: 0, vy: 0 };
 
@@ -358,7 +358,7 @@ function drawWorld() {
 
   // Startrampe
   ctx.fillStyle = css("--ramp");
-  ctx.fillRect(-camX, 300, SX * 2, 80);
+  ctx.fillRect(-camX, TERRACE_Y, SX * 2, groundY - TERRACE_Y);
 }
 
 function drawShape(ls, c) {
@@ -402,7 +402,7 @@ function drawPlane() {
 
 function pullPos() {
   if (!pull || isFlying) return null;
-  return [clamp(pull[0], 12, SX + 160), clamp(pull[1], 170, 335)];
+  return [clamp(pull[0], 12, SX + 160), clamp(pull[1], 170, TERRACE_Y - 14)];
 }
 // Auf kleinen Bildschirmen wird das Spielfeld verkleinert: Schrift und Greifzone wachsen mit.
 function viewScale() { return Math.min(1, canvas.getBoundingClientRect().width / canvas.width || 1); }
@@ -479,7 +479,7 @@ canvas.addEventListener("pointerup", e => {
     const off = Math.abs(p[0] - SX);
     const bonus = off <= 10 ? 1.8 : off <= 30 ? 1.25 : 1;
     throwNote = off <= 10 ? " Perfekter Wurf! ×1,8" : off <= 30 ? " Fast perfekt! ×1,25" : "";
-    throwPlane((0.5 + 0.7 * power) * bonus, tilt, [clamp(p[0], 12, SX + 160), clamp(p[1], 170, 335)]);
+    throwPlane((0.5 + 0.7 * power) * bonus, tilt, [clamp(p[0], 12, SX + 160), clamp(p[1], 170, TERRACE_Y - 14)]);
     if (throwNote) showResult(throwNote.trim());
   }
 });
@@ -533,7 +533,9 @@ function animate() {
     // Kamera folgt, sobald der Flieger die Bildschirmmitte erreicht
     camX = Math.max(0, plane.x - W / 2);
     document.getElementById("live").textContent = Math.max(0, Math.floor(plane.x - launchX));
-    if (plane.y >= groundY - 5) { plane.y = groundY - 5; finish(); }
+    // Die Terrasse ist fest: Wer sie von oben trifft, landet darauf
+    if (plane.vy > 0 && plane.x < SX * 2 && plane.y >= TERRACE_Y - 4) { plane.y = TERRACE_Y - 4; finish(); }
+    else if (plane.y >= groundY - 5) { plane.y = groundY - 5; finish(); }
   }
   drawWorld();
   drawOverlay();
@@ -743,11 +745,11 @@ const PAINTS = ["#ffffff", "#ff6b6b", "#ffb347", "#ffe066", "#69db7c", "#4dabf7"
 const STICKERS = ["⭐", "❤️", "⚡", "🔥", "🚀", "😎"];
 const PAINT_COST = 30, STICKER_COST = 10;
 function styleCost() { return (craftPaint ? PAINT_COST : 0) + craftStickers.length * STICKER_COST; }
-function shade(h, f) {
+function shade(h, f, add) {
   let c;
   if (h[0] === "#") { const n = parseInt(h.slice(1), 16); c = [n >> 16, (n >> 8) & 255, n & 255]; }
   else c = h.match(/\d+/g).slice(0, 3).map(Number);
-  return "rgb(" + c.map(v => Math.max(0, Math.min(255, Math.round(v * f)))).join(",") + ")";
+  return "rgb(" + c.map(v => Math.max(0, Math.min(255, Math.round(v * f + (add || 0))))).join(",") + ")";
 }
 function craftFill(back) {
   if (craftPaint) return back ? shade(craftPaint, 0.82) : craftPaint;
@@ -793,17 +795,6 @@ function refreshStyleUI() {
 const v3 = document.getElementById("view3d"), g3 = v3.getContext("2d");
 v3.width = 640; v3.height = 440;   // doppelte Auflösung für ein scharfes Bild (gezeichnet wird in 320×220)
 let yaw = 0.6, pitch = 1.0, drag3 = null, auto3 = true;
-function lineSpan(pts, xc) {
-  let lo = 1e9, hi = -1e9;
-  for (let i = 0; i < pts.length; i++) {
-    const a = pts[i], b = pts[(i + 1) % pts.length];
-    if ((a[0] - xc) * (b[0] - xc) <= 0 && a[0] !== b[0]) {
-      const y = a[1] + (xc - a[0]) / (b[0] - a[0]) * (b[1] - a[1]);
-      lo = Math.min(lo, y); hi = Math.max(hi, y);
-    }
-  }
-  return lo <= hi ? [lo, hi] : null;
-}
 function draw3d() {
   const W3 = 320, H3 = 220, dpr = v3.width / W3;
   g3.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -812,31 +803,31 @@ function draw3d() {
   const bob = Math.sin(performance.now() / 700) * 3;
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   layers.forEach(l => l.pts.forEach(p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }));
-  const cxm = (x0 + x1) / 2, cym = (y0 + y1) / 2, sc = 172 / Math.max(x1 - x0, y1 - y0, 1);
+  const cxm = (x0 + x1) / 2, cym = (y0 + y1) / 2, sc = 168 / Math.max(x1 - x0, y1 - y0, 1);
   const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const proj = (a, b, c) => { const a2 = a * cyw - b * syw, b2 = a * syw + b * cyw; return [a2, c * cp + b2 * sp, c * sp - b2 * cp]; };
-  const ox = W3 / 2, oy = H3 / 2 - 6 + bob;
+  const ox = W3 / 2, oy = H3 / 2 - 4 + bob;
   const scr = q => { const f = 900 / (900 - q[2]); return [ox + q[0] * f * sc, oy - q[1] * f * sc]; };
-  const L1 = [-0.4, 0.7, 0.6], L2 = [0.6, -0.2, 0.5], l1 = Math.hypot(...L1), l2 = Math.hypot(...L2);
-  const front = craftPaint || "#fbfbff", backC = craftPaint ? shade(craftPaint, 0.86) : "#e6dcc6";
+  const L1 = [-0.45, 0.6, 0.75], L2 = [0.7, -0.3, 0.35], l1 = Math.hypot(...L1), l2 = Math.hypot(...L2);
+  const front = craftPaint || "#fbfbff", backC = craftPaint ? shade(craftPaint, 0.84) : "#e2d6bd";
+  // Das gefaltete Blatt liegt flach; nur ein Hauch Wölbung, damit das Licht sanft über das Papier läuft
+  const camber = u => 0.02 * u;
 
-  // Lichtfleck hinter dem Flieger und weicher Schatten darunter
-  const spot = g3.createRadialGradient(ox, H3 / 2, 6, ox, H3 / 2, 140);
-  spot.addColorStop(0, "rgba(255,255,255,0.55)"); spot.addColorStop(1, "rgba(255,255,255,0)");
+  // Himmelsstimmung, Lichtfleck und weicher Bodenschatten
+  const sky = g3.createLinearGradient(0, 0, 0, H3);
+  sky.addColorStop(0, "rgba(120,180,255,0.30)"); sky.addColorStop(1, "rgba(255,255,255,0)");
+  g3.fillStyle = sky; g3.fillRect(0, 0, W3, H3);
+  const spot = g3.createRadialGradient(ox, H3 / 2 - 10, 8, ox, H3 / 2 - 10, 130);
+  spot.addColorStop(0, "rgba(255,255,255,0.7)"); spot.addColorStop(1, "rgba(255,255,255,0)");
   g3.fillStyle = spot; g3.fillRect(0, 0, W3, H3);
   g3.save();
-  g3.translate(ox, H3 / 2 + 84); g3.scale(1, 0.2);
-  const shS = 1 - bob * 0.02, sg = g3.createRadialGradient(0, 0, 4, 0, 0, 96 * shS);
-  sg.addColorStop(0, "rgba(20,30,60,0.32)"); sg.addColorStop(1, "rgba(20,30,60,0)");
-  g3.fillStyle = sg; g3.fillRect(-110, -110, 220, 220);
+  g3.translate(ox, H3 - 38); g3.scale(1, 0.18);
+  const shS = 1 - bob * 0.02, sg = g3.createRadialGradient(0, 0, 4, 0, 0, 100 * shS);
+  sg.addColorStop(0, "rgba(20,30,60,0.38)"); sg.addColorStop(1, "rgba(20,30,60,0)");
+  g3.fillStyle = sg; g3.fillRect(-120, -120, 240, 240);
   g3.restore();
 
-  const fillPoly = (v, color, k) => {
-    const pts = v.map(scr);
-    let area = 0, ny0 = 1e9, ny1 = -1e9;
-    pts.forEach((p, i) => { const q = pts[(i + 1) % pts.length]; area += p[0] * q[1] - q[0] * p[1]; ny0 = Math.min(ny0, p[1]); ny1 = Math.max(ny1, p[1]); });
-    if (Math.abs(area) < 0.8) return;
-    // Flächennormale (Newell), damit auch Vielecke mit doppelten Punkten sauber schattiert werden
+  const normalLight = v => {
     let nx = 0, ny = 0, nz = 0;
     v.forEach((a, i) => {
       const b = v[(i + 1) % v.length];
@@ -845,43 +836,51 @@ function draw3d() {
     const nl = Math.hypot(nx, ny, nz) || 1;
     const d1 = Math.abs((nx * L1[0] + ny * L1[1] + nz * L1[2]) / (nl * l1));
     const d2 = Math.abs((nx * L2[0] + ny * L2[1] + nz * L2[2]) / (nl * l2));
-    const light = (0.6 + 0.32 * d1 + 0.12 * d2) * (k || 1);
-    const path = dy => {
-      g3.beginPath();
-      pts.forEach((p, i) => g3[i ? "lineTo" : "moveTo"](p[0], p[1] + dy));
-      g3.closePath();
-    };
-    path(1.4); g3.fillStyle = "rgba(20,30,60,0.2)"; g3.fill();   // Papierkante
-    path(0);
-    if (ny1 - ny0 > 1) {
-      const gr = g3.createLinearGradient(0, ny0, 0, ny1);
-      gr.addColorStop(0, shade(color, light * 1.06)); gr.addColorStop(1, shade(color, light * 0.93));
-      g3.fillStyle = gr;
-    } else g3.fillStyle = shade(color, light);
-    g3.fill();
-    g3.strokeStyle = shade(color, light * 0.55); g3.lineWidth = 1; g3.lineJoin = "round"; g3.stroke();
+    return { light: 0.5 + 0.42 * d1 + 0.14 * d2, spec: Math.pow(d1, 7) * 0.3 };
+  };
+  const path = (pts, dy) => {
+    g3.beginPath();
+    pts.forEach((p, i) => g3[i ? "lineTo" : "moveTo"](p[0], p[1] + (dy || 0)));
+    g3.closePath();
+  };
+  const area = pts => Math.abs(pts.reduce((s, p, i) => { const q = pts[(i + 1) % pts.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0));
+  // Ein Stück Papier ohne Kontur (die Kontur kommt einmal um das ganze Teil)
+  const fillBand = (v, color, k) => {
+    const pts = v.map(scr);
+    if (area(pts) < 0.5) return;
+    const n = normalLight(v), c = shade(color, n.light * (k || 1), 255 * n.spec);
+    path(pts); g3.fillStyle = c; g3.fill();
+    g3.strokeStyle = c; g3.lineWidth = 0.8; g3.lineJoin = "round"; g3.stroke();
   };
 
-  // Kiel unter dem Flieger
-  let ylo = 1e9, yhi = -1e9;
-  layers.forEach(l => { const s = lineSpan(l.pts, cxm); if (s) { ylo = Math.min(ylo, s[0]); yhi = Math.max(yhi, s[1]); } });
-  if (ylo < yhi) {
-    const bn = -(ylo - cym), bt = -(yhi - cym), drop = 28;
-    fillPoly([proj(0, bn, 0), proj(0, bt, 0), proj(0, bt, -drop), proj(0, bt + (bn - bt) * 0.45, -drop * 0.7)], backC, 0.82);
-  }
-  // Lagen von unten nach oben (je Lage die fernere Flügelhälfte zuerst), dann deren Sticker
+  // Lagen von unten nach oben; je Lage die fernere Hälfte zuerst
   g3.textAlign = "center"; g3.textBaseline = "middle";
+  const STEP = 14;
   layers.forEach((l, i) => {
-    const f = p => p[0] - cxm;
-    [clip(l.pts, f, 1), clip(l.pts, f, -1)].filter(h => h.length > 2).map(h => {
-      const v = h.map(p => proj(p[0] - cxm, -(p[1] - cym), Math.abs(p[0] - cxm) * 0.33 + i * 3));
-      return { v, z: v.reduce((s, q) => s + q[2], 0) / v.length };
-    }).sort((a, b) => a.z - b.z).forEach(o => fillPoly(o.v, l.back ? backC : front));
+    const lift = i * 0.25;
+    [1, -1].map(s => {
+      const h = clip(l.pts, p => p[0] - cxm, s);
+      if (h.length < 3) return null;
+      const u = p => s * (p[0] - cxm);
+      const P = p => proj(p[0] - cxm, -(p[1] - cym), camber(Math.max(0, u(p))) + lift);
+      const maxU = Math.max(...h.map(u)), bands = [];
+      for (let a = 0; a < maxU; a += STEP) {
+        const b = clip(clip(h, p => u(p) - a, 1), p => a + STEP - u(p), 1);
+        if (b.length > 2) bands.push(b.map(P));
+      }
+      const outline = h.map(P);
+      return { bands, outline, z: outline.reduce((t, q) => t + q[2], 0) / outline.length };
+    }).filter(Boolean).sort((a, b) => a.z - b.z).forEach(o => {
+      const col = l.back ? backC : front, op = o.outline.map(scr);
+      path(op, 1.6); g3.fillStyle = "rgba(20,30,60,0.22)"; g3.fill();   // Papierkante
+      o.bands.forEach(b => fillBand(b, col));
+      path(op); g3.strokeStyle = shade(col, 0.5); g3.lineWidth = 1.1; g3.lineJoin = "round"; g3.stroke();
+    });
     craftStickers.forEach(st => {
       let top = -1;
       layers.forEach((m, j) => { if (inside(m.pts, st.x, st.y)) top = j; });
       if (top !== i) return;
-      const q = proj(st.x - cxm, -(st.y - cym), Math.abs(st.x - cxm) * 0.33 + i * 3 + 1);
+      const q = proj(st.x - cxm, -(st.y - cym), camber(Math.abs(st.x - cxm)) + lift + 1);
       const s = scr(q), fz = 900 / (900 - q[2]);
       g3.font = Math.round(17 * fz) + "px sans-serif";
       g3.fillText(st.e, s[0], s[1]);
