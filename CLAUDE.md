@@ -1,0 +1,62 @@
+# Papier Piloten – Übergabe für Claude Code
+
+## Projekt
+- Browserspiel „Papier Piloten" (früher „Papierflieger Werkstatt"), komplett auf Deutsch.
+- Eine einzige Datei: `index.html` (HTML + CSS + Vanilla-JS, Canvas, keine Bibliotheken, nur Google Font Fredoka).
+- Repository: `github.com/paper-pilots/paper-pilots-frontend` (Organisation `paper-pilots`).
+- Lokal: `C:\Users\bened\OneDrive\Dokumente\Paper Pilots\paper-pilots-frontend` (enthält bisher nur `.git` und eine kleine `README.md`).
+- Entstanden als claude.ai-Artifact: https://claude.ai/artifact/RkQxGKGJDdBzs2ds8AyLL7 . Der aktuelle Stand steht in `index.html` (Kopie von `papierflieger_v2.html`, im Ausgabeordner der claude.ai-Sitzung).
+
+## Arbeitsregeln des Nutzers
+- Bei „hochladen" oder „veröffentlichen": `git commit` mit aussagekräftiger Nachricht, dann `git push`.
+- Bei Merge-Konflikten: `git fetch`, Konflikte selbstständig lösen.
+- Mit aktivem Claude-Pro-Abo die eingebaute GitHub-Integration nutzen, sonst die GitHub CLI (`gh`).
+- Nutzer schreibt Deutsch, Antworten auf Deutsch, kurz und ohne Fachjargon.
+
+## Spielablauf (Kurzfassung)
+1. Erststart: Spitzname-Dialog (min. 2 Zeichen, nicht schließbar). Danach öffnet sich sofort das Faltblatt mit Anleitung (nur neue Spieler, `tutorialDone`).
+2. Anleitung: 4 geführte Falten (`GSTEPS`, Ringe als Ziel). Danach „Flieger übernehmen", dann 3 Übungswürfe mit gestrichelter Mittellinie (`throwHint`, `practiceThrows`).
+3. Werfen: Flieger mit der Maus greifen, nach hinten ziehen, nach vorne schwingen, loslassen. Es gibt keinen Wurfknopf mehr. Der Flug startet genau an der Loslass-Stelle; Weite wird ab `launchX` gemessen.
+4. Münzen = `floor(Weite/10) * 2^coinLevel`. Damit kauft man Wurfstärke, Papier, Boosts, Doppelmünzen, Lack, Sticker, bestellte Flieger.
+
+## Wichtige Konstanten und Formeln
+- Terrasse: `SX = 150` (Startmitte), Terrasse 300 px breit, Boden `groundY = 380`, Canvas 800×400. Kamera folgt ab `W/2`.
+- Perfekt-Linie unsichtbar bei `x = SX`: ±10 px → Wurf ×1,8, ±30 px → ×1,25 (`throwNote` zeigt Meldung). Meter-Striche unter der Terrasse sind absichtlich ausgeblendet.
+- Wurf: `vx = (2 + strength*0.5) * paper.speed * boosts.speed * pm`, `vy = (-1 - strength*0.2 - boosts.lift) * tm`, Schwerkraft `paper.gravity * boosts.gravity`. `pm`/`tm` kommen aus der Zeigergeschwindigkeit beim Loslassen (letzte 120 ms) oder dem Abstand nach vorne.
+- Upgrade-Kosten ×1,5 pro Stufe. Doppelmünzen: `3000 * 2^coinLevel`.
+- Papiere (`PAPERS`): heft (gratis), glanz 60, perga 250, carbon 800. Die Einträge `eigen` und `order` sind nur Altlast und bleiben unsichtbar.
+- Boosts (`BOOSTS`): clip 80, tape 150, rocket 300, sail 700; höchstens 2 gleichzeitig (`attached`).
+- Lack 30 Münzen, Sticker 10 Münzen pro Stück (max. 8). Bezahlt wird erst bei „Flieger übernehmen".
+
+## Selbstgebaute Flieger
+- Freies Falten: Ecke ziehen → Falte an der Mittelsenkrechten von Start und Ziel (`foldLayers`, Lagen als konvexe Polygone `{pts, back}`).
+- Werte aus der Form (`analyze`): Symmetrie, Schlankheit, Stabilität, Auftrieb → `speed`, `gravity`.
+- Gespeichert in `custom[]`: `{id, name, speed, gravity, shape, paint, stickers, color, custom:true}`. Löschen per Zwei-Klick-Knopf („Wirklich löschen?").
+- Im Spiel gezeichnet über `drawShape(shape, entry)` (Form um 90° gedreht, Spitze = Flugrichtung).
+- 3D-Ansicht (`draw3d`): Canvas-Painter-Algorithmus, Lagen von unten nach oben, V-Flügel, Kiel, Perspektive. Schleife `loop3d` startet erst am Ende des Skripts (Falle bei `const`/`let` und Reihenfolge der Deklarationen beachten).
+- Suchleiste im Basteln-Fenster: Katalog **A1–Z20** (520 Modelle, Faltmuster deterministisch per `genFolds(code)` mit Seed; Aerodynamik = `ceil(idx/520*100)`). Freitext über Claude (`sample`), sonst kleiner Katalog `LOCAL`. Preis `round((40 + aero² * 0.14)/10)*10`, `speed = 1 + 0.6*aero/100`, `gravity = 0.05 - 0.026*aero/100`.
+
+## Speicherstand (localStorage)
+- Schlüssel `papierflieger` mit: `coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes (alt), custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows`.
+- Weitere Schlüssel: `pf_claimed` (schon verbuchte Duelle), `m0done`, `p10kdone`.
+- Testlinks im Code: `#muenzen0` (Münzen auf 0, einmalig) und `#plus10k` (+10.000 Münzen, einmalig). **Vor einer öffentlichen Veröffentlichung entfernen.**
+- Alte Spielstände ohne `custom` werden beim Laden migriert (`eigen`/`order` → `custom[]`).
+
+## Duell-Modus (hängt an claude.ai!)
+- Duell-Knopf oben links. Man setzt einen eigenen Flieger ein, wirft, und teilt einen Link `…/artifact/<id>#d_<docId>`.
+- Gegner wählt auch einen Flieger. Wer weiter fliegt, bekommt den Flieger des anderen (Unentschieden: jeder behält seinen).
+- Technik: Capability `db` (Sammlung `duels`, Felder `cId, cNick, cPlane, cDist, status, oId, oNick, oPlane, oDist, result, claimed, created`), `user` (`id()`), `sample`.
+- Der Einsatz des Herausforderers liegt im Duell (aus `custom` entfernt) und kommt über `claimDuels()` bzw. `cancelDuel()` zurück oder geht weg.
+- Gilt nur im claude.ai-Artifact. Beide Spieler brauchen ein Konto und mindestens Mitwirkenden-Rechte (sonst schlägt `set` fehl). Ohne `db` bleibt nur die einfache Herausforderungs-Nachricht mit Teilen-Knopf.
+- `DUEL_LINK` ist fest auf die Artifact-URL gesetzt. **Bei Hosting auf GitHub Pages anpassen** und dort ein eigenes Backend einplanen, sonst funktionieren Einsatz-Duelle und die Claude-Suche nicht.
+
+## Plattform-Einschränkungen (aus dem Artifact-Sandbox-Betrieb)
+- Kein `alert`, `confirm`, `prompt` (werden blockiert). Bestätigungen laufen über Zwei-Klick-Knöpfe.
+- Die Spielfläche hat `touch-action: none` (Ziehen am Handy; Scrollen nur außerhalb).
+- Hash-Links nur als einfaches Token (`#d_…`, `#plus10k`).
+
+## Stand und offene Punkte
+- **Nichts davon wurde im Browser getestet.** Es gab nur Syntaxprüfungen mit `node --check`. Vor dem ersten Release alles einmal durchspielen: Anmeldung, Anleitung, Wurf mit Perfekt-Linie, Basteln, Lack/Sticker, 3D-Ansicht, Katalog A–Z, Boosts, Löschen, Duell (mit zweitem Konto).
+- Duell-Nachricht heißt jetzt „Papier Piloten" (erledigt). Im Browser getestet (ohne Duell mit zwei Konten): Anmeldung, Anleitung, Würfe, Laden, Boosts, Basteln, Katalog, Lack/Sticker, Löschen, Handy-Ansicht.
+- Ideen: Treffer-Linie nach Treffer kurz aufblitzen lassen, fertige Flieger nachträglich umlackieren, Boosts am Flieger sichtbar zeichnen, Datei in Module aufteilen, echte Bestenliste und Konten.
+- Das Spiel wurde bisher nur als Artifact veröffentlicht, noch nicht ins GitHub-Repository gepusht (siehe Arbeitsregeln). `index.html` muss zuerst aus der claude.ai-Sitzung ins Repository kopiert werden.

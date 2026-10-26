@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Papier Piloten</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #cfe8f7; --surface: #ffffff; --ink: #1f2a44; --muted: #5b6785;
+  --accent: #2f7d5b; --accent-ink: #ffffff; --coin: #f2a33a;
+  --sky: #e0f6ff; --grass: #8fbe6d; --ramp: #a0522d; --line: #1f2a44; --cloud: #ffffff;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #101a2e; --surface: #1b2744; --ink: #eef3ff; --muted: #9aa8c7;
+    --accent: #5fc79a; --accent-ink: #0d1a14; --sky: #223457; --grass: #4f7a46; --ramp: #8a4a2a; --line: #eef3ff; --cloud: #3a4d78;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101a2e; --surface: #1b2744; --ink: #eef3ff; --muted: #9aa8c7;
+  --accent: #5fc79a; --accent-ink: #0d1a14; --sky: #223457; --grass: #4f7a46; --ramp: #8a4a2a; --line: #eef3ff; --cloud: #3a4d78;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: "Fredoka", system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 40px; }
+h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
+.lead { margin: 0 0 20px; color: var(--muted); font-size: 1.05rem; }
+.panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.card { background: var(--surface); border-radius: 14px; padding: 14px 16px; }
+.card h2 { margin: 0 0 6px; font-size: 1rem; font-weight: 600; color: var(--muted); }
+.big { font-size: 1.8rem; font-weight: 700; }
+.coin-dot { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; background: var(--coin); margin-right: 6px; vertical-align: -0.05em; }
+button { font: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; border: 0; border-radius: 10px; padding: 10px 18px; background: var(--accent); color: var(--accent-ink); }
+button:hover:not(:disabled) { filter: brightness(1.08); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.stage { position: relative; }
+#gameCanvas { touch-action: none; }
+canvas { display: block; width: 100%; height: auto; border-radius: 14px; border: 2px solid var(--line); background: var(--sky); }
+.hud { position: absolute; right: 12px; top: 10px; background: var(--surface); border-radius: 10px; padding: 4px 12px; font-weight: 600; }
+.result { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 8px 16px; font-weight: 600; text-align: center; max-width: 90%; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
+.result[hidden] { display: none; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+.actions .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); padding: 8px 14px; font-weight: 400; }
+.best { color: var(--muted); margin-left: auto; }
+.shop { margin-top: 20px; }
+.shop h2 { font-size: 1.3rem; margin: 0 0 10px; }
+.papers { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.paper { display: flex; flex-direction: column; gap: 6px; border: 2px solid transparent; }
+.paper.active { border-color: var(--accent); }
+.paper .swatch { height: 28px; border-radius: 8px; border: 1px solid var(--line); }
+.paper .name { font-weight: 700; }
+.paper .stats { color: var(--muted); font-size: 0.9rem; }
+.paper button { margin-top: auto; }
+.craft { margin-bottom: 14px; }
+dialog { background: var(--surface); color: var(--ink); border: 0; border-radius: 16px; padding: 18px; width: min(92vw, 380px); }
+dialog::backdrop { background: rgba(10,20,40,0.55); }
+dialog h2 { margin: 0 0 6px; }
+dialog { max-height: 92vh; overflow-y: auto; }
+.boost-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; }
+.boost-row span { font-size: 0.9rem; }
+.boost-row small { display: block; color: var(--muted); }
+.boost-row button { padding: 6px 12px; font-size: 0.9rem; white-space: nowrap; }
+#craft-boosts { margin-top: 14px; }
+.dlg-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.dlg-head h2 { margin: 0; white-space: nowrap; }
+.search { display: flex; gap: 6px; min-width: 0; }
+.search input { font: inherit; min-width: 0; width: 130px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
+.search button { padding: 6px 12px; font-size: 0.9rem; }
+#order-result { margin-bottom: 10px; font-size: 0.9rem; color: var(--muted); }
+#order-result:empty { display: none; }
+#paint-row, #sticker-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+.sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
+.stk { padding: 4px 8px; font-size: 1.1rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); }
+.sw.on, .stk.on { outline: 3px solid var(--accent); outline-offset: 1px; }
+#craft-style { margin-top: 12px; font-size: 0.9rem; }
+#view3d { display: block; width: 100%; max-width: 320px; margin: 0 auto 10px; border-radius: 12px; background: linear-gradient(var(--sky), var(--surface)); touch-action: none; cursor: grab; }
+#catalog { margin-bottom: 10px; font-size: 0.9rem; }
+#catalog summary { cursor: pointer; font-weight: 600; }
+#catalog button { padding: 3px 7px; font-size: 0.8rem; margin: 2px; border-radius: 6px; }
+#cat-nums button { background: var(--bg); color: var(--ink); border: 1px solid var(--muted); font-weight: 400; }
+#order-result .card { background: var(--bg); color: var(--ink); display: flex; flex-direction: column; gap: 6px; }
+#craft-text { min-height: 3em; margin: 0 0 10px; color: var(--muted); }
+#craft-canvas { max-width: 320px; margin: 0 auto; touch-action: none; background: var(--sky); cursor: grab; }
+.dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.dlg-actions .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); font-weight: 400; padding: 8px 14px; }
+@media (max-width: 520px) { .panel { grid-template-columns: 1fr; } .best { margin-left: 0; width: 100%; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <button id="craft-btn" class="craft" type="button">Flieger basteln</button>
+  <button id="duel-btn" class="craft" type="button">Duell</button>
+  <span id="nick-label" style="margin-left:12px;font-weight:600"></span>
+  <h1>Papier Piloten</h1>
+  <p class="lead">Wirf deinen Flieger von der Terrasse, sammle Münzen und kaufe besseres Papier und mehr Wurfstärke.</p>
+
+  <section class="panel" aria-label="Spielstand">
+    <div class="card">
+      <h2>Münzen</h2>
+      <div class="big"><span class="coin-dot"></span><span id="coins">0</span></div>
+    </div>
+    <div class="card">
+      <h2>Wurfstärke: Stufe <span id="strength-level">1</span></h2>
+      <button id="upgrade-btn" type="button">Upgrade für <span id="upgrade-cost">10</span> Münzen</button>
+    </div>
+  </section>
+
+  <div class="stage">
+    <canvas id="gameCanvas" width="800" height="400" aria-label="Spielfeld"></canvas>
+    <div class="hud"><span id="live">0</span> m</div>
+    <div class="result" id="result" role="status" hidden></div>
+  </div>
+
+  <div class="actions">
+    <button id="reset-btn" class="small" type="button">Spielstand zurücksetzen</button>
+    <span class="best">Bester Wurf: <strong id="best">0</strong> Meter</span>
+  </div>
+
+  <section class="shop" aria-label="Papier-Laden">
+    <h2>Papier-Laden</h2>
+    <div class="papers" id="papers"></div>
+  </section>
+  <section class="shop" aria-label="Boosts">
+    <h2>Boosts</h2>
+    <p class="lead">Gekaufte Boosts bringst du im Fenster „Flieger basteln" an deinem Flieger an.</p>
+    <div class="papers" id="boosts-shop"></div>
+  </section>
+</main>
+
+<dialog id="login-dialog" aria-label="Anmeldung">
+  <h2>Willkommen!</h2>
+  <p style="color:var(--muted);margin:0 0 12px">Gib dir einen Spitznamen, bevor es losgeht. Du brauchst ihn, um zu spielen.</p>
+  <input id="nick-in" type="text" maxlength="16" placeholder="Dein Spitzname" aria-label="Spitzname" autocomplete="off" style="font:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:var(--bg);color:var(--ink)">
+  <p id="nick-err" role="alert" style="color:#c0392b;margin:6px 0 0;min-height:1.3em;font-size:0.9rem"></p>
+  <div class="dlg-actions"><button id="nick-go" type="button">Los geht’s</button></div>
+</dialog>
+
+<dialog id="duel-dialog" aria-label="Duell">
+  <h2>Duell</h2>
+  <p id="duel-info" style="color:var(--muted);margin:0 0 10px"></p>
+  <div id="duel-pick" style="margin-bottom:8px"></div>
+  <div id="duel-list" style="margin-bottom:8px"></div>
+  <textarea id="duel-text" rows="5" readonly hidden style="font:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:var(--bg);color:var(--ink);resize:none"></textarea>
+  <p id="duel-note" role="status" style="margin:6px 0 0;min-height:1.3em;font-size:0.9rem;color:var(--muted)"></p>
+  <div class="dlg-actions">
+    <button id="duel-new" type="button">Neues Duell</button>
+    <button id="duel-share" type="button" hidden>Teilen</button>
+    <button id="duel-close" class="small" type="button">Schließen</button>
+  </div>
+</dialog>
+
+<dialog id="craft-dialog" aria-label="Flieger basteln">
+  <div class="dlg-head">
+    <h2>Flieger basteln</h2>
+    <div class="search">
+      <input id="plane-q" type="text" maxlength="40" placeholder="F-14 Kampfjet" aria-label="Flugzeug suchen">
+      <button id="plane-search" type="button">Suchen</button>
+    </div>
+  </div>
+  <p id="craft-text">Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.</p>
+  <details id="catalog">
+    <summary>Katalog A–Z (je 20 Modelle, alle anders gefaltet)</summary>
+    <div id="cat-letters"></div>
+    <div id="cat-nums"></div>
+  </details>
+  <div id="order-result" role="status"></div>
+  <canvas id="craft-canvas" width="320" height="400"></canvas>
+  <p id="craft-stats" style="margin:8px 0 0;font-size:0.9rem;color:var(--muted)"></p>
+  <div id="craft-style" hidden>
+    <strong>3D-Ansicht</strong> <span style="color:var(--muted)">(zum Drehen ziehen)</span>
+    <canvas id="view3d" width="320" height="220" aria-label="3D-Ansicht deines Fliegers"></canvas>
+    <strong>Lackieren (30 Münzen)</strong><div id="paint-row"></div>
+    <strong>Sticker (je 10 Münzen)</strong><div id="sticker-row"></div>
+    <span id="sticker-hint" style="color:var(--muted)"></span>
+  </div>
+  <div id="craft-boosts"></div>
+  <div class="dlg-actions">
+    <button id="craft-done" type="button" disabled>Flieger übernehmen</button>
+    <button id="craft-undo" class="small" type="button">Rückgängig</button>
+    <button id="craft-redo" class="small" type="button">Neu anfangen</button>
+    <button id="craft-close" class="small" type="button">Schließen</button>
+  </div>
+</dialog>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const resultEl = document.getElementById("result");
+const W = canvas.width, groundY = 380;
+
+const PAPERS = [
+  { id: "heft",   name: "Schulheftpapier", cost: 0,   speed: 1.0,  gravity: 0.050, color: "#ffffff" },
+  { id: "glanz",  name: "Glanzpapier",     cost: 60,  speed: 1.15, gravity: 0.042, color: "#ffe9a8" },
+  { id: "perga",  name: "Pergament",       cost: 250, speed: 1.3,  gravity: 0.034, color: "#f4c7a1" },
+  { id: "carbon", name: "Carbonpapier",    cost: 800, speed: 1.5,  gravity: 0.026, color: "#8fb8ff" },
+  { id: "eigen",  name: "Selbstgebastelt", cost: 0,   speed: 1.1,  gravity: 0.046, color: "#ffd6e0" },
+  { id: "order",  name: "Bestellter Flieger", cost: 0, speed: 1.2, gravity: 0.04, color: "#d5dcec" }
+];
+
+let coins = 0, strength = 1, upgradeCost = 10, best = 0;
+let owned = ["heft"], equipped = "heft";
+let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
+let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], coinLevel = 0, nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null;
+const BOOSTS = [
+  { id: "clip",   name: "Büroklammer-Nase", cost: 80,  desc: "Tempo ×1,12",                 speed: 1.12, gravity: 1,    lift: 0 },
+  { id: "tape",   name: "Klebeband-Flügel", cost: 150, desc: "Gleitet länger (Fall ×0,85)", speed: 1,    gravity: 0.85, lift: 0 },
+  { id: "rocket", name: "Raketenstart",     cost: 300, desc: "Höherer Abwurf, Tempo ×1,05", speed: 1.05, gravity: 1,    lift: 0.7 },
+  { id: "sail",   name: "Windsegel",        cost: 700, desc: "Tempo ×1,2, Fall ×0,9",       speed: 1.2,  gravity: 0.9,  lift: 0 }
+];
+const SX = 150;
+let launchX = SX, throwNote = "";
+const plane = { x: SX, y: 300, vx: 0, vy: 0 };
+
+const paper = () => PAPERS.find(p => p.id === equipped) || custom.find(c => c.id === equipped) || PAPERS[0];
+function css(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function load() {
+  try {
+    if (location.hash === "#plus10k" && localStorage.getItem("p10kdone") !== "1") {
+      const t = JSON.parse(localStorage.getItem("papierflieger") || "null") || {};
+      t.coins = (t.coins || 0) + 10000;
+      localStorage.setItem("papierflieger", JSON.stringify(t));
+      localStorage.setItem("p10kdone", "1");
+    }
+  } catch (e) {}
+  try {
+    if (location.hash === "#muenzen0" && localStorage.getItem("m0done") !== "1") {
+      const t = JSON.parse(localStorage.getItem("papierflieger") || "null");
+      if (t) { t.coins = 0; localStorage.setItem("papierflieger", JSON.stringify(t)); }
+      localStorage.setItem("m0done", "1");
+    }
+  } catch (e) {}
+  try {
+    const s = JSON.parse(localStorage.getItem("papierflieger") || "null");
+    if (s) {
+      coins = s.coins || 0; strength = s.strength || 1; upgradeCost = s.upgradeCost || 10; best = s.best || 0;
+      owned = s.owned || ["heft"]; equipped = s.equipped || "heft";
+      craftQ = s.craftQ || 0; applyCraft(craftQ);
+      ownedBoosts = s.ownedBoosts || []; attached = s.attached || [];
+      orderQ = s.orderQ || null; if (orderQ) applyOrder(orderQ);
+      shapes = s.shapes || {};
+      custom = s.custom || [];
+      coinLevel = s.coinLevel || 0;
+      nick = s.nick || "";
+      tutorialDone = s.tutorialDone !== undefined ? s.tutorialDone : true;
+      throwHint = !!s.throwHint;
+      practiceThrows = s.practiceThrows || 0;
+      if (!s.custom) {
+        const map = {};
+        if (owned.includes("eigen") && shapes.eigen) {
+          custom.push({ id: "c1", name: "Eigenbau 1", speed: (craftQ && craftQ.speed) || 1.1, gravity: (craftQ && craftQ.gravity) || 0.046, shape: shapes.eigen, color: "#e8e0d0", custom: true });
+          map.eigen = "c1";
+        }
+        if (owned.includes("order") && shapes.order && orderQ) {
+          custom.push({ id: "c2", name: orderQ.name, speed: orderQ.speed, gravity: orderQ.gravity, shape: shapes.order, color: "#e8e0d0", custom: true });
+          map.order = "c2";
+        }
+        if (equipped === "eigen" || equipped === "order") equipped = map[equipped] || "heft";
+        owned = owned.filter(x => x !== "eigen" && x !== "order");
+      }
+    }
+  } catch (e) {}
+}
+function save() {
+  try { localStorage.setItem("papierflieger", JSON.stringify({ coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes, custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows })); } catch (e) {}
+}
+
+function renderShop() {
+  const box = document.getElementById("papers");
+  box.innerHTML = "";
+  PAPERS.concat(custom).forEach(p => {
+    if ((p.id === "eigen" || p.id === "order") && !owned.includes(p.id)) return;
+    const has = owned.includes(p.id) || !!p.custom, on = equipped === p.id;
+    const d = document.createElement("div");
+    d.className = "card paper" + (on ? " active" : "");
+    d.innerHTML = '<div class="swatch" style="background:' + p.color + '"></div>' +
+      '<div class="name">' + esc(p.name) + '</div>' +
+      '<div class="stats">Tempo ×' + p.speed.toFixed(2) + ', Gleitflug ' + Math.round((0.05 / p.gravity) * 100) + ' %</div>';
+    const b = document.createElement("button");
+    b.type = "button";
+    if (on) { b.textContent = "Ausgewählt"; b.disabled = true; }
+    else if (has) { b.textContent = "Auswählen"; b.onclick = () => { if (!isFlying && !duelCtx) { equipped = p.id; save(); updateUI(); } }; }
+    else { b.textContent = "Kaufen für " + p.cost + " Münzen"; b.disabled = coins < p.cost; b.onclick = () => buyPaper(p); }
+    if (isFlying && !on) b.disabled = true;
+    d.appendChild(b);
+    if (p.custom) {
+      const x = document.createElement("button");
+      x.type = "button"; x.textContent = pendingDelete === p.id ? "Wirklich löschen?" : "Löschen"; x.disabled = isFlying;
+      x.style.cssText = "background:transparent;color:var(--muted);border:1px solid var(--muted);font-weight:400;padding:6px 12px;font-size:0.9rem";
+      x.onclick = () => deleteCustom(p.id);
+      d.appendChild(x);
+    }
+    box.appendChild(d);
+  });
+}
+
+function buyPaper(p) {
+  if (isFlying || owned.includes(p.id) || coins < p.cost) return;
+  coins -= p.cost; owned.push(p.id); equipped = p.id;
+  save(); updateUI();
+}
+
+function updateUI() {
+  document.getElementById("coins").textContent = Math.floor(coins);
+  document.getElementById("nick-label").textContent = nick ? "Spieler: " + nick : "";
+  document.getElementById("strength-level").textContent = strength;
+  document.getElementById("upgrade-cost").textContent = upgradeCost;
+  document.getElementById("best").textContent = best;
+  document.getElementById("craft-btn").disabled = isFlying;
+  renderBoosts();
+  document.getElementById("upgrade-btn").disabled = coins < upgradeCost || isFlying;
+  renderShop();
+}
+
+function showResult(t) {
+  resultEl.textContent = t; resultEl.hidden = false;
+  clearTimeout(resultTimer);
+  resultTimer = setTimeout(() => { resultEl.hidden = true; }, 4000);
+}
+
+function drawWorld() {
+  ctx.fillStyle = css("--sky");
+  ctx.fillRect(0, 0, W, canvas.height);
+
+  // Wolken (laufen langsamer als die Kamera)
+  ctx.fillStyle = css("--cloud");
+  const cs = 300, off = camX * 0.4;
+  for (let i = Math.floor(off / cs) - 1; i < Math.floor(off / cs) + 4; i++) {
+    const cx = i * cs + 80 - off, cy = 50 + ((i * 53) % 90 + 90) % 90;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 44, 16, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + 24, cy - 10, 26, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Boden
+  ctx.fillStyle = css("--grass");
+  ctx.fillRect(0, groundY, W, canvas.height - groundY);
+
+  // Entfernungsmarken alle 100 m
+  ctx.fillStyle = css("--ink");
+  ctx.font = "600 14px Fredoka, sans-serif";
+  ctx.textAlign = "center";
+  const first = Math.floor(camX / 100) * 100;
+  for (let m = first; m <= camX + W + 100; m += 100) {
+    const sx = m + SX - camX;
+    if (m + SX <= SX * 2) continue;
+    ctx.fillRect(sx - 1, groundY, 2, 6);
+    if (m > 0) ctx.fillText(m + " m", sx, groundY + 17);
+  }
+
+  // Startrampe
+  ctx.fillStyle = css("--ramp");
+  ctx.fillRect(-camX, 300, SX * 2, 80);
+}
+
+function drawShape(ls, c) {
+  if (!ls || !ls.length) return false;
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  ls.forEach(l => l.pts.forEach(p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }));
+  const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, s = 46 / Math.max(x1 - x0, y1 - y0, 1);
+  ctx.lineWidth = 1; ctx.lineJoin = "round"; ctx.strokeStyle = "#1f2a44";
+  ls.forEach(l => {
+    ctx.beginPath();
+    l.pts.forEach((p, i) => ctx[i ? "lineTo" : "moveTo"](-(p[1] - my) * s, (p[0] - mx) * s));
+    ctx.closePath();
+    ctx.fillStyle = (c && c.paint) ? (l.back ? shade(c.paint, 0.82) : c.paint) : (l.back ? "#ddd0b8" : "#ffffff");
+    ctx.fill(); ctx.stroke();
+  });
+  if (c && c.stickers && c.stickers.length) {
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "11px sans-serif";
+    c.stickers.forEach(st => ctx.fillText(st.e, -(st.y - my) * s, (st.x - mx) * s));
+    ctx.textBaseline = "alphabetic";
+  }
+  return true;
+}
+
+function drawPlane() {
+  const angle = isFlying ? Math.atan2(plane.vy, plane.vx) : 0;
+  ctx.save();
+  const dp = pullPos();
+  ctx.translate((dp ? dp[0] : plane.x) - camX, dp ? dp[1] : plane.y);
+  ctx.rotate(angle);
+  if (drawShape((custom.find(c => c.id === equipped) || {}).shape, custom.find(c => c.id === equipped))) { ctx.restore(); return; }
+  ctx.fillStyle = paper().color;
+  ctx.strokeStyle = "#1f2a44";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(10, 0); ctx.lineTo(-16, 10); ctx.lineTo(-9, 0); ctx.lineTo(-16, -7);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function pullPos() {
+  if (!pull || isFlying) return null;
+  return [clamp(pull[0], 12, SX + 160), clamp(pull[1], 170, 335)];
+}
+function drawOverlay() {
+  if (isFlying || pullPos()) return;
+  ctx.textAlign = "left"; ctx.font = "600 14px Fredoka, sans-serif";
+  if (duelCtx) { ctx.fillStyle = css("--ink"); ctx.fillText("Duell: wirf deinen Einsatz-Flieger " + duelCtx.plane.name + "! (Duell-Knopf = abbrechen)", 10, 24); return; }
+  if (throwHint) {
+    const y = 250, x0 = 30, x1 = SX + 30, ac = css("--accent");
+    ctx.strokeStyle = ac; ctx.fillStyle = ac; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(x0 + 12, y); ctx.lineTo(x1 - 12, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 - 16, y - 10); ctx.lineTo(x1 - 16, y + 10); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + 16, y - 10); ctx.lineTo(x0 + 16, y + 10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = css("--ink");
+    ctx.fillText("Übungswurf " + (practiceThrows + 1) + " von 3: Ziehen, nach vorne schwingen und genau auf der Linie loslassen!", 10, y - 18);
+    ctx.strokeStyle = ac; ctx.lineWidth = 3; ctx.setLineDash([8, 6]);
+    ctx.beginPath(); ctx.moveTo(SX, 170); ctx.lineTo(SX, 380); ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    ctx.globalAlpha = 0.7; ctx.fillStyle = css("--ink");
+    ctx.fillText("Flieger greifen, zurückziehen, nach vorne schwingen und loslassen", 10, 24);
+    ctx.globalAlpha = 1;
+  }
+}
+function gpos(e) {
+  const r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height];
+}
+let samples = [];
+canvas.addEventListener("pointerdown", e => {
+  if (isFlying) return;
+  const p = gpos(e);
+  if (Math.hypot(p[0] - plane.x, p[1] - plane.y) < 50) {
+    pull = p; samples = [[performance.now(), p[0], p[1]]];
+    canvas.setPointerCapture(e.pointerId);
+  }
+});
+canvas.addEventListener("pointermove", e => {
+  if (!pull) return;
+  pull = gpos(e);
+  const now = performance.now();
+  samples.push([now, pull[0], pull[1]]);
+  while (samples.length > 2 && now - samples[0][0] > 120) samples.shift();
+});
+canvas.addEventListener("pointerup", e => {
+  if (!pull) return;
+  const p = gpos(e), now = performance.now();
+  samples.push([now, p[0], p[1]]);
+  pull = null;
+  const a = samples[0], b = samples[samples.length - 1], dt = Math.max(b[0] - a[0], 16);
+  const vx = (b[1] - a[1]) / dt, vy = (b[2] - a[2]) / dt;
+  const ahead = p[0] - SX;
+  let power = 0, tilt = 1;
+  if (vx > 0.3) { power = clamp(vx / 1.6, 0.3, 1); tilt = 1 + clamp(-vy, -0.5, 1) * 0.6; }
+  else if (ahead > 30) { power = clamp(ahead / 130, 0.3, 1); }
+  samples = [];
+  if (power > 0 && !isFlying) {
+    const off = Math.abs(p[0] - SX);
+    const bonus = off <= 10 ? 1.8 : off <= 30 ? 1.25 : 1;
+    throwNote = off <= 10 ? " Perfekter Wurf! ×1,8" : off <= 30 ? " Fast perfekt! ×1,25" : "";
+    throwPlane((0.5 + 0.7 * power) * bonus, tilt, [clamp(p[0], 12, SX + 160), clamp(p[1], 170, 335)]);
+    if (throwNote) showResult(throwNote.trim());
+  }
+});
+canvas.addEventListener("pointercancel", () => { pull = null; samples = []; });
+
+function throwPlane(pm, tm, lp) {
+  if (typeof pm !== "number") { pm = 1; tm = 1; }
+  if (throwHint && !isFlying) {
+    practiceThrows++;
+    if (practiceThrows >= 3) { throwHint = false; throwNote += " Übung geschafft! Die Linie ist jetzt unsichtbar."; }
+    save();
+  }
+  if (isFlying) return;
+  isFlying = true;
+  resultEl.hidden = true;
+  const p = paper();
+  plane.x = lp ? lp[0] : SX; plane.y = lp ? lp[1] : 300; launchX = plane.x; camX = 0;
+  let sm = 1, gm = 1, lift = 0;
+  attached.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { sm *= b.speed; gm *= b.gravity; lift += b.lift; } });
+  plane.vx = (2 + strength * 0.5) * p.speed * sm * pm;
+  plane.vy = (-1 - strength * 0.2 - lift) * tm;
+  flightGravity = p.gravity * gm;
+  updateUI();
+}
+
+function finish() {
+  isFlying = false;
+  const distance = Math.max(0, Math.floor(plane.x - launchX));
+  if (duelCtx) {
+    const dc = duelCtx; duelCtx = null;
+    plane.x = SX; plane.y = 300; camX = 0;
+    document.getElementById("live").textContent = "0";
+    updateUI(); duelDone(dc, distance);
+    return;
+  }
+  const earned = Math.floor(distance / 10) * Math.pow(2, coinLevel);
+  coins += earned;
+  const record = distance > best;
+  if (record) best = distance;
+  showResult("Gelandet! " + distance + " Meter, +" + earned + " Münzen." + (record ? " Neuer Rekord!" : "") + throwNote);
+  plane.x = SX; plane.y = 300; camX = 0;
+  document.getElementById("live").textContent = "0";
+  save(); updateUI();
+}
+
+function animate() {
+  if (isFlying) {
+    plane.x += plane.vx;
+    plane.y += plane.vy;
+    plane.vy += flightGravity;
+    // Kamera folgt, sobald der Flieger die Bildschirmmitte erreicht
+    camX = Math.max(0, plane.x - W / 2);
+    document.getElementById("live").textContent = Math.max(0, Math.floor(plane.x - launchX));
+    if (plane.y >= groundY - 5) { plane.y = groundY - 5; finish(); }
+  }
+  drawWorld();
+  drawOverlay();
+  drawPlane();
+}
+
+function buyUpgrade() {
+  if (isFlying || coins < upgradeCost) return;
+  coins -= upgradeCost; strength++;
+  upgradeCost = Math.floor(upgradeCost * 1.5);
+  save(); updateUI();
+}
+
+function resetGame() {
+  if (isFlying) return;
+  const rb = document.getElementById("reset-btn");
+  if (rb.dataset.armed !== "1") {
+    rb.dataset.armed = "1"; rb.textContent = "Wirklich zurücksetzen?";
+    setTimeout(() => { rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen"; }, 4000);
+    return;
+  }
+  rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen";
+  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; coinLevel = 0; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0;
+  save(); updateUI(); showResult("Spielstand zurückgesetzt."); askNick();
+}
+
+document.getElementById("upgrade-btn").addEventListener("click", buyUpgrade);
+document.getElementById("reset-btn").addEventListener("click", resetGame);
+
+let pendingDelete = null;
+function addCustom(name, speed, gravity, shape, paint, stk) {
+  const c = { id: "c" + Date.now(), name: String(name).slice(0, 40), speed, gravity, shape, paint: paint || null, stickers: stk || [], color: paint || "#e8e0d0", custom: true };
+  custom.push(c);
+  equipped = c.id;
+  save(); updateUI();
+}
+function deleteCustom(id) {
+  if (isFlying || duelCtx) return;
+  if (pendingDelete !== id) {
+    pendingDelete = id; updateUI();
+    setTimeout(() => { if (pendingDelete === id) { pendingDelete = null; updateUI(); } }, 4000);
+    return;
+  }
+  pendingDelete = null;
+  custom = custom.filter(c => c.id !== id);
+  if (equipped === id) equipped = "heft";
+  save(); updateUI();
+}
+
+// ---------- Flieger bestellen ----------
+function applyOrder(o) {
+  const p = PAPERS.find(x => x.id === "order");
+  p.name = o.name; p.speed = o.speed; p.gravity = o.gravity;
+}
+const LOCAL = [
+  ["f-?14|kampfjet|tomcat", "F-14 Tomcat", 92],
+  ["concorde", "Concorde", 95],
+  ["segelflug|glider", "Segelflugzeug", 80],
+  ["shuttle", "Space Shuttle", 70],
+  ["airbus|boeing|jumbo|a380|737", "Verkehrsflugzeug", 55],
+  ["cessna", "Cessna 172", 45],
+  ["wright|doppeldecker", "Wright Flyer", 25]
+];
+async function findPlane(q) {
+  const cm = q.trim().match(/^([a-zA-Z])\s*-?\s*(\d{1,2})$/);
+  if (cm && +cm[2] >= 1 && +cm[2] <= 20) {
+    const code = cm[1].toUpperCase() + (+cm[2]);
+    const idx = (cm[1].toUpperCase().charCodeAt(0) - 65) * 20 + (+cm[2]);
+    return { ok: true, name: "Modell " + code, aero: clamp(Math.ceil(idx / 520 * 100), 1, 100), blurb: "Faltmodell " + code + " mit eigenem Faltmuster.", code };
+  }
+  let sample = null;
+  try { if (typeof claude !== "undefined") sample = await claude.use("sample"); } catch (e) {}
+  if (sample) {
+    try { return await sample.json("Du bewertest Flugzeuge für ein Papierflieger-Spiel. Anfrage des Spielers: '" + q.replace(/['"]/g, "").slice(0, 60) + "'. Ist das ein Flugzeug oder Fluggerät, gib genau dieses JSON zurück: {\"ok\":true,\"name\":\"offizieller Name, kurz\",\"aero\":Ganzzahl von 1 bis 100 für die Aerodynamik (Schnittigkeit, Tempo, Gleitfähigkeit; Kampfjet und Segelflugzeug hoch, Heißluftballon niedrig),\"blurb\":\"ein kurzer deutscher Satz zum Flugzeug\"}. Sonst gib {\"ok\":false} zurück. Antworte nur mit JSON."); } catch (e) { /* weiter mit dem Katalog */ }
+  }
+  const s = q.toLowerCase();
+  const m = LOCAL.find(x => new RegExp(x[0]).test(s));
+  return m ? { ok: true, name: m[1], aero: m[2], blurb: "Aus dem Katalog." } : { ok: false };
+}
+async function runSearch() {
+  if (animating) return;
+  const q = document.getElementById("plane-q").value.trim();
+  if (!q) return;
+  const box = document.getElementById("order-result");
+  box.textContent = "Suche läuft…";
+  let r;
+  try { r = await findPlane(q); } catch (e) { box.textContent = "Die Suche hat nicht geklappt. Versuch es gleich noch einmal."; return; }
+  if (!r || !r.ok) { box.textContent = "Dazu habe ich kein Flugzeug gefunden."; return; }
+  const aero = clamp(Math.round(Number(r.aero) || 1), 1, 100);
+  const steps = r.code ? genFolds(r.code) : null;
+  const o = { name: String(r.name || q).slice(0, 40), speed: +(1 + 0.6 * aero / 100).toFixed(2), gravity: +(0.05 - 0.026 * aero / 100).toFixed(4) };
+  const cost = Math.round((40 + aero * aero * 0.14) / 10) * 10;
+  box.innerHTML = "";
+  const card = document.createElement("div");
+  card.className = "card";
+  const t = document.createElement("strong"); t.textContent = o.name;
+  const d = document.createElement("span"); d.textContent = String(r.blurb || "").slice(0, 140);
+  const st = document.createElement("span");
+  st.textContent = "Aerodynamik " + aero + " von 100, Tempo ×" + o.speed.toFixed(2) + ", Gleitflug " + Math.round(0.05 / o.gravity * 100) + " %";
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = "Basteln lassen für " + cost + " Münzen";
+  b.disabled = coins < cost;
+  b.onclick = () => {
+    if (coins < cost || animating) return;
+    coins -= cost; orderQ = o;
+    let fin = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
+    (steps || DEFAULT_FOLDS).forEach(([fa, fb]) => { fin = foldLayers(fin, fa, fb); });
+    addCustom(o.name, o.speed, o.gravity, fin);
+    orderedId = custom[custom.length - 1].id;
+    box.textContent = "Dein Flieger wird gefaltet…";
+    foldAnim(steps).then(() => { box.textContent = o.name + " ist fertig. Drück auf „Flieger übernehmen“."; });
+  };
+  card.append(t, d, st, b);
+  box.appendChild(card);
+}
+let ordered = false, animating = false;
+const DEFAULT_FOLDS = [[[0, 0], [100, 100]], [[200, 0], [100, 100]], [[0, 260], [100, 278.6]], [[200, 260], [100, 278.6]]];
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function foldAnim(steps) {
+  newSheet();
+  animating = true;
+  refreshCraft();
+  const S = steps || [[[0, 0], [100, 100]], [[200, 0], [100, 100]], [[0, 260], [100, 278.6]], [[200, 260], [100, 278.6]]];
+  for (const [a, b] of S) {
+    await new Promise(res => {
+      let t0 = null;
+      requestAnimationFrame(function tick(now) {
+        if (t0 === null) t0 = now;
+        const k = clamp((now - t0) / (S.length > 4 ? 280 : 650), 0, 1), e = k * k * (3 - 2 * k);
+        from = a; drag = [a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e];
+        drawCraft();
+        if (k < 1) requestAnimationFrame(tick); else res();
+      });
+    });
+    hist.push(layers);
+    layers = foldLayers(layers, a, b);
+    drag = null; from = null;
+    drawCraft();
+    await wait(S.length > 4 ? 90 : 250);
+  }
+  animating = false;
+  ordered = true;
+  refreshCraft();
+}
+function rng(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function coveredArea(ls) {
+  let n = 0;
+  for (let y = -100; y <= 380; y += 10) for (let x = -100; x <= 300; x += 10) if (ls.some(l => inside(l.pts, x, y))) n++;
+  return n * 100;
+}
+function nearestVertex(ls, p) {
+  let best = null, bd = 1e9;
+  ls.forEach(l => l.pts.forEach(v => { const d = Math.hypot(v[0] - p[0], v[1] - p[1]); if (d < bd) { bd = d; best = v; } }));
+  return best;
+}
+function genFolds(code) {
+  let h = 7;
+  for (const ch of code) h = (h * 31 + ch.charCodeAt(0)) | 0;
+  const rnd = rng(h);
+  let ls = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
+  const out = [], pairs = 3 + Math.floor(rnd() * 4);
+  for (let i = 0; i < pairs * 3 && out.length < pairs * 2; i++) {
+    const left = [];
+    ls.forEach(l => l.pts.forEach(p => { if (p[0] < 95) left.push(p); }));
+    if (!left.length) break;
+    const v = left[Math.floor(rnd() * left.length)];
+    const t = [70 + rnd() * 50, v[1] + (rnd() - 0.4) * 160];
+    const a = foldLayers(ls, v, t);
+    const v2 = nearestVertex(a, [200 - v[0], v[1]]);
+    const t2 = [200 - t[0], t[1]];
+    const b = foldLayers(a, v2, t2);
+    if (coveredArea(b) > 9000) { ls = b; out.push([v, t], [v2, t2]); }
+  }
+  return out.length ? out : [[[0, 0], [100, 100]], [[200, 0], [100, 100]]];
+}
+(function buildCatalog() {
+  const L = document.getElementById("cat-letters"), N = document.getElementById("cat-nums");
+  for (let i = 0; i < 26; i++) {
+    const ch = String.fromCharCode(65 + i);
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = ch;
+    b.onclick = () => {
+      N.innerHTML = "";
+      for (let n = 1; n <= 20; n++) {
+        const nb = document.createElement("button");
+        nb.type = "button"; nb.textContent = ch + n;
+        nb.onclick = () => { document.getElementById("plane-q").value = ch + n; runSearch(); };
+        N.appendChild(nb);
+      }
+    };
+    L.appendChild(b);
+  }
+})();
+document.getElementById("plane-search").addEventListener("click", runSearch);
+document.getElementById("plane-q").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
+
+// ---------- Lackieren & Sticker ----------
+const PAINTS = ["#ffffff", "#ff6b6b", "#ffb347", "#ffe066", "#69db7c", "#4dabf7", "#b197fc", "#ff8ad8", "#495057"];
+const STICKERS = ["⭐", "❤️", "⚡", "🔥", "🚀", "😎"];
+const PAINT_COST = 30, STICKER_COST = 10;
+function styleCost() { return (craftPaint ? PAINT_COST : 0) + craftStickers.length * STICKER_COST; }
+function shade(h, f) {
+  const n = parseInt(h.slice(1), 16);
+  return "rgb(" + ((n >> 16) * f | 0) + "," + (((n >> 8) & 255) * f | 0) + "," + ((n & 255) * f | 0) + ")";
+}
+function craftFill(back) {
+  if (craftPaint) return back ? shade(craftPaint, 0.82) : craftPaint;
+  return back ? "#ddd0b8" : "#ffffff";
+}
+function placeSticker(p) {
+  if (!pendingSticker || !layers.some(l => inside(l.pts, p[0], p[1]))) return;
+  if (craftStickers.length < 8 && coins < styleCost() + STICKER_COST) { document.getElementById("sticker-hint").textContent = "Zu wenig Münzen für einen weiteren Sticker."; return; }
+  if (craftStickers.length >= 8) craftStickers.shift();
+  craftStickers.push({ e: pendingSticker, x: p[0], y: p[1] });
+  drawCraft();
+}
+function refreshStyleUI() {
+  document.querySelectorAll("#paint-row .sw").forEach(b => b.classList.toggle("on", (b.dataset.c === "#ffffff" ? null : b.dataset.c) === craftPaint));
+  document.querySelectorAll("#sticker-row .stk").forEach(b => b.classList.toggle("on", b.dataset.e === pendingSticker));
+  document.getElementById("sticker-hint").textContent = pendingSticker ? "Tippe aufs Blatt, um den Sticker zu kleben. Tippe den Sticker oben noch einmal an, um wieder zu falten." : "Wähle einen Sticker und tippe dann aufs Blatt.";
+  document.getElementById("sticker-hint").textContent += " Kosten: " + styleCost() + " Münzen (du hast " + Math.floor(coins) + ").";
+}
+(function buildStyle() {
+  const pr = document.getElementById("paint-row"), sr = document.getElementById("sticker-row");
+  PAINTS.forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "sw"; b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", "Farbe " + c);
+    b.onclick = () => {
+      if (c !== "#ffffff" && !craftPaint && coins < styleCost() + PAINT_COST) { document.getElementById("sticker-hint").textContent = "Zu wenig Münzen für den Lack."; return; }
+      craftPaint = c === "#ffffff" ? null : c; refreshStyleUI(); drawCraft();
+    };
+    pr.appendChild(b);
+  });
+  STICKERS.forEach(e => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "stk"; b.dataset.e = e; b.textContent = e;
+    b.onclick = () => { pendingSticker = pendingSticker === e ? null : e; refreshStyleUI(); };
+    sr.appendChild(b);
+  });
+  const x = document.createElement("button");
+  x.type = "button"; x.className = "stk"; x.textContent = "Alle weg";
+  x.onclick = () => { craftStickers = []; drawCraft(); };
+  sr.appendChild(x);
+})();
+
+// ---------- 3D-Ansicht ----------
+const v3 = document.getElementById("view3d"), g3 = v3.getContext("2d");
+let yaw = 0.6, pitch = 1.0, drag3 = null, auto3 = true;
+function lineSpan(pts, xc) {
+  let lo = 1e9, hi = -1e9;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    if ((a[0] - xc) * (b[0] - xc) <= 0 && a[0] !== b[0]) {
+      const y = a[1] + (xc - a[0]) / (b[0] - a[0]) * (b[1] - a[1]);
+      lo = Math.min(lo, y); hi = Math.max(hi, y);
+    }
+  }
+  return lo <= hi ? [lo, hi] : null;
+}
+function draw3d() {
+  const W3 = v3.width, H3 = v3.height;
+  g3.clearRect(0, 0, W3, H3);
+  if (!layers || !layers.length) return;
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  layers.forEach(l => l.pts.forEach(p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }));
+  const cxm = (x0 + x1) / 2, cym = (y0 + y1) / 2, sc = 190 / Math.max(x1 - x0, y1 - y0, 1);
+  const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const proj = (a, b, c) => { const a2 = a * cyw - b * syw, b2 = a * syw + b * cyw; return [a2, c * cp + b2 * sp, c * sp - b2 * cp]; };
+  const ox = W3 / 2, oy = H3 / 2 + 4;
+  const scr = q => { const f = 900 / (900 - q[2]); return [ox + q[0] * f * sc, oy - q[1] * f * sc]; };
+  const lightV = [-0.4, 0.7, 0.6], ll = Math.hypot(...lightV);
+  const front = craftPaint || "#fbfbff", backC = craftPaint ? shade(craftPaint, 0.88) : "#e9dfca";
+  const fillPoly = (v, color, k) => {
+    const a = v[0], b = v[1], c = v[2];
+    const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], wx = c[0] - a[0], wy = c[1] - a[1], wz = c[2] - a[2];
+    const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx, nl = Math.hypot(nx, ny, nz) || 1;
+    const light = 0.6 + 0.4 * Math.abs((nx * lightV[0] + ny * lightV[1] + nz * lightV[2]) / (nl * ll));
+    g3.beginPath();
+    v.forEach((q, i) => { const s = scr(q); g3[i ? "lineTo" : "moveTo"](s[0], s[1]); });
+    g3.closePath();
+    g3.fillStyle = shade(color, light * (k || 1));
+    g3.fill();
+    g3.strokeStyle = "rgba(31,42,68,0.5)"; g3.lineWidth = 1; g3.lineJoin = "round"; g3.stroke();
+  };
+  // Schatten
+  g3.fillStyle = "rgba(0,0,0,0.16)";
+  g3.beginPath(); g3.ellipse(ox, oy + 90, 80, 13, 0, 0, Math.PI * 2); g3.fill();
+  // Kiel unter dem Flieger
+  let ylo = 1e9, yhi = -1e9;
+  layers.forEach(l => { const s = lineSpan(l.pts, cxm); if (s) { ylo = Math.min(ylo, s[0]); yhi = Math.max(yhi, s[1]); } });
+  if (ylo < yhi) {
+    const bn = -(ylo - cym), bt = -(yhi - cym), drop = 28;
+    fillPoly([proj(0, bn, 0), proj(0, bt, 0), proj(0, bt, -drop), proj(0, bt + (bn - bt) * 0.45, -drop * 0.7)], backC, 0.8);
+  }
+  // Lagen von unten nach oben, dann deren Sticker
+  g3.textAlign = "center"; g3.textBaseline = "middle";
+  layers.forEach((l, i) => {
+    const f = p => p[0] - cxm;
+    [clip(l.pts, f, 1), clip(l.pts, f, -1)].filter(h => h.length > 2).forEach(h => {
+      const v = h.map(p => proj(p[0] - cxm, -(p[1] - cym), Math.abs(p[0] - cxm) * 0.33 + i * 3));
+      fillPoly(v, l.back ? backC : front);
+    });
+    craftStickers.forEach(st => {
+      let top = -1;
+      layers.forEach((m, j) => { if (inside(m.pts, st.x, st.y)) top = j; });
+      if (top !== i) return;
+      const q = proj(st.x - cxm, -(st.y - cym), Math.abs(st.x - cxm) * 0.33 + i * 3 + 1);
+      const s = scr(q), f = 900 / (900 - q[2]);
+      g3.font = Math.round(17 * f) + "px sans-serif";
+      g3.fillText(st.e, s[0], s[1]);
+    });
+  });
+}
+function loop3d() {
+  if (dlg.open && !document.getElementById("craft-style").hidden) { if (auto3 && !drag3) yaw += 0.012; draw3d(); }
+  requestAnimationFrame(loop3d);
+}
+v3.addEventListener("pointerdown", e => { drag3 = [e.clientX, e.clientY]; v3.setPointerCapture(e.pointerId); });
+v3.addEventListener("pointermove", e => {
+  if (!drag3) return;
+  yaw += (e.clientX - drag3[0]) * 0.01;
+  pitch = clamp(pitch + (e.clientY - drag3[1]) * 0.01, 0.3, 1.5);
+  drag3 = [e.clientX, e.clientY];
+});
+v3.addEventListener("pointerup", () => { drag3 = null; });
+v3.addEventListener("pointercancel", () => { drag3 = null; });
+
+// ---------- Boosts ----------
+function renderBoosts() {
+  const shop = document.getElementById("boosts-shop");
+  shop.innerHTML = "";
+  BOOSTS.forEach(b => {
+    const has = ownedBoosts.includes(b.id);
+    const d = document.createElement("div");
+    d.className = "card paper";
+    d.innerHTML = '<div class="name">' + b.name + '</div><div class="stats">' + b.desc + '</div>';
+    const btn = document.createElement("button");
+    btn.type = "button";
+    if (has) { btn.textContent = "Gekauft"; btn.disabled = true; }
+    else {
+      btn.textContent = "Kaufen für " + b.cost + " Münzen";
+      btn.disabled = coins < b.cost || isFlying;
+      btn.onclick = () => { if (coins >= b.cost) { coins -= b.cost; ownedBoosts.push(b.id); save(); updateUI(); } };
+    }
+    d.appendChild(btn);
+    shop.appendChild(d);
+  });
+  const mult = Math.pow(2, coinLevel), price = 3000 * mult;
+  const dc = document.createElement("div");
+  dc.className = "card paper";
+  dc.innerHTML = '<div class="name">Doppelmünzen' + (coinLevel ? ' (Stufe ' + coinLevel + ')' : '') + '</div><div class="stats">Aktuell ×' + mult + ' Münzen pro Wurf. Nächste Stufe: ×' + (mult * 2) + '</div>';
+  const cb = document.createElement("button");
+  cb.type = "button";
+  cb.textContent = "Kaufen für " + price.toLocaleString("de-DE") + " Münzen";
+  cb.disabled = coins < price || isFlying;
+  cb.onclick = () => { if (coins >= price) { coins -= price; coinLevel++; save(); updateUI(); } };
+  dc.appendChild(cb);
+  shop.appendChild(dc);
+  const box = document.getElementById("craft-boosts");
+  box.innerHTML = "<strong>Boosts (max. 2 gleichzeitig)</strong>";
+  const mine = BOOSTS.filter(b => ownedBoosts.includes(b.id));
+  if (!mine.length) {
+    const p = document.createElement("p");
+    p.style.cssText = "margin:6px 0 0;color:var(--muted);font-size:0.9rem";
+    p.textContent = "Noch keine Boosts. Kauf welche im Laden unter dem Papier.";
+    box.appendChild(p);
+  }
+  mine.forEach(b => {
+    const on = attached.includes(b.id);
+    const row = document.createElement("div");
+    row.className = "boost-row";
+    row.innerHTML = "<span>" + b.name + "<small>" + b.desc + "</small></span>";
+    const t = document.createElement("button");
+    t.type = "button";
+    t.textContent = on ? "Entfernen" : "Anbringen";
+    t.disabled = !on && attached.length >= 2;
+    t.onclick = () => { attached = on ? attached.filter(x => x !== b.id) : attached.concat(b.id); save(); renderBoosts(); };
+    row.appendChild(t);
+    box.appendChild(row);
+  });
+}
+
+// ---------- Flieger basteln (freies Falten) ----------
+const OX = 60, OY = 70;
+let gstep = 0;
+let craftPaint = null, craftStickers = [], pendingSticker = null, orderedId = null;
+const GSTEPS = [
+  { a: [0, 0],     b: [100, 100],   t: "Zieh die linke obere Ecke auf den Ring in der Mitte." },
+  { a: [200, 0],   b: [100, 100],   t: "Jetzt die rechte obere Ecke auch auf den Ring ziehen." },
+  { a: [0, 260],   b: [100, 278.6], t: "Zieh die linke untere Ecke zum Ring, sodass die Kante an der Mittellinie liegt." },
+  { a: [200, 260], b: [100, 278.6], t: "Das Gleiche auf der rechten Seite." }
+];
+function guideStep() { return !tutorialDone && !ordered && !animating && gstep < GSTEPS.length ? GSTEPS[gstep] : null; }
+const dlg = document.getElementById("craft-dialog");
+const cc = document.getElementById("craft-canvas");
+const cx = cc.getContext("2d");
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+let layers, hist, drag, from;
+
+function applyCraft(q) {
+  const p = PAPERS.find(x => x.id === "eigen");
+  if (q && typeof q === "object") { p.speed = q.speed; p.gravity = q.gravity; }
+  else { p.speed = 1.1 + 0.25 * (q || 0); p.gravity = 0.046 - 0.014 * (q || 0); }
+}
+function clip(poly, f, s) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const P = poly[i], Q = poly[(i + 1) % poly.length];
+    const fp = s * f(P), fq = s * f(Q);
+    if (fp >= 0) out.push(P);
+    if ((fp >= 0) !== (fq >= 0)) { const t = fp / (fp - fq); out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]); }
+  }
+  return out;
+}
+function foldLayers(ls, a, b) {
+  let nx = b[0] - a[0], ny = b[1] - a[1];
+  const len = Math.hypot(nx, ny);
+  if (len < 1) return ls;
+  nx /= len; ny /= len;
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+  const f = p => (p[0] - mx) * nx + (p[1] - my) * ny;
+  const keep = [], moved = [];
+  ls.forEach(l => {
+    const k = clip(l.pts, f, 1), m = clip(l.pts, f, -1);
+    if (k.length > 2) keep.push({ pts: k, back: l.back });
+    if (m.length > 2) moved.push({ pts: m.map(p => { const d = f(p); return [p[0] - 2 * d * nx, p[1] - 2 * d * ny]; }), back: !l.back });
+  });
+  return keep.concat(moved);
+}
+function inside(poly, x, y) {
+  let c = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c;
+  }
+  return c;
+}
+function analyze(ls, folds) {
+  let n = 0, layerSum = 0, minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  const pts = [];
+  for (let y = -100; y <= 380; y += 8) for (let x = -100; x <= 300; x += 8) {
+    let c = 0;
+    for (const l of ls) if (inside(l.pts, x, y)) c++;
+    if (c) { n++; layerSum += c; pts.push([x, y]); minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+  }
+  if (!n) return { speed: 1, gravity: 0.05, sym: 0, slender: 0, stiff: 0, lift: 0 };
+  const w = maxX - minX + 8, h = maxY - minY + 8, mid = (minX + maxX) / 2;
+  let miss = 0;
+  for (const p of pts) { const mx = 2 * mid - p[0]; if (!ls.some(l => inside(l.pts, mx, p[1]))) miss++; }
+  const sym = 1 - miss / n;
+  const slender = clamp((h / w - 1) / 2, 0, 1);
+  const stiff = clamp((layerSum / n - 1) / 2, 0, 1);
+  const lift = clamp(n * 64 / 52000, 0, 1);
+  const ff = Math.min(1, folds / 3);
+  return { sym, slender, stiff, lift,
+    speed: 1 + (0.3 * slender * sym + 0.1 * stiff) * ff,
+    gravity: 0.05 - 0.016 * lift * sym * ff };
+}
+function newSheet() {
+  layers = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
+  hist = []; drag = null; from = null; ordered = false; gstep = 0;
+  craftPaint = null; craftStickers = []; pendingSticker = null;
+  refreshCraft();
+}
+function refreshCraft() {
+  const s = analyze(layers, hist.length), pc = v => Math.round(v * 100) + " %";
+  document.getElementById("craft-stats").textContent = ordered ? "Bestellt: " + orderQ.name + ", Tempo ×" + orderQ.speed.toFixed(2) : hist.length
+    ? "Symmetrie " + pc(s.sym) + ", Schlankheit " + pc(s.slender) + ", Stabilität " + pc(s.stiff) + ", Auftrieb " + pc(s.lift) + ". Tempo ×" + s.speed.toFixed(2)
+    : "Noch nicht gefaltet.";
+  const needGuide = !tutorialDone && !ordered && !animating;
+  document.getElementById("craft-text").textContent = needGuide
+    ? (gstep < GSTEPS.length ? "Anleitung, Schritt " + (gstep + 1) + " von " + GSTEPS.length + ": " + GSTEPS[gstep].t : "Super, dein Flieger ist fertig gefaltet! Drück auf „Flieger übernehmen“.")
+    : "Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.";
+  document.getElementById("craft-done").disabled = animating || (needGuide ? gstep < GSTEPS.length : (!hist.length && !ordered));
+  document.getElementById("craft-style").hidden = document.getElementById("craft-done").disabled;
+  refreshStyleUI();
+  document.getElementById("craft-undo").disabled = !hist.length;
+  drawCraft();
+}
+function drawCraft() {
+  cx.clearRect(0, 0, cc.width, cc.height);
+  const show = (drag && from) ? foldLayers(layers, from, drag) : layers;
+  cx.lineWidth = 1.5; cx.strokeStyle = css("--line");
+  show.forEach(l => {
+    cx.beginPath();
+    l.pts.forEach((p, i) => cx[i ? "lineTo" : "moveTo"](p[0] + OX, p[1] + OY));
+    cx.closePath();
+    cx.fillStyle = craftFill(l.back);
+    cx.fill(); cx.stroke();
+  });
+  cx.font = "22px sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
+  craftStickers.forEach(st => cx.fillText(st.e, st.x + OX, st.y + OY));
+  cx.textBaseline = "alphabetic";
+  cx.fillStyle = css("--accent");
+  const g = guideStep();
+  if (g) {
+    cx.strokeStyle = css("--accent"); cx.lineWidth = 3;
+    cx.beginPath(); cx.arc(g.b[0] + OX, g.b[1] + OY, 13, 0, 7); cx.stroke();
+    if (!drag) { cx.beginPath(); cx.arc(g.a[0] + OX, g.a[1] + OY, 8, 0, 7); cx.fill(); }
+  } else if (!drag) layers.forEach(l => l.pts.forEach(p => { cx.beginPath(); cx.arc(p[0] + OX, p[1] + OY, 4, 0, 7); cx.fill(); }));
+  if (drag && from) {
+    cx.beginPath(); cx.arc(from[0] + OX, from[1] + OY, 6, 0, 7); cx.fill();
+    cx.beginPath(); cx.arc(drag[0] + OX, drag[1] + OY, 9, 0, 7); cx.fill();
+  }
+}
+function cpos(e) {
+  const r = cc.getBoundingClientRect();
+  return [(e.clientX - r.left) * cc.width / r.width - OX, (e.clientY - r.top) * cc.height / r.height - OY];
+}
+function pick(p) {
+  let best = null, bd = 24;
+  for (let i = layers.length - 1; i >= 0; i--) for (const v of layers[i].pts) {
+    const d = Math.hypot(v[0] - p[0], v[1] - p[1]);
+    if (d < bd - 0.5) { bd = d; best = v; }
+  }
+  return best;
+}
+cc.addEventListener("pointerdown", e => {
+  if (animating) return;
+  if (pendingSticker) { placeSticker(cpos(e)); return; }
+  const p = cpos(e), g = guideStep();
+  const v = g ? (Math.hypot(p[0] - g.a[0], p[1] - g.a[1]) < 28 ? g.a : null) : pick(p);
+  if (v) { from = v; drag = p; cc.setPointerCapture(e.pointerId); drawCraft(); }
+});
+cc.addEventListener("pointermove", e => { if (drag) { drag = cpos(e); drawCraft(); } });
+cc.addEventListener("pointerup", e => {
+  if (!drag || !from) return;
+  const p = cpos(e), g = guideStep();
+  if (g) {
+    if (Math.hypot(p[0] - g.b[0], p[1] - g.b[1]) < 30) { hist.push(layers); layers = foldLayers(layers, g.a, g.b); gstep++; craftStickers = []; }
+  } else if (Math.hypot(p[0] - from[0], p[1] - from[1]) > 14) {
+    const next = foldLayers(layers, from, p);
+    if (next.length && next.length < 80) { hist.push(layers); layers = next; ordered = false; craftStickers = []; }
+  }
+  drag = null; from = null;
+  refreshCraft();
+});
+cc.addEventListener("pointercancel", () => { drag = null; from = null; drawCraft(); });
+
+document.getElementById("craft-btn").addEventListener("click", () => { if (!isFlying) { newSheet(); dlg.showModal(); } });
+document.getElementById("craft-close").addEventListener("click", () => { if (!animating) dlg.close(); });
+dlg.addEventListener("cancel", e => { if (animating) e.preventDefault(); });
+document.getElementById("craft-redo").addEventListener("click", () => { if (!animating) newSheet(); });
+document.getElementById("craft-undo").addEventListener("click", () => { if (hist.length && !animating) { layers = hist.pop(); craftStickers = []; if (!tutorialDone && gstep > 0) gstep--; refreshCraft(); } });
+document.getElementById("craft-done").addEventListener("click", () => {
+  if (ordered) {
+    const oc = custom.find(c => c.id === orderedId);
+    if (oc && (craftPaint || craftStickers.length)) { coins -= Math.min(coins, styleCost()); oc.paint = craftPaint; oc.stickers = craftStickers.slice(); if (craftPaint) oc.color = craftPaint; save(); updateUI(); }
+    dlg.close(); showResult(orderQ.name + " ist fertig! Tempo ×" + orderQ.speed.toFixed(2)); return;
+  }
+  const s = analyze(layers, hist.length);
+  if (!tutorialDone) { throwHint = true; practiceThrows = 0; }
+  tutorialDone = true;
+  coins -= Math.min(coins, styleCost());
+  addCustom("Eigenbau " + (custom.length + 1), s.speed, s.gravity, layers, craftPaint, craftStickers.slice());
+  dlg.close();
+  showResult("Dein Flieger ist fertig! Tempo ×" + s.speed.toFixed(2) + ", Symmetrie " + Math.round(s.sym * 100) + " %");
+});
+
+// ---------- Duell ----------
+const DUEL_LINK = "https://claude.ai/artifact/RkQxGKGJDdBzs2ds8AyLL7";
+const duelDlg = document.getElementById("duel-dialog");
+function duelText() {
+  return "Ich fordere dich heraus zum Duell! " + (best ? "Mein Rekord bei Papier Piloten:" + best + " Meter. Schaffst du mehr?" : "Wer schafft mit dem Papierflieger die größte Weite?") + (nick ? " – " + nick : "");
+}
+document.getElementById("duel-btn").addEventListener("click", () => {
+  if (duelCtx) { cancelDuelThrow(); return; }
+  const ok = dbRef && myId;
+  openDuelDialog(ok ? "Setze einen deiner selbstgebauten oder bestellten Flieger ein. Wer weiter fliegt, gewinnt den Flieger des anderen." : "Für Einsatz-Duelle brauchst du ein claude.ai-Konto und Mitwirkenden-Zugriff auf diese Seite. Eine einfache Herausforderung kannst du trotzdem verschicken.");
+  if (!ok) showPlainChallenge();
+});
+document.getElementById("duel-close").addEventListener("click", () => duelDlg.close());
+document.getElementById("duel-share").addEventListener("click", async () => {
+  const ta = document.getElementById("duel-text"), note = document.getElementById("duel-note");
+  try {
+    if (navigator.share) { await navigator.share({ title: "Papier Piloten Duell", text: duelText(), url: duelShareLink }); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(ta.value); note.textContent = "Nachricht mit Link kopiert. Füge sie in einen Chat ein."; return; } catch (e) {}
+  try { ta.select(); document.execCommand("copy"); note.textContent = "Nachricht mit Link kopiert. Füge sie in einen Chat ein."; }
+  catch (e) { note.textContent = "Markiere den Text und kopiere ihn selbst."; }
+});
+
+// ---------- Duell-Modus mit Einsatz ----------
+let duelShareLink = DUEL_LINK, dbRef = null, myId = null, duelCtx = null, duelPrevEq = null, myDuels = [];
+let joinId = (location.hash.match(/^#d_([A-Za-z0-9_~.-]+)$/) || [])[1] || null;
+const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0" });
+function addPlaneCopy(p) {
+  if (!p) return;
+  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || "Flieger").slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", custom: true });
+}
+function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = "heft"; }
+function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
+function addClaimed(id) { try { const c = getClaimed(); c.push(id); localStorage.setItem("pf_claimed", JSON.stringify(c.slice(-200))); } catch (e) {} }
+function duelNote(t) { document.getElementById("duel-note").textContent = t; }
+function openDuelDialog(text) {
+  document.getElementById("duel-info").textContent = text || "";
+  document.getElementById("duel-pick").innerHTML = "";
+  document.getElementById("duel-text").hidden = true;
+  document.getElementById("duel-share").hidden = true;
+  duelNote("");
+  renderDuelList();
+  if (!duelDlg.open) duelDlg.showModal();
+}
+function showDuelLink(id) {
+  duelShareLink = DUEL_LINK + "#d_" + id;
+  document.getElementById("duel-text").value = duelText() + " Mein Einsatz liegt bereit!\n" + duelShareLink;
+  document.getElementById("duel-text").hidden = false;
+  document.getElementById("duel-share").hidden = false;
+}
+function showPlainChallenge() {
+  duelShareLink = DUEL_LINK;
+  document.getElementById("duel-text").value = duelText() + "\n" + DUEL_LINK;
+  document.getElementById("duel-text").hidden = false;
+  document.getElementById("duel-share").hidden = false;
+}
+function renderDuelList() {
+  const box = document.getElementById("duel-list");
+  box.innerHTML = "";
+  myDuels.filter(d => d.status === "open").forEach(d => {
+    const row = document.createElement("div");
+    row.className = "boost-row";
+    const sp = document.createElement("span");
+    sp.textContent = "Offen: " + d.cPlane.name + " (" + d.cDist + " m)";
+    const b1 = document.createElement("button"); b1.type = "button"; b1.textContent = "Link";
+    b1.onclick = () => showDuelLink(d.id);
+    const b2 = document.createElement("button"); b2.type = "button"; b2.textContent = "Abbrechen";
+    b2.onclick = () => cancelDuel(d);
+    row.append(sp, b1, b2);
+    box.appendChild(row);
+  });
+}
+function renderPick(mode, d, id) {
+  const box = document.getElementById("duel-pick");
+  box.innerHTML = "";
+  if (mode === "create" && !(dbRef && myId)) { box.textContent = "Duelle mit Einsatz gehen hier nicht. Du brauchst ein claude.ai-Konto und Mitwirkenden-Zugriff."; return; }
+  if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten oder bestellten Flieger zum Einsetzen."; return; }
+  custom.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "boost-row";
+    const sp = document.createElement("span");
+    sp.textContent = c.name + " · Tempo ×" + c.speed.toFixed(2);
+    const b = document.createElement("button"); b.type = "button"; b.textContent = "Einsetzen";
+    b.onclick = () => startDuelThrow(c, mode, d, id);
+    row.append(sp, b);
+    box.appendChild(row);
+  });
+}
+function startDuelThrow(c, mode, d, id) {
+  duelCtx = { mode, plane: c, duel: d, id };
+  duelPrevEq = equipped; equipped = c.id;
+  duelDlg.close(); updateUI();
+  showResult("Duell! Wirf jetzt " + c.name + ".");
+}
+function cancelDuelThrow() {
+  equipped = duelPrevEq || "heft"; duelCtx = null; updateUI();
+  showResult("Duell abgebrochen. Dein Flieger bleibt bei dir.");
+}
+async function duelDone(dc, distance) {
+  equipped = duelPrevEq || "heft";
+  const c = dc.plane;
+  if (dc.mode === "create") {
+    try {
+      const ref = dbRef.collection("duels").doc();
+      await ref.set({ cId: myId, cNick: nick, cPlane: planePack(c), cDist: distance, status: "open", claimed: false, created: Date.now() });
+      removePlane(c.id); save(); updateUI();
+      openDuelDialog("Du bist " + distance + " Meter weit geflogen. Dein Flieger " + c.name + " liegt als Einsatz im Duell. Schick den Link an einen Freund!");
+      showDuelLink(ref.id);
+    } catch (e) {
+      updateUI();
+      openDuelDialog("Das Duell konnte nicht gespeichert werden. Du brauchst Mitwirkenden-Zugriff auf diese Seite. Dein Flieger bleibt bei dir.");
+    }
+    return;
+  }
+  const d = dc.duel;
+  try {
+    const ref = dbRef.doc("duels/" + dc.id);
+    const s = await ref.get();
+    if (!s.exists || s.data().status !== "open") { updateUI(); openDuelDialog("Dieses Duell ist schon vorbei. Dein Flieger bleibt bei dir."); return; }
+    const result = distance > d.cDist ? "o" : distance < d.cDist ? "c" : "draw";
+    await ref.update({ status: "done", oId: myId, oNick: nick, oPlane: planePack(c), oDist: distance, result, claimed: false });
+    let msg;
+    if (result === "o") { addPlaneCopy(d.cPlane); msg = "Gewonnen! " + distance + " gegen " + d.cDist + " Meter. Du bekommst " + d.cPlane.name + " von " + d.cNick + "."; }
+    else if (result === "c") { removePlane(c.id); msg = "Verloren. " + distance + " gegen " + d.cDist + " Meter. " + c.name + " gehört jetzt " + d.cNick + "."; }
+    else msg = "Unentschieden bei " + distance + " Metern. Jeder behält seinen Flieger.";
+    save(); updateUI();
+    openDuelDialog(msg);
+  } catch (e) {
+    updateUI();
+    openDuelDialog("Das Ergebnis konnte nicht gespeichert werden. Dein Flieger bleibt bei dir.");
+  }
+}
+async function cancelDuel(d) {
+  try {
+    const ref = dbRef.doc("duels/" + d.id);
+    const s = await ref.get();
+    if (!s.exists || s.data().status !== "open") { duelNote("Das Duell ist schon beendet."); return; }
+    await ref.update({ status: "cancelled", claimed: true });
+    addPlaneCopy(d.cPlane); save(); updateUI();
+    duelNote("Duell abgebrochen. " + d.cPlane.name + " ist wieder bei dir.");
+  } catch (e) { duelNote("Das hat nicht geklappt."); }
+}
+function claimDuels() {
+  const done = getClaimed();
+  myDuels.forEach(d => {
+    if (d.status !== "done" || d.claimed || done.includes(d.id)) return;
+    addClaimed(d.id);
+    let msg;
+    if (d.result === "c") { addPlaneCopy(d.cPlane); addPlaneCopy(d.oPlane); msg = "Duell gewonnen gegen " + d.oNick + "! Du bekommst " + d.oPlane.name + "."; }
+    else if (d.result === "draw") { addPlaneCopy(d.cPlane); msg = "Unentschieden gegen " + d.oNick + ". Dein Einsatz ist zurück."; }
+    else msg = "Duell verloren gegen " + d.oNick + ". " + d.cPlane.name + " gehört jetzt " + d.oNick + ".";
+    save(); updateUI();
+    showResult(msg);
+    try { dbRef.doc("duels/" + d.id).update({ claimed: true }); } catch (e) {}
+  });
+}
+async function tryJoin() {
+  if (!joinId || !dbRef || !myId || !nick || dlg.open) return;
+  const id = joinId; joinId = null;
+  try {
+    const s = await dbRef.doc("duels/" + id).get();
+    if (!s.exists) { openDuelDialog("Dieses Duell gibt es nicht (mehr)."); return; }
+    const d = s.data();
+    if (d.status !== "open") { openDuelDialog("Dieses Duell ist schon vorbei."); return; }
+    if (d.cId === myId) { openDuelDialog("Das ist dein eigenes Duell. Schick den Link an einen Freund."); showDuelLink(id); return; }
+    openDuelDialog(String(d.cNick).slice(0, 20) + " fordert dich zum Duell heraus! Rekord: " + d.cDist + " Meter, Einsatz: " + String(d.cPlane.name).slice(0, 40) + ". Wähle deinen Einsatz-Flieger. Wer weiter fliegt, gewinnt den Flieger des anderen.");
+    renderPick("join", d, id);
+  } catch (e) { openDuelDialog("Das Duell konnte nicht geladen werden."); }
+}
+async function initDuel() {
+  try {
+    if (typeof claude === "undefined") return;
+    dbRef = await claude.use("db");
+    const u = await claude.use("user");
+    if (dbRef && u) myId = await u.id();
+  } catch (e) {}
+  if (!dbRef || !myId) return;
+  try {
+    dbRef.collection("duels").where("cId", "==", myId).onSnapshot(snap => {
+      myDuels = snap.docs.map(x => Object.assign({ id: x.id }, x.data()));
+      claimDuels(); renderDuelList();
+    }, () => {});
+  } catch (e) {}
+  tryJoin();
+}
+document.getElementById("duel-new").addEventListener("click", () => { document.getElementById("duel-text").hidden = true; document.getElementById("duel-share").hidden = true; renderPick("create"); });
+
+// ---------- Anmeldung ----------
+const loginDlg = document.getElementById("login-dialog");
+function askNick() {
+  document.getElementById("nick-in").value = "";
+  document.getElementById("nick-err").textContent = "";
+  if (!loginDlg.open) loginDlg.showModal();
+}
+function submitNick() {
+  const v = document.getElementById("nick-in").value.trim().replace(/\s+/g, " ");
+  if (v.length < 2) { document.getElementById("nick-err").textContent = "Der Spitzname braucht mindestens 2 Zeichen."; return; }
+  nick = v; save(); updateUI(); loginDlg.close();
+  if (!tutorialDone) { newSheet(); dlg.showModal(); } else tryJoin();
+}
+loginDlg.addEventListener("cancel", e => e.preventDefault());
+document.getElementById("nick-go").addEventListener("click", submitNick);
+document.getElementById("nick-in").addEventListener("keydown", e => { if (e.key === "Enter") submitNick(); });
+
+load();
+updateUI();
+if (!nick) askNick();
+requestAnimationFrame(loop3d);
+initDuel();
+setInterval(animate, 1000 / 60);
+</script>
+</body>
+</html>
