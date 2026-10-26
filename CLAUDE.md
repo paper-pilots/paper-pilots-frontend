@@ -1,7 +1,7 @@
 # Papier Piloten – Übergabe für Claude Code
 
 ## Projekt
-- Browserspiel „Papier Piloten" (früher „Papierflieger Werkstatt"), komplett auf Deutsch.
+- Browserspiel „Papier Piloten" (früher „Papierflieger Werkstatt"), in 7 Sprachen (Deutsch ist die Ausgangssprache, siehe „Sprachen“).
 - Eine einzige Datei: `index.html` (HTML + CSS + Vanilla-JS, Canvas, keine Bibliotheken, nur Google Font Fredoka).
 - Repository: `github.com/paper-pilots/paper-pilots-frontend` (Organisation `paper-pilots`).
 - Lokal: `C:\Users\bened\OneDrive\Dokumente\Paper Pilots\paper-pilots-frontend` (enthält bisher nur `.git` und eine kleine `README.md`).
@@ -41,6 +41,14 @@
 - Klick auf eine Karte öffnet die Seite des Flugzeugs (siehe unten); dort wählt man ihn aus. Ein Flieger im Windkanal ist blass mit „Im Windkanal“ markiert.
 - Wird mit `updateUI()` neu gezeichnet. Im Querformat am Handy ausgeblendet (nur das Spielfeld bleibt).
 
+## Sprachen
+- Sieben Sprachen: Deutsch, English, Español, Français, Italiano, Português, Türkçe (`LANGS`). Alle Texte stehen in `I18N[sprache][schlüssel]` am Anfang des Skripts; `t("schlüssel", {param: wert})` liefert den Text, Platzhalter heißen `{n}`, `{d}` usw. Fehlt ein Schlüssel in einer Sprache, gilt Deutsch.
+- Feste Texte im HTML tragen `data-i18n="schlüssel"` (Text), `data-i18n-ph` (Platzhalter) oder `data-i18n-aria` (aria-label); `applyLang()` setzt sie. Texte, die der Code zusammenbaut (Meldungen, Laden, Fenster), rufen `t()` beim Zeichnen auf; `setLang()` zeichnet neu (`updateUI` usw.).
+- Sprachwahl: Beim ersten Start als Knöpfe im Anmeldefenster (`#lang-chips`, vorgewählt nach Browsersprache, sonst Englisch), später als Auswahlfeld `#lang-select` unten auf der Hauptseite. Gespeichert unter `pf_lang` im localStorage (eigener Schlüssel, nicht im Spielstand). Alte Spielstände ohne `pf_lang` starten auf Deutsch.
+- Namen von Papieren und Boosts: `PAPERS[].name`, `BOOSTS[].name/desc` werden von `refreshNames()` je Sprache gesetzt (Schulheftpapier nur, wenn es nicht selbst umbenannt wurde). Selbst vergebene Flieger-Namen werden nicht übersetzt.
+- Namensvorschläge für Flieger: `NAMEDATA[sprache]` mit `mode` `pre` (Deutsch: zusammengeschrieben), `ap` (Englisch, Türkisch: „Silver Eagle“) oder `ba` (Romanisch: „Águila Relámpago“).
+- Neue Sprache hinzufügen: Eintrag in `LANGS`, vollständiges `I18N[xx]` (alle Schlüssel von `I18N.de`) und `NAMEDATA[xx]`. Prüfen: Alle Schlüssel von `I18N.de` müssen in jeder Sprache vorkommen und dieselben Platzhalter haben (Test in der Konsole).
+- Übersetzungen stammen vom Assistenten, nicht von Muttersprachlern: bei Gelegenheit gegenlesen lassen.
 ## Seite eines Flugzeugs (Upgrades)
 - Klick auf eine Karte in „Meine Flugzeuge“ öffnet `plane-dialog` (`openPlane`, `renderPlane`): großes Bild, Werte, Knopf „Auswählen“ (gesperrt beim Fliegen, im Duell-Wurf und im Windkanal) und „Upgrades“.
 - Upgrades pro Flugzeug: bis zu `MAX_UP` = 2 Boosts (Büroklammer-Nase, Klebeband-Flügel, Raketenstart, Windsegel; kaufen oder anbringen/entfernen direkt dort) und besseres Papier (`pap`: Glanz 60, Pergament 250, Carbon 800 Münzen, bezahlt wird der Unterschied zum aktuellen Papier). Bei selbstgebauten Fliegern liegen sie am Flieger (`c.boosts`, `c.pap`), bei Standardpapieren in `pupg[id]`. `upOf(p)` liefert sie, `effStats(p)` die Werte mit Papier und Boosts; `throwPlane` rechnet damit.
@@ -54,8 +62,8 @@
 - Idee für später: Symmetrie/Stabilität als weitere Werte (heute nur beim Falten berechnet und nicht gespeichert), Offline-Obergrenze.
 
 ## Namen neuer Flieger
-- Sobald ein Flieger fertig gefaltet ist (Bereich `#craft-style` wird sichtbar), schlägt das Spiel einen coolen Namen vor (`suggestName`: Vorsilbe `NAME_A` + Endung, z. B. „Blitzfalke“, „Sturmschwalbe“). Schlanke Flieger bekommen Tempo-Namen (`NAME_FAST`), Flieger mit viel Auftrieb Gleiter-Namen (`NAME_GLIDE`). Bereits vergebene Namen und schon vorgeschlagene Namen (`usedNames`) kommen nicht nochmal: pro Typ gibt es rund 640 (schnell, Gleiter) bzw. 1700 (normal) Möglichkeiten; erst wenn alle durch sind, beginnt es von vorn.
-- Im Feld `#craft-name` kann man den Namen ändern; „🎲 Neuer Vorschlag“ würfelt neu. Der Vorschlag kommt einmal pro Blatt (`craftNameSet`), spätere Falten ändern ihn nicht. Bleibt das Feld leer, wird ein neuer Vorschlag genommen. Umbenennen im Nachhinein: Auf der Seite eines selbstgebauten Fliegers (`#pl-rename`, `renamePlane`) steht oben ein Namensfeld mit „Umbenennen“ (auch Enter) und 🎲 für einen neuen Vorschlag; höchstens 24 Zeichen, leer ändert nichts. Auch das Schulheftpapier kann umbenannt werden (Name in `pupg.heft.name`, beim Laden auf `PAPERS` angewendet, beim Zurücksetzen auf `PAPER_DEFAULT` zurück). Gespeichert wird auch beim Verlassen des Felds (außer beim Wechsel auf 🎲); eine Meldung `#pl-rename-note` bestätigt es. Achtung: `.name-row[hidden]` braucht eine eigene `display:none`-Regel, sonst überschreibt `display:flex` das `hidden`-Attribut. Das Feld wird beim Tippen nicht von Neuzeichnen überschrieben. „Eigenbau n“ gibt es nicht mehr (alte Flieger behalten ihren Namen).
+- Sobald ein Flieger fertig gefaltet ist (Bereich `#craft-style` wird sichtbar), schlägt das Spiel einen coolen Namen vor (`suggestName`: je Sprache `NAMEDATA[lang]`: Vorsilbe + Endung, z. B. „Blitzfalke“, „Sturmschwalbe“). Schlanke Flieger bekommen Tempo-Namen (`fast`), Flieger mit viel Auftrieb Gleiter-Namen (`glide`). Bereits vergebene Namen und schon vorgeschlagene Namen (`usedNames`) kommen nicht nochmal: pro Typ gibt es rund 640 (schnell, Gleiter) bzw. 1700 (normal) Möglichkeiten; erst wenn alle durch sind, beginnt es von vorn.
+- Im Feld `#craft-name` kann man den Namen ändern; „🎲 Neuer Vorschlag“ würfelt neu. Der Vorschlag kommt einmal pro Blatt (`craftNameSet`), spätere Falten ändern ihn nicht. Bleibt das Feld leer, wird ein neuer Vorschlag genommen. Umbenennen im Nachhinein: Auf der Seite eines selbstgebauten Fliegers (`#pl-rename`, `renamePlane`) steht oben ein Namensfeld mit „Umbenennen“ (auch Enter) und 🎲 für einen neuen Vorschlag; höchstens 24 Zeichen, leer ändert nichts. Auch das Schulheftpapier kann umbenannt werden (Name in `pupg.heft.name`, beim Laden auf `PAPERS` angewendet, beim Zurücksetzen auf den übersetzten Standardnamen zurück (`refreshNames`)). Gespeichert wird auch beim Verlassen des Felds (außer beim Wechsel auf 🎲); eine Meldung `#pl-rename-note` bestätigt es. Achtung: `.name-row[hidden]` braucht eine eigene `display:none`-Regel, sonst überschreibt `display:flex` das `hidden`-Attribut. Das Feld wird beim Tippen nicht von Neuzeichnen überschrieben. „Eigenbau n“ gibt es nicht mehr (alte Flieger behalten ihren Namen).
 ## Speicherstand (localStorage)
 - Schlüssel `papierflieger` mit: `coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, orderQ, shapes (alt), custom, nick, tutorialDone, throwHint, practiceThrows, tunnel, pupg`.
 - Weiterer Schlüssel: `pf_claimed` (schon verbuchte Duelle).

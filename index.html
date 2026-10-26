@@ -80,6 +80,12 @@ dialog { max-height: 92vh; overflow-y: auto; }
 #craft-style { margin-top: 12px; font-size: 0.9rem; }
 .name-row { display: flex; gap: 8px; margin: 4px 0 12px; }
 .name-row[hidden] { display: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.chips button { padding: 6px 10px; font-size: 0.9rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); font-weight: 400; }
+.chips button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.langhead { margin: 0 0 6px; font-weight: 600; font-size: 0.95rem; }
+.langsel { font-size: 0.9rem; color: var(--muted); }
+.langsel select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
 #craft-name { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
 #pl-rename { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
 #pl-rename-save { padding: 8px 12px; font-size: 0.9rem; white-space: nowrap; }
@@ -114,114 +120,117 @@ dialog { max-height: 92vh; overflow-y: auto; }
 </head>
 <body>
 <main>
-  <button id="craft-btn" class="craft" type="button">Flieger basteln</button>
-  <button id="duel-btn" class="craft" type="button">Duell</button>
-  <button id="tunnel-btn" class="craft" type="button">Windkanal</button>
+  <button id="craft-btn" class="craft" type="button" data-i18n="btn.craft"></button>
+  <button id="duel-btn" class="craft" type="button" data-i18n="btn.duel"></button>
+  <button id="tunnel-btn" class="craft" type="button" data-i18n="btn.tunnel"></button>
   <span id="nick-label" style="margin-left:12px;font-weight:600"></span>
-  <h1>Papier Piloten</h1>
-  <p class="lead">Wirf deinen Flieger von der Terrasse, sammle Münzen und kaufe besseres Papier und mehr Wurfstärke.</p>
+  <h1 data-i18n="app.name"></h1>
+  <p class="lead" data-i18n="lead"></p>
 
-  <section class="panel" aria-label="Spielstand">
+  <section class="panel" data-i18n-aria="panel.aria">
     <div class="card">
-      <h2>Münzen</h2>
+      <h2 data-i18n="coins"></h2>
       <div class="big"><span class="coin-dot"></span><span id="coins">0</span></div>
     </div>
     <div class="card">
-      <h2>Wurfstärke: Stufe <span id="strength-level">1</span></h2>
-      <button id="upgrade-btn" type="button">Upgrade für <span id="upgrade-cost">10</span> Münzen</button>
+      <h2 id="strength-h"></h2>
+      <button id="upgrade-btn" type="button"></button>
     </div>
   </section>
 
-  <section class="hangar-box" aria-label="Meine Flugzeuge">
-    <h2>Meine Flugzeuge</h2>
+  <section class="hangar-box" data-i18n-aria="planes">
+    <h2 data-i18n="planes"></h2>
     <div id="hangar" class="hangar-row"></div>
   </section>
 
   <div class="stage">
-    <canvas id="gameCanvas" width="800" height="400" aria-label="Spielfeld"></canvas>
+    <canvas id="gameCanvas" width="800" height="400" data-i18n-aria="field.aria"></canvas>
     <div class="hud"><span id="live">0</span> m</div>
     <div class="result" id="result" role="status" hidden></div>
   </div>
 
   <div class="actions">
-    <button id="reset-btn" class="small" type="button">Spielstand zurücksetzen</button>
-    <span class="best">Bester Wurf: <strong id="best">0</strong> Meter</span>
+    <button id="reset-btn" class="small" type="button" data-i18n="reset"></button>
+    <label class="langsel"><span data-i18n="lang.label"></span> <select id="lang-select"></select></label>
+    <span class="best" id="best-line"></span>
   </div>
 
 </main>
 
-<dialog id="login-dialog" aria-label="Anmeldung">
-  <h2>Willkommen!</h2>
-  <p style="color:var(--muted);margin:0 0 12px">Gib dir einen Spitznamen, bevor es losgeht. Du brauchst ihn, um zu spielen.</p>
-  <input id="nick-in" type="text" maxlength="16" placeholder="Dein Spitzname" aria-label="Spitzname" autocomplete="off" style="font:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:var(--bg);color:var(--ink)">
+<dialog id="login-dialog" data-i18n-aria="login.dlg">
+  <h2 data-i18n="login.title"></h2>
+  <p style="color:var(--muted);margin:0 0 12px" data-i18n="login.text"></p>
+  <p class="langhead"><span aria-hidden="true">🌐</span> <span data-i18n="login.lang"></span></p>
+  <div id="lang-chips" class="chips" role="group"></div>
+  <input id="nick-in" type="text" maxlength="16" data-i18n-ph="login.ph" data-i18n-aria="login.aria" autocomplete="off" style="font:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:var(--bg);color:var(--ink)">
   <p id="nick-err" role="alert" style="color:#c0392b;margin:6px 0 0;min-height:1.3em;font-size:0.9rem"></p>
-  <div class="dlg-actions"><button id="nick-go" type="button">Los geht’s</button></div>
+  <div class="dlg-actions"><button id="nick-go" type="button" data-i18n="login.go"></button></div>
 </dialog>
 
-<dialog id="duel-dialog" aria-label="Duell">
-  <h2>Duell</h2>
+<dialog id="duel-dialog" data-i18n-aria="duel.dlg">
+  <h2 data-i18n="duel.dlg"></h2>
   <p id="duel-info" style="color:var(--muted);margin:0 0 10px"></p>
   <div id="duel-pick" style="margin-bottom:8px"></div>
   <div id="duel-list" style="margin-bottom:8px"></div>
   <textarea id="duel-text" rows="5" readonly hidden style="font:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:var(--bg);color:var(--ink);resize:none"></textarea>
   <p id="duel-note" role="status" style="margin:6px 0 0;min-height:1.3em;font-size:0.9rem;color:var(--muted)"></p>
   <div class="dlg-actions">
-    <button id="duel-new" type="button">Neues Duell</button>
-    <button id="duel-share" type="button" hidden>Teilen</button>
-    <button id="duel-close" class="small" type="button">Schließen</button>
+    <button id="duel-new" type="button" data-i18n="duel.new"></button>
+    <button id="duel-share" type="button" hidden data-i18n="duel.share"></button>
+    <button id="duel-close" class="small" type="button" data-i18n="close"></button>
   </div>
 </dialog>
 
-<dialog id="plane-dialog" aria-label="Flugzeug">
+<dialog id="plane-dialog" data-i18n-aria="pl.dlg">
   <h2 id="pl-name"></h2>
   <div id="pl-rename-row" class="name-row" hidden>
-    <input id="pl-rename" type="text" maxlength="24" aria-label="Neuer Name des Fliegers" autocomplete="off">
-    <button id="pl-rename-roll" class="small" type="button" aria-label="Neuen Namen vorschlagen">🎲</button>
-    <button id="pl-rename-save" type="button">Umbenennen</button>
+    <input id="pl-rename" type="text" maxlength="24" data-i18n-aria="pl.renameAria" autocomplete="off">
+    <button id="pl-rename-roll" class="small" type="button" data-i18n-aria="craft.nameRollAria">🎲</button>
+    <button id="pl-rename-save" type="button" data-i18n="pl.rename"></button>
   </div>
   <p id="pl-rename-note" role="status" style="margin:-6px 0 8px;font-size:0.85rem;color:var(--muted);min-height:1.2em"></p>
-  <canvas id="pl-canvas" width="640" height="320" aria-label="Dein Flugzeug"></canvas>
+  <canvas id="pl-canvas" width="640" height="320" data-i18n-aria="pl.img"></canvas>
   <p id="pl-stats" style="margin:0 0 8px"></p>
   <div class="dlg-actions" style="margin-top:0"><button id="pl-select" type="button"></button></div>
   <div id="pl-up"></div>
-  <div class="dlg-actions"><button id="pl-close" class="small" type="button">Schließen</button></div>
+  <div class="dlg-actions"><button id="pl-close" class="small" type="button" data-i18n="close"></button></div>
 </dialog>
 
-<dialog id="tunnel-dialog" aria-label="Windkanal">
-  <h2>Windkanal</h2>
-  <p id="tunnel-info" style="color:var(--muted);margin:0 0 10px">Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Alle 3 Minuten steigt er eine Stufe auf und wird besser. Das läuft auch weiter, wenn du das Fenster schließt. Solange er trainiert, kannst du ihn nicht werfen.</p>
-  <canvas id="tunnel-canvas" width="640" height="360" aria-label="Windkanal mit Ventilatoren"></canvas>
-  <div id="tunnel-bar" role="progressbar" aria-label="Fortschritt bis zur nächsten Stufe"><div></div></div>
+<dialog id="tunnel-dialog" data-i18n-aria="tn.dlg">
+  <h2 data-i18n="tn.dlg"></h2>
+  <p id="tunnel-info" style="color:var(--muted);margin:0 0 10px" data-i18n="tn.info"></p>
+  <canvas id="tunnel-canvas" width="640" height="360" data-i18n-aria="tn.canvas"></canvas>
+  <div id="tunnel-bar" role="progressbar" data-i18n-aria="tn.bar"><div></div></div>
   <p id="tunnel-status" role="status"></p>
   <div id="tunnel-list"></div>
   <div class="dlg-actions">
-    <button id="tunnel-out" type="button" hidden>Herausnehmen</button>
-    <button id="tunnel-close" class="small" type="button">Schließen</button>
+    <button id="tunnel-out" type="button" hidden data-i18n="tn.out"></button>
+    <button id="tunnel-close" class="small" type="button" data-i18n="close"></button>
   </div>
 </dialog>
 
-<dialog id="craft-dialog" aria-label="Flieger basteln">
-  <h2>Flieger basteln</h2>
-  <p id="craft-text">Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.</p>
+<dialog id="craft-dialog" data-i18n-aria="craft.title">
+  <h2 data-i18n="craft.title"></h2>
+  <p id="craft-text"></p>
   <canvas id="craft-canvas" width="320" height="400"></canvas>
   <p id="craft-stats" style="margin:8px 0 0;font-size:0.9rem;color:var(--muted)"></p>
   <div id="craft-style" hidden>
-    <strong>Name deines Fliegers</strong>
+    <strong data-i18n="craft.nameLabel"></strong>
     <div class="name-row">
-      <input id="craft-name" type="text" maxlength="24" aria-label="Name deines Fliegers" autocomplete="off">
-      <button id="craft-name-roll" class="small" type="button" aria-label="Neuen Namen vorschlagen">🎲 Neuer Vorschlag</button>
+      <input id="craft-name" type="text" maxlength="24" data-i18n-aria="craft.nameLabel" autocomplete="off">
+      <button id="craft-name-roll" class="small" type="button" data-i18n-aria="craft.nameRollAria" data-i18n="craft.nameRoll"></button>
     </div>
-    <strong>3D-Ansicht</strong> <span style="color:var(--muted)">(zum Drehen ziehen)</span>
-    <canvas id="view3d" width="320" height="220" aria-label="3D-Ansicht deines Fliegers"></canvas>
-    <strong>Lackieren (30 Münzen)</strong><div id="paint-row"></div>
-    <strong>Sticker (je 10 Münzen)</strong><div id="sticker-row"></div>
+    <strong data-i18n="craft.view3d"></strong> <span style="color:var(--muted)" data-i18n="craft.view3dHint"></span>
+    <canvas id="view3d" width="320" height="220" data-i18n-aria="craft.view3dAria"></canvas>
+    <strong data-i18n="craft.paint"></strong><div id="paint-row"></div>
+    <strong data-i18n="craft.sticker"></strong><div id="sticker-row"></div>
     <span id="sticker-hint" style="color:var(--muted)"></span>
   </div>
   <div class="dlg-actions">
-    <button id="craft-done" type="button" disabled>Flieger übernehmen</button>
-    <button id="craft-undo" class="small" type="button">Rückgängig</button>
-    <button id="craft-redo" class="small" type="button">Neu anfangen</button>
-    <button id="craft-close" class="small" type="button">Schließen</button>
+    <button id="craft-done" type="button" disabled data-i18n="craft.done"></button>
+    <button id="craft-undo" class="small" type="button" data-i18n="craft.undo"></button>
+    <button id="craft-redo" class="small" type="button" data-i18n="craft.redo"></button>
+    <button id="craft-close" class="small" type="button" data-i18n="close"></button>
   </div>
 </dialog>
 
@@ -230,6 +239,572 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const resultEl = document.getElementById("result");
 const W = canvas.width, groundY = 380;
+
+// ---------- Sprachen ----------
+// Alle Texte stehen hier. Neue Sprache: LANGS, I18N und NAMEDATA um einen Eintrag ergänzen.
+const LANGS = { de: "Deutsch", en: "English", es: "Español", fr: "Français", it: "Italiano", pt: "Português", tr: "Türkçe" };
+const I18N = {
+  de: {
+    "app.name": "Papier Piloten",
+    "btn.craft": "Flieger basteln", "btn.duel": "Duell", "btn.tunnel": "Windkanal",
+    "player": "Spieler: {n}",
+    "lead": "Wirf deinen Flieger von der Terrasse, sammle Münzen und kaufe besseres Papier und mehr Wurfstärke.",
+    "panel.aria": "Spielstand",
+    "coins": "Münzen", "strength": "Wurfstärke: Stufe {n}", "upgradeBtn": "Upgrade für {n} Münzen",
+    "planes": "Meine Flugzeuge", "field.aria": "Spielfeld",
+    "reset": "Spielstand zurücksetzen", "reset.sure": "Wirklich zurücksetzen?", "reset.done": "Spielstand zurückgesetzt.",
+    "best": "Bester Wurf: {n} Meter", "lang.label": "Sprache", "close": "Schließen",
+    "login.title": "Willkommen!", "login.text": "Gib dir einen Spitznamen, bevor es losgeht. Du brauchst ihn, um zu spielen.",
+    "login.ph": "Dein Spitzname", "login.aria": "Spitzname", "login.go": "Los geht’s", "login.err": "Der Spitzname braucht mindestens 2 Zeichen.",
+    "login.lang": "Sprache wählen", "login.dlg": "Anmeldung",
+    "ov.duel": "Duell: wirf deinen Einsatz-Flieger {n}! (Duell-Knopf = abbrechen)",
+    "ov.practice": "Übungswurf {i} von 3: Ziehen, nach vorne schwingen und genau auf der Linie loslassen!",
+    "ov.hint": "Flieger greifen, zurückziehen, nach vorne schwingen und loslassen",
+    "note.perfect": "Perfekter Wurf! ×1,8", "note.near": "Fast perfekt! ×1,25", "note.practiceDone": "Übung geschafft! Die Linie ist jetzt unsichtbar.",
+    "land": "Gelandet! {d} Meter, +{c} Münzen.", "land.record": "Neuer Rekord!",
+    "craft.title": "Flieger basteln",
+    "craft.text": "Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.",
+    "craft.guide": "Anleitung, Schritt {i} von {n}: {t}", "craft.guideDone": "Super, dein Flieger ist fertig gefaltet! Drück auf „Flieger übernehmen“.",
+    "guide.0": "Zieh die linke obere Ecke auf den Ring in der Mitte.", "guide.1": "Jetzt die rechte obere Ecke auch auf den Ring ziehen.",
+    "guide.2": "Zieh die linke untere Ecke zum Ring, sodass die Kante an der Mittellinie liegt.", "guide.3": "Das Gleiche auf der rechten Seite.",
+    "craft.stats": "Symmetrie {a} %, Schlankheit {b} %, Stabilität {c} %, Auftrieb {d} %. Tempo ×{e}", "craft.none": "Noch nicht gefaltet.",
+    "craft.nameLabel": "Name deines Fliegers", "craft.nameRoll": "🎲 Neuer Vorschlag", "craft.nameRollAria": "Neuen Namen vorschlagen",
+    "craft.view3d": "3D-Ansicht", "craft.view3dHint": "(zum Drehen ziehen)", "craft.view3dAria": "3D-Ansicht deines Fliegers",
+    "craft.paint": "Lackieren (30 Münzen)", "craft.sticker": "Sticker (je 10 Münzen)", "craft.done": "Flieger übernehmen", "craft.undo": "Rückgängig", "craft.redo": "Neu anfangen",
+    "craft.ready": "Dein Flieger ist fertig! Tempo ×{s}, Symmetrie {y} %",
+    "sticker.none": "Alle weg", "sticker.poor": "Zu wenig Münzen für einen weiteren Sticker.", "paint.poor": "Zu wenig Münzen für den Lack.",
+    "sticker.hintOn": "Tippe aufs Blatt, um den Sticker zu kleben. Tippe den Sticker oben noch einmal an, um wieder zu falten.",
+    "sticker.hintOff": "Wähle einen Sticker und tippe dann aufs Blatt.", "sticker.cost": "Kosten: {c} Münzen (du hast {h}).", "aria.color": "Farbe {c}",
+    "pl.dlg": "Flugzeug", "pl.img": "Dein Flugzeug", "pl.renameAria": "Neuer Name des Fliegers", "pl.rename": "Umbenennen", "pl.saved": "Gespeichert ✓",
+    "pl.noteSaved": "Gespeichert: {n}", "pl.empty": "Der Name darf nicht leer sein.",
+    "pl.stats": "Tempo ×{s}, Gleitflug {g} %", "pl.statsLvl": ", Windkanal-Stufe {n}", "pl.statsUp": " (mit Upgrades)",
+    "pl.training": "Trainiert gerade", "pl.selected": "Ausgewählt", "pl.select": "Auswählen", "pl.upgrades": "Upgrades",
+    "pl.boosts": "Boosts (höchstens {n} gleichzeitig)", "pl.remove": "Entfernen", "pl.attach": "Anbringen", "pl.buy": "Kaufen für {n} Münzen",
+    "pl.paper": "Besseres Papier", "pl.now": "Jetzt: {n}", "pl.best": " – besser geht es nicht.", "pl.upgradeFor": "Upgrade für {n} Münzen",
+    "pl.delete": "Flieger löschen", "pl.deleteSure": "Wirklich löschen?",
+    "hg.away": "Im Windkanal", "hg.stats": "Tempo ×{s}", "hg.lvl": "Stufe {n} · ",
+    "boost.clip": "Büroklammer-Nase", "boost.tape": "Klebeband-Flügel", "boost.rocket": "Raketenstart", "boost.sail": "Windsegel",
+    "boostd.clip": "Tempo ×1,12", "boostd.tape": "Gleitet länger (Fall ×0,85)", "boostd.rocket": "Höherer Abwurf, Tempo ×1,05", "boostd.sail": "Tempo ×1,2, Fall ×0,9",
+    "paper.heft": "Schulheftpapier", "paper.glanz": "Glanzpapier", "paper.perga": "Pergament", "paper.carbon": "Carbonpapier", "paper.eigen": "Selbstgebastelt", "paper.order": "Bestellter Flieger",
+    "tn.dlg": "Windkanal",
+    "tn.info": "Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Alle 3 Minuten steigt er eine Stufe auf und wird besser. Das läuft auch weiter, wenn du das Fenster schließt. Solange er trainiert, kannst du ihn nicht werfen.",
+    "tn.canvas": "Windkanal mit Ventilatoren", "tn.bar": "Fortschritt bis zur nächsten Stufe", "tn.out": "Herausnehmen", "tn.emptyState": "Der Windkanal ist leer.",
+    "tn.full": "{n} ist voll trainiert (Stufe {m}).", "tn.status": "{n}, Stufe {l} von {m}. Nächste Stufe in {t} ({g}).",
+    "tn.gainSpeed": "Tempo +0,03", "tn.gainGlide": "Gleitflug +5 %", "tn.up": "{n} ist im Windkanal auf Stufe {l} gestiegen!",
+    "tn.noPlanes": "Du hast noch keinen selbstgebauten Flieger. Bastel einen und leg ihn dann hier hinein.",
+    "tn.level": "Stufe {l} von {m} · Tempo ×{s} · Gleitflug {g} %", "tn.in": "Trainiert", "tn.put": "Hineinlegen", "tn.empty": "Leer", "tn.stage": "Stufe {n}",
+    "duel.dlg": "Duell", "duel.new": "Neues Duell", "duel.share": "Teilen", "duel.shareTitle": "Papier Piloten Duell",
+    "duel.info.stake": "Setze einen deiner selbstgebauten Flieger ein. Wer weiter fliegt, gewinnt den Flieger des anderen.",
+    "duel.info.simple": "Für Einsatz-Duelle brauchst du ein claude.ai-Konto und Mitwirkenden-Zugriff auf diese Seite. Eine einfache Herausforderung kannst du trotzdem verschicken.",
+    "duel.text.head": "Ich fordere dich heraus zum Duell!", "duel.text.record": "Mein Rekord bei Papier Piloten: {n} Meter. Schaffst du mehr?",
+    "duel.text.who": "Wer schafft mit dem Papierflieger die größte Weite?", "duel.text.stake": "Mein Einsatz liegt bereit!",
+    "duel.copied": "Nachricht mit Link kopiert. Füge sie in einen Chat ein.", "duel.copyManual": "Markiere den Text und kopiere ihn selbst.",
+    "duel.open": "Offen: {n} ({d} m)", "duel.link": "Link", "duel.cancel": "Abbrechen",
+    "duel.noStake": "Duelle mit Einsatz gehen hier nicht. Du brauchst ein claude.ai-Konto und Mitwirkenden-Zugriff.",
+    "duel.noPlanes": "Du hast noch keinen selbstgebauten Flieger zum Einsetzen.", "duel.use": "Einsetzen", "duel.go": "Duell! Wirf jetzt {n}.",
+    "duel.cancelled": "Duell abgebrochen. Dein Flieger bleibt bei dir.",
+    "duel.created": "Du bist {d} Meter weit geflogen. Dein Flieger {n} liegt als Einsatz im Duell. Schick den Link an einen Freund!",
+    "duel.saveFail": "Das Duell konnte nicht gespeichert werden. Du brauchst Mitwirkenden-Zugriff auf diese Seite. Dein Flieger bleibt bei dir.",
+    "duel.over": "Dieses Duell ist schon vorbei. Dein Flieger bleibt bei dir.", "duel.overShort": "Dieses Duell ist schon vorbei.",
+    "duel.won": "Gewonnen! {a} gegen {b} Meter. Du bekommst {p} von {n}.", "duel.lost": "Verloren. {a} gegen {b} Meter. {p} gehört jetzt {n}.",
+    "duel.draw": "Unentschieden bei {a} Metern. Jeder behält seinen Flieger.", "duel.resFail": "Das Ergebnis konnte nicht gespeichert werden. Dein Flieger bleibt bei dir.",
+    "duel.ended": "Das Duell ist schon beendet.", "duel.cancelOk": "Duell abgebrochen. {n} ist wieder bei dir.", "duel.fail": "Das hat nicht geklappt.",
+    "duel.claimWon": "Duell gewonnen gegen {o}! Du bekommst {p}.", "duel.claimDraw": "Unentschieden gegen {o}. Dein Einsatz ist zurück.",
+    "duel.claimLost": "Duell verloren gegen {o}. {p} gehört jetzt {o}.", "duel.none": "Dieses Duell gibt es nicht (mehr).",
+    "duel.own": "Das ist dein eigenes Duell. Schick den Link an einen Freund.",
+    "duel.join": "{c} fordert dich zum Duell heraus! Rekord: {d} Meter, Einsatz: {p}. Wähle deinen Einsatz-Flieger. Wer weiter fliegt, gewinnt den Flieger des anderen.",
+    "duel.loadFail": "Das Duell konnte nicht geladen werden.", "plane.default": "Flieger"
+  },
+  en: {
+    "app.name": "Paper Pilots",
+    "btn.craft": "Build a plane", "btn.duel": "Duel", "btn.tunnel": "Wind tunnel",
+    "player": "Player: {n}",
+    "lead": "Throw your plane off the terrace, collect coins and buy better paper and more throwing power.",
+    "panel.aria": "Game status",
+    "coins": "Coins", "strength": "Throwing power: level {n}", "upgradeBtn": "Upgrade for {n} coins",
+    "planes": "My planes", "field.aria": "Playing field",
+    "reset": "Reset game", "reset.sure": "Really reset?", "reset.done": "Game reset.",
+    "best": "Best throw: {n} meters", "lang.label": "Language", "close": "Close",
+    "login.title": "Welcome!", "login.text": "Pick a nickname before you start. You need it to play.",
+    "login.ph": "Your nickname", "login.aria": "Nickname", "login.go": "Let’s go", "login.err": "The nickname needs at least 2 characters.",
+    "login.lang": "Choose your language", "login.dlg": "Sign in",
+    "ov.duel": "Duel: throw your stake plane {n}! (Duel button = cancel)",
+    "ov.practice": "Practice throw {i} of 3: pull back, swing forward and let go exactly on the line!",
+    "ov.hint": "Grab the plane, pull back, swing forward and let go",
+    "note.perfect": "Perfect throw! ×1.8", "note.near": "Almost perfect! ×1.25", "note.practiceDone": "Practice done! The line is now invisible.",
+    "land": "Landed! {d} meters, +{c} coins.", "land.record": "New record!",
+    "craft.title": "Build a plane",
+    "craft.text": "Drag a corner anywhere: the paper folds exactly halfway between start and target. Fold as often as you like.",
+    "craft.guide": "Guide, step {i} of {n}: {t}", "craft.guideDone": "Great, your plane is folded! Press “Keep plane”.",
+    "guide.0": "Drag the top left corner onto the ring in the middle.", "guide.1": "Now drag the top right corner onto the ring too.",
+    "guide.2": "Drag the bottom left corner to the ring so the edge lies on the center line.", "guide.3": "Do the same on the right side.",
+    "craft.stats": "Symmetry {a} %, slimness {b} %, stability {c} %, lift {d} %. Speed ×{e}", "craft.none": "Not folded yet.",
+    "craft.nameLabel": "Your plane’s name", "craft.nameRoll": "🎲 New suggestion", "craft.nameRollAria": "Suggest a new name",
+    "craft.view3d": "3D view", "craft.view3dHint": "(drag to rotate)", "craft.view3dAria": "3D view of your plane",
+    "craft.paint": "Paint (30 coins)", "craft.sticker": "Stickers (10 coins each)", "craft.done": "Keep plane", "craft.undo": "Undo", "craft.redo": "Start over",
+    "craft.ready": "Your plane is ready! Speed ×{s}, symmetry {y} %",
+    "sticker.none": "Remove all", "sticker.poor": "Not enough coins for another sticker.", "paint.poor": "Not enough coins for the paint.",
+    "sticker.hintOn": "Tap the sheet to stick the sticker on. Tap the sticker above again to go back to folding.",
+    "sticker.hintOff": "Pick a sticker, then tap the sheet.", "sticker.cost": "Cost: {c} coins (you have {h}).", "aria.color": "Color {c}",
+    "pl.dlg": "Plane", "pl.img": "Your plane", "pl.renameAria": "New name for the plane", "pl.rename": "Rename", "pl.saved": "Saved ✓",
+    "pl.noteSaved": "Saved: {n}", "pl.empty": "The name can’t be empty.",
+    "pl.stats": "Speed ×{s}, glide {g} %", "pl.statsLvl": ", wind tunnel level {n}", "pl.statsUp": " (with upgrades)",
+    "pl.training": "Training now", "pl.selected": "Selected", "pl.select": "Select", "pl.upgrades": "Upgrades",
+    "pl.boosts": "Boosts (at most {n} at once)", "pl.remove": "Remove", "pl.attach": "Attach", "pl.buy": "Buy for {n} coins",
+    "pl.paper": "Better paper", "pl.now": "Now: {n}", "pl.best": " – it doesn’t get better.", "pl.upgradeFor": "Upgrade for {n} coins",
+    "pl.delete": "Delete plane", "pl.deleteSure": "Really delete?",
+    "hg.away": "In the wind tunnel", "hg.stats": "Speed ×{s}", "hg.lvl": "Level {n} · ",
+    "boost.clip": "Paperclip nose", "boost.tape": "Tape wings", "boost.rocket": "Rocket start", "boost.sail": "Wind sail",
+    "boostd.clip": "Speed ×1.12", "boostd.tape": "Glides longer (fall ×0.85)", "boostd.rocket": "Higher launch, speed ×1.05", "boostd.sail": "Speed ×1.2, fall ×0.9",
+    "paper.heft": "Notebook paper", "paper.glanz": "Glossy paper", "paper.perga": "Parchment", "paper.carbon": "Carbon paper", "paper.eigen": "Homemade", "paper.order": "Ordered plane",
+    "tn.dlg": "Wind tunnel",
+    "tn.info": "Put a plane you built into the wind tunnel. While it flies there, it trains: every 3 minutes it goes up a level and gets better. This keeps running when you close the window. While it trains, you can’t throw it.",
+    "tn.canvas": "Wind tunnel with fans", "tn.bar": "Progress to the next level", "tn.out": "Take out", "tn.emptyState": "The wind tunnel is empty.",
+    "tn.full": "{n} is fully trained (level {m}).", "tn.status": "{n}, level {l} of {m}. Next level in {t} ({g}).",
+    "tn.gainSpeed": "Speed +0.03", "tn.gainGlide": "Glide +5 %", "tn.up": "{n} reached level {l} in the wind tunnel!",
+    "tn.noPlanes": "You haven’t built a plane yet. Build one, then put it in here.",
+    "tn.level": "Level {l} of {m} · Speed ×{s} · Glide {g} %", "tn.in": "Training", "tn.put": "Put in", "tn.empty": "Empty", "tn.stage": "Level {n}",
+    "duel.dlg": "Duel", "duel.new": "New duel", "duel.share": "Share", "duel.shareTitle": "Paper Pilots duel",
+    "duel.info.stake": "Stake one of the planes you built. Whoever flies farther wins the other’s plane.",
+    "duel.info.simple": "Duels with stakes need a claude.ai account and contributor access to this page. You can still send a simple challenge.",
+    "duel.text.head": "I challenge you to a duel!", "duel.text.record": "My record in Paper Pilots: {n} meters. Can you beat it?",
+    "duel.text.who": "Who can fly their paper plane the farthest?", "duel.text.stake": "My stake is ready!",
+    "duel.copied": "Message with link copied. Paste it into a chat.", "duel.copyManual": "Select the text and copy it yourself.",
+    "duel.open": "Open: {n} ({d} m)", "duel.link": "Link", "duel.cancel": "Cancel",
+    "duel.noStake": "Duels with stakes don’t work here. You need a claude.ai account and contributor access.",
+    "duel.noPlanes": "You don’t have a plane you built to stake yet.", "duel.use": "Stake", "duel.go": "Duel! Throw {n} now.",
+    "duel.cancelled": "Duel cancelled. Your plane stays with you.",
+    "duel.created": "You flew {d} meters. Your plane {n} is staked in the duel. Send the link to a friend!",
+    "duel.saveFail": "The duel couldn’t be saved. You need contributor access to this page. Your plane stays with you.",
+    "duel.over": "This duel is already over. Your plane stays with you.", "duel.overShort": "This duel is already over.",
+    "duel.won": "You won! {a} to {b} meters. You get {p} from {n}.", "duel.lost": "You lost. {a} to {b} meters. {p} now belongs to {n}.",
+    "duel.draw": "A draw at {a} meters. Everyone keeps their plane.", "duel.resFail": "The result couldn’t be saved. Your plane stays with you.",
+    "duel.ended": "The duel has already ended.", "duel.cancelOk": "Duel cancelled. {n} is back with you.", "duel.fail": "That didn’t work.",
+    "duel.claimWon": "Duel won against {o}! You get {p}.", "duel.claimDraw": "A draw against {o}. Your stake is back.",
+    "duel.claimLost": "Duel lost against {o}. {p} now belongs to {o}.", "duel.none": "This duel doesn’t exist (any more).",
+    "duel.own": "This is your own duel. Send the link to a friend.",
+    "duel.join": "{c} challenges you to a duel! Record: {d} meters, stake: {p}. Choose your stake plane. Whoever flies farther wins the other’s plane.",
+    "duel.loadFail": "The duel couldn’t be loaded.", "plane.default": "Plane"
+  },
+  es: {
+    "app.name": "Pilotos de Papel",
+    "btn.craft": "Crear avión", "btn.duel": "Duelo", "btn.tunnel": "Túnel de viento",
+    "player": "Jugador: {n}",
+    "lead": "Lanza tu avión desde la terraza, reúne monedas y compra mejor papel y más fuerza de lanzamiento.",
+    "panel.aria": "Estado del juego",
+    "coins": "Monedas", "strength": "Fuerza de lanzamiento: nivel {n}", "upgradeBtn": "Mejorar por {n} monedas",
+    "planes": "Mis aviones", "field.aria": "Campo de juego",
+    "reset": "Reiniciar partida", "reset.sure": "¿Reiniciar de verdad?", "reset.done": "Partida reiniciada.",
+    "best": "Mejor lanzamiento: {n} metros", "lang.label": "Idioma", "close": "Cerrar",
+    "login.title": "¡Bienvenido!", "login.text": "Elige un apodo antes de empezar. Lo necesitas para jugar.",
+    "login.ph": "Tu apodo", "login.aria": "Apodo", "login.go": "¡Vamos!", "login.err": "El apodo necesita al menos 2 caracteres.",
+    "login.lang": "Elige tu idioma", "login.dlg": "Inicio",
+    "ov.duel": "Duelo: ¡lanza tu avión apostado {n}! (botón Duelo = cancelar)",
+    "ov.practice": "Lanzamiento de práctica {i} de 3: ¡tira hacia atrás, balancea hacia delante y suelta justo en la línea!",
+    "ov.hint": "Agarra el avión, tira hacia atrás, balancea hacia delante y suelta",
+    "note.perfect": "¡Lanzamiento perfecto! ×1,8", "note.near": "¡Casi perfecto! ×1,25", "note.practiceDone": "¡Práctica superada! Ahora la línea es invisible.",
+    "land": "¡Aterrizaje! {d} metros, +{c} monedas.", "land.record": "¡Nuevo récord!",
+    "craft.title": "Crear avión",
+    "craft.text": "Arrastra una esquina adonde quieras: el papel se dobla justo a mitad de camino entre el inicio y el destino. Dobla tantas veces como quieras.",
+    "craft.guide": "Guía, paso {i} de {n}: {t}", "craft.guideDone": "¡Genial, tu avión está doblado! Pulsa «Quedarme el avión».",
+    "guide.0": "Arrastra la esquina superior izquierda hasta el anillo del centro.", "guide.1": "Ahora arrastra también la esquina superior derecha hasta el anillo.",
+    "guide.2": "Arrastra la esquina inferior izquierda hasta el anillo para que el borde quede sobre la línea central.", "guide.3": "Lo mismo en el lado derecho.",
+    "craft.stats": "Simetría {a} %, esbeltez {b} %, estabilidad {c} %, sustentación {d} %. Velocidad ×{e}", "craft.none": "Aún sin doblar.",
+    "craft.nameLabel": "Nombre de tu avión", "craft.nameRoll": "🎲 Otra sugerencia", "craft.nameRollAria": "Sugerir otro nombre",
+    "craft.view3d": "Vista 3D", "craft.view3dHint": "(arrastra para girar)", "craft.view3dAria": "Vista 3D de tu avión",
+    "craft.paint": "Pintar (30 monedas)", "craft.sticker": "Pegatinas (10 monedas cada una)", "craft.done": "Quedarme el avión", "craft.undo": "Deshacer", "craft.redo": "Empezar de nuevo",
+    "craft.ready": "¡Tu avión está listo! Velocidad ×{s}, simetría {y} %",
+    "sticker.none": "Quitar todas", "sticker.poor": "No hay monedas para otra pegatina.", "paint.poor": "No hay monedas para la pintura.",
+    "sticker.hintOn": "Toca la hoja para pegar la pegatina. Toca de nuevo la pegatina de arriba para volver a doblar.",
+    "sticker.hintOff": "Elige una pegatina y toca la hoja.", "sticker.cost": "Coste: {c} monedas (tienes {h}).", "aria.color": "Color {c}",
+    "pl.dlg": "Avión", "pl.img": "Tu avión", "pl.renameAria": "Nuevo nombre del avión", "pl.rename": "Renombrar", "pl.saved": "Guardado ✓",
+    "pl.noteSaved": "Guardado: {n}", "pl.empty": "El nombre no puede estar vacío.",
+    "pl.stats": "Velocidad ×{s}, planeo {g} %", "pl.statsLvl": ", nivel del túnel de viento {n}", "pl.statsUp": " (con mejoras)",
+    "pl.training": "Entrenando ahora", "pl.selected": "Elegido", "pl.select": "Elegir", "pl.upgrades": "Mejoras",
+    "pl.boosts": "Boosts (como máximo {n} a la vez)", "pl.remove": "Quitar", "pl.attach": "Poner", "pl.buy": "Comprar por {n} monedas",
+    "pl.paper": "Mejor papel", "pl.now": "Ahora: {n}", "pl.best": " – mejor no se puede.", "pl.upgradeFor": "Mejorar por {n} monedas",
+    "pl.delete": "Borrar avión", "pl.deleteSure": "¿Borrar de verdad?",
+    "hg.away": "En el túnel de viento", "hg.stats": "Velocidad ×{s}", "hg.lvl": "Nivel {n} · ",
+    "boost.clip": "Nariz de clip", "boost.tape": "Alas de cinta", "boost.rocket": "Despegue de cohete", "boost.sail": "Vela de viento",
+    "boostd.clip": "Velocidad ×1,12", "boostd.tape": "Planea más (caída ×0,85)", "boostd.rocket": "Lanzamiento más alto, velocidad ×1,05", "boostd.sail": "Velocidad ×1,2, caída ×0,9",
+    "paper.heft": "Papel de cuaderno", "paper.glanz": "Papel brillante", "paper.perga": "Pergamino", "paper.carbon": "Papel carbón", "paper.eigen": "Hecho a mano", "paper.order": "Avión encargado",
+    "tn.dlg": "Túnel de viento",
+    "tn.info": "Pon un avión que hayas creado en el túnel de viento. Mientras vuela allí, entrena: cada 3 minutos sube un nivel y mejora. Sigue funcionando aunque cierres la ventana. Mientras entrena, no puedes lanzarlo.",
+    "tn.canvas": "Túnel de viento con ventiladores", "tn.bar": "Progreso hasta el siguiente nivel", "tn.out": "Sacar", "tn.emptyState": "El túnel de viento está vacío.",
+    "tn.full": "{n} está totalmente entrenado (nivel {m}).", "tn.status": "{n}, nivel {l} de {m}. Siguiente nivel en {t} ({g}).",
+    "tn.gainSpeed": "Velocidad +0,03", "tn.gainGlide": "Planeo +5 %", "tn.up": "¡{n} ha subido al nivel {l} en el túnel de viento!",
+    "tn.noPlanes": "Aún no has creado ningún avión. Crea uno y ponlo aquí.",
+    "tn.level": "Nivel {l} de {m} · Velocidad ×{s} · Planeo {g} %", "tn.in": "Entrenando", "tn.put": "Meter", "tn.empty": "Vacío", "tn.stage": "Nivel {n}",
+    "duel.dlg": "Duelo", "duel.new": "Nuevo duelo", "duel.share": "Compartir", "duel.shareTitle": "Duelo de Pilotos de Papel",
+    "duel.info.stake": "Apuesta uno de los aviones que has creado. Quien vuele más lejos gana el avión del otro.",
+    "duel.info.simple": "Los duelos con apuesta necesitan una cuenta de claude.ai y acceso de colaborador a esta página. Aun así puedes enviar un reto sencillo.",
+    "duel.text.head": "¡Te reto a un duelo!", "duel.text.record": "Mi récord en Pilotos de Papel: {n} metros. ¿Puedes superarlo?",
+    "duel.text.who": "¿Quién consigue que su avión de papel vuele más lejos?", "duel.text.stake": "¡Mi apuesta está lista!",
+    "duel.copied": "Mensaje con enlace copiado. Pégalo en un chat.", "duel.copyManual": "Selecciona el texto y cópialo tú mismo.",
+    "duel.open": "Abierto: {n} ({d} m)", "duel.link": "Enlace", "duel.cancel": "Cancelar",
+    "duel.noStake": "Aquí no se puede apostar en duelos. Necesitas una cuenta de claude.ai y acceso de colaborador.",
+    "duel.noPlanes": "Aún no tienes ningún avión creado para apostar.", "duel.use": "Apostar", "duel.go": "¡Duelo! Lanza ahora {n}.",
+    "duel.cancelled": "Duelo cancelado. Tu avión se queda contigo.",
+    "duel.created": "Has volado {d} metros. Tu avión {n} está apostado en el duelo. ¡Envía el enlace a un amigo!",
+    "duel.saveFail": "No se pudo guardar el duelo. Necesitas acceso de colaborador a esta página. Tu avión se queda contigo.",
+    "duel.over": "Este duelo ya ha terminado. Tu avión se queda contigo.", "duel.overShort": "Este duelo ya ha terminado.",
+    "duel.won": "¡Has ganado! {a} contra {b} metros. Recibes {p} de {n}.", "duel.lost": "Has perdido. {a} contra {b} metros. {p} ahora es de {n}.",
+    "duel.draw": "Empate a {a} metros. Cada uno se queda con su avión.", "duel.resFail": "No se pudo guardar el resultado. Tu avión se queda contigo.",
+    "duel.ended": "El duelo ya ha terminado.", "duel.cancelOk": "Duelo cancelado. {n} vuelve contigo.", "duel.fail": "No ha funcionado.",
+    "duel.claimWon": "¡Duelo ganado contra {o}! Recibes {p}.", "duel.claimDraw": "Empate contra {o}. Tu apuesta ha vuelto.",
+    "duel.claimLost": "Duelo perdido contra {o}. {p} ahora es de {o}.", "duel.none": "Este duelo no existe (ya).",
+    "duel.own": "Este es tu propio duelo. Envía el enlace a un amigo.",
+    "duel.join": "¡{c} te reta a un duelo! Récord: {d} metros, apuesta: {p}. Elige tu avión apostado. Quien vuele más lejos gana el avión del otro.",
+    "duel.loadFail": "No se pudo cargar el duelo.", "plane.default": "Avión"
+  },
+  fr: {
+    "app.name": "Pilotes de Papier",
+    "btn.craft": "Fabriquer un avion", "btn.duel": "Duel", "btn.tunnel": "Soufflerie",
+    "player": "Joueur : {n}",
+    "lead": "Lance ton avion depuis la terrasse, ramasse des pièces et achète du meilleur papier et plus de puissance de lancer.",
+    "panel.aria": "État de la partie",
+    "coins": "Pièces", "strength": "Puissance de lancer : niveau {n}", "upgradeBtn": "Améliorer pour {n} pièces",
+    "planes": "Mes avions", "field.aria": "Terrain de jeu",
+    "reset": "Réinitialiser la partie", "reset.sure": "Vraiment réinitialiser ?", "reset.done": "Partie réinitialisée.",
+    "best": "Meilleur lancer : {n} mètres", "lang.label": "Langue", "close": "Fermer",
+    "login.title": "Bienvenue !", "login.text": "Choisis un pseudo avant de commencer. Il te faut un pseudo pour jouer.",
+    "login.ph": "Ton pseudo", "login.aria": "Pseudo", "login.go": "C’est parti", "login.err": "Le pseudo doit comporter au moins 2 caractères.",
+    "login.lang": "Choisis ta langue", "login.dlg": "Connexion",
+    "ov.duel": "Duel : lance ton avion misé {n} ! (bouton Duel = annuler)",
+    "ov.practice": "Lancer d’entraînement {i} sur 3 : tire en arrière, balance vers l’avant et lâche exactement sur la ligne !",
+    "ov.hint": "Attrape l’avion, tire en arrière, balance vers l’avant et lâche",
+    "note.perfect": "Lancer parfait ! ×1,8", "note.near": "Presque parfait ! ×1,25", "note.practiceDone": "Entraînement réussi ! La ligne est maintenant invisible.",
+    "land": "Atterri ! {d} mètres, +{c} pièces.", "land.record": "Nouveau record !",
+    "craft.title": "Fabriquer un avion",
+    "craft.text": "Tire un coin où tu veux : le papier se plie exactement à mi-chemin entre le départ et l’arrivée. Plie autant de fois que tu veux.",
+    "craft.guide": "Guide, étape {i} sur {n} : {t}", "craft.guideDone": "Super, ton avion est plié ! Appuie sur « Garder l’avion ».",
+    "guide.0": "Tire le coin en haut à gauche sur l’anneau au milieu.", "guide.1": "Maintenant, tire aussi le coin en haut à droite sur l’anneau.",
+    "guide.2": "Tire le coin en bas à gauche vers l’anneau pour que le bord soit sur la ligne centrale.", "guide.3": "La même chose du côté droit.",
+    "craft.stats": "Symétrie {a} %, finesse {b} %, stabilité {c} %, portance {d} %. Vitesse ×{e}", "craft.none": "Pas encore plié.",
+    "craft.nameLabel": "Nom de ton avion", "craft.nameRoll": "🎲 Autre idée", "craft.nameRollAria": "Proposer un autre nom",
+    "craft.view3d": "Vue 3D", "craft.view3dHint": "(glisse pour tourner)", "craft.view3dAria": "Vue 3D de ton avion",
+    "craft.paint": "Peindre (30 pièces)", "craft.sticker": "Autocollants (10 pièces chacun)", "craft.done": "Garder l’avion", "craft.undo": "Annuler", "craft.redo": "Recommencer",
+    "craft.ready": "Ton avion est prêt ! Vitesse ×{s}, symétrie {y} %",
+    "sticker.none": "Tout enlever", "sticker.poor": "Pas assez de pièces pour un autre autocollant.", "paint.poor": "Pas assez de pièces pour la peinture.",
+    "sticker.hintOn": "Touche la feuille pour coller l’autocollant. Touche encore l’autocollant en haut pour replier.",
+    "sticker.hintOff": "Choisis un autocollant, puis touche la feuille.", "sticker.cost": "Coût : {c} pièces (tu en as {h}).", "aria.color": "Couleur {c}",
+    "pl.dlg": "Avion", "pl.img": "Ton avion", "pl.renameAria": "Nouveau nom de l’avion", "pl.rename": "Renommer", "pl.saved": "Enregistré ✓",
+    "pl.noteSaved": "Enregistré : {n}", "pl.empty": "Le nom ne peut pas être vide.",
+    "pl.stats": "Vitesse ×{s}, plané {g} %", "pl.statsLvl": ", niveau de soufflerie {n}", "pl.statsUp": " (avec améliorations)",
+    "pl.training": "S’entraîne en ce moment", "pl.selected": "Choisi", "pl.select": "Choisir", "pl.upgrades": "Améliorations",
+    "pl.boosts": "Boosts ({n} au maximum en même temps)", "pl.remove": "Retirer", "pl.attach": "Fixer", "pl.buy": "Acheter pour {n} pièces",
+    "pl.paper": "Meilleur papier", "pl.now": "Actuel : {n}", "pl.best": " – impossible de faire mieux.", "pl.upgradeFor": "Améliorer pour {n} pièces",
+    "pl.delete": "Supprimer l’avion", "pl.deleteSure": "Vraiment supprimer ?",
+    "hg.away": "Dans la soufflerie", "hg.stats": "Vitesse ×{s}", "hg.lvl": "Niveau {n} · ",
+    "boost.clip": "Nez en trombone", "boost.tape": "Ailes en ruban adhésif", "boost.rocket": "Départ fusée", "boost.sail": "Voile de vent",
+    "boostd.clip": "Vitesse ×1,12", "boostd.tape": "Plane plus longtemps (chute ×0,85)", "boostd.rocket": "Lancer plus haut, vitesse ×1,05", "boostd.sail": "Vitesse ×1,2, chute ×0,9",
+    "paper.heft": "Papier de cahier", "paper.glanz": "Papier brillant", "paper.perga": "Parchemin", "paper.carbon": "Papier carbone", "paper.eigen": "Fait maison", "paper.order": "Avion commandé",
+    "tn.dlg": "Soufflerie",
+    "tn.info": "Mets un avion que tu as fabriqué dans la soufflerie. Tant qu’il y vole, il s’entraîne : toutes les 3 minutes, il gagne un niveau et s’améliore. Cela continue même si tu fermes la fenêtre. Pendant l’entraînement, tu ne peux pas le lancer.",
+    "tn.canvas": "Soufflerie avec ventilateurs", "tn.bar": "Progression jusqu’au prochain niveau", "tn.out": "Sortir", "tn.emptyState": "La soufflerie est vide.",
+    "tn.full": "{n} est entièrement entraîné (niveau {m}).", "tn.status": "{n}, niveau {l} sur {m}. Prochain niveau dans {t} ({g}).",
+    "tn.gainSpeed": "Vitesse +0,03", "tn.gainGlide": "Plané +5 %", "tn.up": "{n} a atteint le niveau {l} dans la soufflerie !",
+    "tn.noPlanes": "Tu n’as pas encore fabriqué d’avion. Fabrique-en un, puis mets-le ici.",
+    "tn.level": "Niveau {l} sur {m} · Vitesse ×{s} · Plané {g} %", "tn.in": "En entraînement", "tn.put": "Mettre", "tn.empty": "Vide", "tn.stage": "Niveau {n}",
+    "duel.dlg": "Duel", "duel.new": "Nouveau duel", "duel.share": "Partager", "duel.shareTitle": "Duel de Pilotes de Papier",
+    "duel.info.stake": "Mise un des avions que tu as fabriqués. Celui qui vole le plus loin gagne l’avion de l’autre.",
+    "duel.info.simple": "Les duels avec mise demandent un compte claude.ai et un accès de contributeur à cette page. Tu peux quand même envoyer un simple défi.",
+    "duel.text.head": "Je te défie en duel !", "duel.text.record": "Mon record aux Pilotes de Papier : {n} mètres. Peux-tu faire mieux ?",
+    "duel.text.who": "Qui fait voler son avion en papier le plus loin ?", "duel.text.stake": "Ma mise est prête !",
+    "duel.copied": "Message avec lien copié. Colle-le dans une discussion.", "duel.copyManual": "Sélectionne le texte et copie-le toi-même.",
+    "duel.open": "Ouvert : {n} ({d} m)", "duel.link": "Lien", "duel.cancel": "Annuler",
+    "duel.noStake": "Les duels avec mise ne marchent pas ici. Il te faut un compte claude.ai et un accès de contributeur.",
+    "duel.noPlanes": "Tu n’as pas encore d’avion fabriqué à miser.", "duel.use": "Miser", "duel.go": "Duel ! Lance maintenant {n}.",
+    "duel.cancelled": "Duel annulé. Ton avion reste chez toi.",
+    "duel.created": "Tu as volé {d} mètres. Ton avion {n} est mis en jeu dans le duel. Envoie le lien à un ami !",
+    "duel.saveFail": "Le duel n’a pas pu être enregistré. Il te faut un accès de contributeur à cette page. Ton avion reste chez toi.",
+    "duel.over": "Ce duel est déjà terminé. Ton avion reste chez toi.", "duel.overShort": "Ce duel est déjà terminé.",
+    "duel.won": "Gagné ! {a} contre {b} mètres. Tu reçois {p} de {n}.", "duel.lost": "Perdu. {a} contre {b} mètres. {p} appartient maintenant à {n}.",
+    "duel.draw": "Égalité à {a} mètres. Chacun garde son avion.", "duel.resFail": "Le résultat n’a pas pu être enregistré. Ton avion reste chez toi.",
+    "duel.ended": "Le duel est déjà terminé.", "duel.cancelOk": "Duel annulé. {n} est de retour chez toi.", "duel.fail": "Ça n’a pas marché.",
+    "duel.claimWon": "Duel gagné contre {o} ! Tu reçois {p}.", "duel.claimDraw": "Égalité contre {o}. Ta mise est de retour.",
+    "duel.claimLost": "Duel perdu contre {o}. {p} appartient maintenant à {o}.", "duel.none": "Ce duel n’existe pas (ou plus).",
+    "duel.own": "C’est ton propre duel. Envoie le lien à un ami.",
+    "duel.join": "{c} te défie en duel ! Record : {d} mètres, mise : {p}. Choisis ton avion à miser. Celui qui vole le plus loin gagne l’avion de l’autre.",
+    "duel.loadFail": "Le duel n’a pas pu être chargé.", "plane.default": "Avion"
+  },
+  it: {
+    "app.name": "Piloti di Carta",
+    "btn.craft": "Costruisci un aereo", "btn.duel": "Duello", "btn.tunnel": "Galleria del vento",
+    "player": "Giocatore: {n}",
+    "lead": "Lancia il tuo aereo dalla terrazza, raccogli monete e compra carta migliore e più forza di lancio.",
+    "panel.aria": "Stato del gioco",
+    "coins": "Monete", "strength": "Forza di lancio: livello {n}", "upgradeBtn": "Potenzia per {n} monete",
+    "planes": "I miei aerei", "field.aria": "Campo di gioco",
+    "reset": "Azzera la partita", "reset.sure": "Azzerare davvero?", "reset.done": "Partita azzerata.",
+    "best": "Miglior lancio: {n} metri", "lang.label": "Lingua", "close": "Chiudi",
+    "login.title": "Benvenuto!", "login.text": "Scegli un soprannome prima di iniziare. Ti serve per giocare.",
+    "login.ph": "Il tuo soprannome", "login.aria": "Soprannome", "login.go": "Si parte", "login.err": "Il soprannome deve avere almeno 2 caratteri.",
+    "login.lang": "Scegli la tua lingua", "login.dlg": "Accesso",
+    "ov.duel": "Duello: lancia il tuo aereo in gioco {n}! (pulsante Duello = annulla)",
+    "ov.practice": "Lancio di prova {i} di 3: tira indietro, oscilla in avanti e rilascia esattamente sulla linea!",
+    "ov.hint": "Afferra l’aereo, tira indietro, oscilla in avanti e rilascia",
+    "note.perfect": "Lancio perfetto! ×1,8", "note.near": "Quasi perfetto! ×1,25", "note.practiceDone": "Prova superata! Ora la linea è invisibile.",
+    "land": "Atterrato! {d} metri, +{c} monete.", "land.record": "Nuovo record!",
+    "craft.title": "Costruisci un aereo",
+    "craft.text": "Trascina un angolo dove vuoi: la carta si piega esattamente a metà tra partenza e arrivo. Piega quante volte vuoi.",
+    "craft.guide": "Guida, passo {i} di {n}: {t}", "craft.guideDone": "Ottimo, il tuo aereo è piegato! Premi «Tieni l’aereo».",
+    "guide.0": "Trascina l’angolo in alto a sinistra sull’anello al centro.", "guide.1": "Ora trascina sull’anello anche l’angolo in alto a destra.",
+    "guide.2": "Trascina l’angolo in basso a sinistra verso l’anello, così il bordo sta sulla linea centrale.", "guide.3": "Lo stesso sul lato destro.",
+    "craft.stats": "Simmetria {a} %, snellezza {b} %, stabilità {c} %, portanza {d} %. Velocità ×{e}", "craft.none": "Non ancora piegato.",
+    "craft.nameLabel": "Nome del tuo aereo", "craft.nameRoll": "🎲 Altra idea", "craft.nameRollAria": "Suggerisci un altro nome",
+    "craft.view3d": "Vista 3D", "craft.view3dHint": "(trascina per ruotare)", "craft.view3dAria": "Vista 3D del tuo aereo",
+    "craft.paint": "Verniciare (30 monete)", "craft.sticker": "Adesivi (10 monete l’uno)", "craft.done": "Tieni l’aereo", "craft.undo": "Annulla", "craft.redo": "Ricomincia",
+    "craft.ready": "Il tuo aereo è pronto! Velocità ×{s}, simmetria {y} %",
+    "sticker.none": "Togli tutti", "sticker.poor": "Monete insufficienti per un altro adesivo.", "paint.poor": "Monete insufficienti per la vernice.",
+    "sticker.hintOn": "Tocca il foglio per incollare l’adesivo. Tocca di nuovo l’adesivo in alto per tornare a piegare.",
+    "sticker.hintOff": "Scegli un adesivo e poi tocca il foglio.", "sticker.cost": "Costo: {c} monete (ne hai {h}).", "aria.color": "Colore {c}",
+    "pl.dlg": "Aereo", "pl.img": "Il tuo aereo", "pl.renameAria": "Nuovo nome dell’aereo", "pl.rename": "Rinomina", "pl.saved": "Salvato ✓",
+    "pl.noteSaved": "Salvato: {n}", "pl.empty": "Il nome non può essere vuoto.",
+    "pl.stats": "Velocità ×{s}, planata {g} %", "pl.statsLvl": ", livello galleria del vento {n}", "pl.statsUp": " (con potenziamenti)",
+    "pl.training": "Si sta allenando", "pl.selected": "Scelto", "pl.select": "Scegli", "pl.upgrades": "Potenziamenti",
+    "pl.boosts": "Boost (al massimo {n} insieme)", "pl.remove": "Rimuovi", "pl.attach": "Applica", "pl.buy": "Compra per {n} monete",
+    "pl.paper": "Carta migliore", "pl.now": "Ora: {n}", "pl.best": " – meglio di così non si può.", "pl.upgradeFor": "Potenzia per {n} monete",
+    "pl.delete": "Elimina aereo", "pl.deleteSure": "Eliminare davvero?",
+    "hg.away": "Nella galleria del vento", "hg.stats": "Velocità ×{s}", "hg.lvl": "Livello {n} · ",
+    "boost.clip": "Naso a graffetta", "boost.tape": "Ali di nastro adesivo", "boost.rocket": "Partenza a razzo", "boost.sail": "Vela al vento",
+    "boostd.clip": "Velocità ×1,12", "boostd.tape": "Plana più a lungo (caduta ×0,85)", "boostd.rocket": "Lancio più alto, velocità ×1,05", "boostd.sail": "Velocità ×1,2, caduta ×0,9",
+    "paper.heft": "Carta da quaderno", "paper.glanz": "Carta lucida", "paper.perga": "Pergamena", "paper.carbon": "Carta carbone", "paper.eigen": "Fatto a mano", "paper.order": "Aereo ordinato",
+    "tn.dlg": "Galleria del vento",
+    "tn.info": "Metti un aereo che hai costruito nella galleria del vento. Finché vola lì, si allena: ogni 3 minuti sale di un livello e migliora. Va avanti anche se chiudi la finestra. Mentre si allena, non puoi lanciarlo.",
+    "tn.canvas": "Galleria del vento con ventole", "tn.bar": "Avanzamento verso il prossimo livello", "tn.out": "Togli", "tn.emptyState": "La galleria del vento è vuota.",
+    "tn.full": "{n} è allenato al massimo (livello {m}).", "tn.status": "{n}, livello {l} di {m}. Prossimo livello tra {t} ({g}).",
+    "tn.gainSpeed": "Velocità +0,03", "tn.gainGlide": "Planata +5 %", "tn.up": "{n} è salito al livello {l} nella galleria del vento!",
+    "tn.noPlanes": "Non hai ancora costruito nessun aereo. Costruiscine uno e mettilo qui.",
+    "tn.level": "Livello {l} di {m} · Velocità ×{s} · Planata {g} %", "tn.in": "In allenamento", "tn.put": "Metti dentro", "tn.empty": "Vuota", "tn.stage": "Livello {n}",
+    "duel.dlg": "Duello", "duel.new": "Nuovo duello", "duel.share": "Condividi", "duel.shareTitle": "Duello di Piloti di Carta",
+    "duel.info.stake": "Metti in palio uno degli aerei che hai costruito. Chi vola più lontano vince l’aereo dell’altro.",
+    "duel.info.simple": "I duelli con posta in gioco richiedono un account claude.ai e l’accesso da collaboratore a questa pagina. Puoi comunque inviare una semplice sfida.",
+    "duel.text.head": "Ti sfido a duello!", "duel.text.record": "Il mio record ai Piloti di Carta: {n} metri. Riesci a battermi?",
+    "duel.text.who": "Chi riesce a far volare più lontano il suo aeroplanino di carta?", "duel.text.stake": "La mia posta è pronta!",
+    "duel.copied": "Messaggio con link copiato. Incollalo in una chat.", "duel.copyManual": "Seleziona il testo e copialo tu stesso.",
+    "duel.open": "Aperto: {n} ({d} m)", "duel.link": "Link", "duel.cancel": "Annulla",
+    "duel.noStake": "Qui i duelli con posta in gioco non funzionano. Ti servono un account claude.ai e l’accesso da collaboratore.",
+    "duel.noPlanes": "Non hai ancora un aereo costruito da mettere in palio.", "duel.use": "Metti in palio", "duel.go": "Duello! Lancia ora {n}.",
+    "duel.cancelled": "Duello annullato. Il tuo aereo resta con te.",
+    "duel.created": "Hai volato per {d} metri. Il tuo aereo {n} è in palio nel duello. Manda il link a un amico!",
+    "duel.saveFail": "Non è stato possibile salvare il duello. Ti serve l’accesso da collaboratore a questa pagina. Il tuo aereo resta con te.",
+    "duel.over": "Questo duello è già finito. Il tuo aereo resta con te.", "duel.overShort": "Questo duello è già finito.",
+    "duel.won": "Hai vinto! {a} contro {b} metri. Ricevi {p} da {n}.", "duel.lost": "Hai perso. {a} contro {b} metri. {p} ora appartiene a {n}.",
+    "duel.draw": "Pareggio a {a} metri. Ognuno tiene il suo aereo.", "duel.resFail": "Non è stato possibile salvare il risultato. Il tuo aereo resta con te.",
+    "duel.ended": "Il duello è già finito.", "duel.cancelOk": "Duello annullato. {n} è tornato da te.", "duel.fail": "Non ha funzionato.",
+    "duel.claimWon": "Duello vinto contro {o}! Ricevi {p}.", "duel.claimDraw": "Pareggio contro {o}. La tua posta è tornata.",
+    "duel.claimLost": "Duello perso contro {o}. {p} ora appartiene a {o}.", "duel.none": "Questo duello non esiste (più).",
+    "duel.own": "Questo è il tuo duello. Manda il link a un amico.",
+    "duel.join": "{c} ti sfida a duello! Record: {d} metri, posta: {p}. Scegli il tuo aereo da mettere in palio. Chi vola più lontano vince l’aereo dell’altro.",
+    "duel.loadFail": "Non è stato possibile caricare il duello.", "plane.default": "Aereo"
+  },
+  pt: {
+    "app.name": "Pilotos de Papel",
+    "btn.craft": "Construir avião", "btn.duel": "Duelo", "btn.tunnel": "Túnel de vento",
+    "player": "Jogador: {n}",
+    "lead": "Lance o seu avião do terraço, junte moedas e compre papel melhor e mais força de lançamento.",
+    "panel.aria": "Estado do jogo",
+    "coins": "Moedas", "strength": "Força de lançamento: nível {n}", "upgradeBtn": "Melhorar por {n} moedas",
+    "planes": "Meus aviões", "field.aria": "Campo de jogo",
+    "reset": "Reiniciar jogo", "reset.sure": "Reiniciar mesmo?", "reset.done": "Jogo reiniciado.",
+    "best": "Melhor lançamento: {n} metros", "lang.label": "Idioma", "close": "Fechar",
+    "login.title": "Bem-vindo!", "login.text": "Escolha um apelido antes de começar. Você precisa dele para jogar.",
+    "login.ph": "Seu apelido", "login.aria": "Apelido", "login.go": "Vamos lá", "login.err": "O apelido precisa de pelo menos 2 caracteres.",
+    "login.lang": "Escolha seu idioma", "login.dlg": "Entrada",
+    "ov.duel": "Duelo: lance o seu avião apostado {n}! (botão Duelo = cancelar)",
+    "ov.practice": "Lançamento de treino {i} de 3: puxe para trás, balance para a frente e solte exatamente na linha!",
+    "ov.hint": "Pegue o avião, puxe para trás, balance para a frente e solte",
+    "note.perfect": "Lançamento perfeito! ×1,8", "note.near": "Quase perfeito! ×1,25", "note.practiceDone": "Treino concluído! Agora a linha está invisível.",
+    "land": "Pousou! {d} metros, +{c} moedas.", "land.record": "Novo recorde!",
+    "craft.title": "Construir avião",
+    "craft.text": "Arraste um canto para onde quiser: o papel dobra exatamente no meio entre o início e o destino. Dobre quantas vezes quiser.",
+    "craft.guide": "Guia, passo {i} de {n}: {t}", "craft.guideDone": "Ótimo, seu avião está dobrado! Toque em “Ficar com o avião”.",
+    "guide.0": "Arraste o canto superior esquerdo até o anel no meio.", "guide.1": "Agora arraste também o canto superior direito até o anel.",
+    "guide.2": "Arraste o canto inferior esquerdo até o anel, para que a borda fique na linha do meio.", "guide.3": "O mesmo no lado direito.",
+    "craft.stats": "Simetria {a} %, esbeltez {b} %, estabilidade {c} %, sustentação {d} %. Velocidade ×{e}", "craft.none": "Ainda não dobrado.",
+    "craft.nameLabel": "Nome do seu avião", "craft.nameRoll": "🎲 Outra sugestão", "craft.nameRollAria": "Sugerir outro nome",
+    "craft.view3d": "Vista 3D", "craft.view3dHint": "(arraste para girar)", "craft.view3dAria": "Vista 3D do seu avião",
+    "craft.paint": "Pintar (30 moedas)", "craft.sticker": "Adesivos (10 moedas cada)", "craft.done": "Ficar com o avião", "craft.undo": "Desfazer", "craft.redo": "Recomeçar",
+    "craft.ready": "Seu avião está pronto! Velocidade ×{s}, simetria {y} %",
+    "sticker.none": "Tirar todos", "sticker.poor": "Moedas insuficientes para outro adesivo.", "paint.poor": "Moedas insuficientes para a tinta.",
+    "sticker.hintOn": "Toque na folha para colar o adesivo. Toque de novo no adesivo acima para voltar a dobrar.",
+    "sticker.hintOff": "Escolha um adesivo e toque na folha.", "sticker.cost": "Custo: {c} moedas (você tem {h}).", "aria.color": "Cor {c}",
+    "pl.dlg": "Avião", "pl.img": "Seu avião", "pl.renameAria": "Novo nome do avião", "pl.rename": "Renomear", "pl.saved": "Salvo ✓",
+    "pl.noteSaved": "Salvo: {n}", "pl.empty": "O nome não pode ficar vazio.",
+    "pl.stats": "Velocidade ×{s}, planeio {g} %", "pl.statsLvl": ", nível do túnel de vento {n}", "pl.statsUp": " (com melhorias)",
+    "pl.training": "Treinando agora", "pl.selected": "Escolhido", "pl.select": "Escolher", "pl.upgrades": "Melhorias",
+    "pl.boosts": "Boosts (no máximo {n} ao mesmo tempo)", "pl.remove": "Remover", "pl.attach": "Colocar", "pl.buy": "Comprar por {n} moedas",
+    "pl.paper": "Papel melhor", "pl.now": "Agora: {n}", "pl.best": " – melhor não dá.", "pl.upgradeFor": "Melhorar por {n} moedas",
+    "pl.delete": "Apagar avião", "pl.deleteSure": "Apagar mesmo?",
+    "hg.away": "No túnel de vento", "hg.stats": "Velocidade ×{s}", "hg.lvl": "Nível {n} · ",
+    "boost.clip": "Nariz de clipe", "boost.tape": "Asas de fita adesiva", "boost.rocket": "Lançamento de foguete", "boost.sail": "Vela de vento",
+    "boostd.clip": "Velocidade ×1,12", "boostd.tape": "Plana por mais tempo (queda ×0,85)", "boostd.rocket": "Lançamento mais alto, velocidade ×1,05", "boostd.sail": "Velocidade ×1,2, queda ×0,9",
+    "paper.heft": "Papel de caderno", "paper.glanz": "Papel brilhante", "paper.perga": "Pergaminho", "paper.carbon": "Papel carbono", "paper.eigen": "Feito à mão", "paper.order": "Avião encomendado",
+    "tn.dlg": "Túnel de vento",
+    "tn.info": "Coloque no túnel de vento um avião que você construiu. Enquanto ele voa lá, treina: a cada 3 minutos sobe um nível e melhora. Isso continua mesmo se você fechar a janela. Enquanto treina, você não pode lançá-lo.",
+    "tn.canvas": "Túnel de vento com ventiladores", "tn.bar": "Progresso até o próximo nível", "tn.out": "Tirar", "tn.emptyState": "O túnel de vento está vazio.",
+    "tn.full": "{n} está totalmente treinado (nível {m}).", "tn.status": "{n}, nível {l} de {m}. Próximo nível em {t} ({g}).",
+    "tn.gainSpeed": "Velocidade +0,03", "tn.gainGlide": "Planeio +5 %", "tn.up": "{n} subiu para o nível {l} no túnel de vento!",
+    "tn.noPlanes": "Você ainda não construiu nenhum avião. Construa um e coloque aqui.",
+    "tn.level": "Nível {l} de {m} · Velocidade ×{s} · Planeio {g} %", "tn.in": "Treinando", "tn.put": "Colocar", "tn.empty": "Vazio", "tn.stage": "Nível {n}",
+    "duel.dlg": "Duelo", "duel.new": "Novo duelo", "duel.share": "Compartilhar", "duel.shareTitle": "Duelo de Pilotos de Papel",
+    "duel.info.stake": "Aposte um dos aviões que você construiu. Quem voar mais longe ganha o avião do outro.",
+    "duel.info.simple": "Duelos com aposta precisam de uma conta claude.ai e acesso de colaborador a esta página. Mesmo assim, você pode enviar um desafio simples.",
+    "duel.text.head": "Eu desafio você para um duelo!", "duel.text.record": "Meu recorde em Pilotos de Papel: {n} metros. Você consegue mais?",
+    "duel.text.who": "Quem consegue fazer o avião de papel voar mais longe?", "duel.text.stake": "Minha aposta está pronta!",
+    "duel.copied": "Mensagem com link copiada. Cole em um chat.", "duel.copyManual": "Selecione o texto e copie você mesmo.",
+    "duel.open": "Aberto: {n} ({d} m)", "duel.link": "Link", "duel.cancel": "Cancelar",
+    "duel.noStake": "Duelos com aposta não funcionam aqui. Você precisa de uma conta claude.ai e acesso de colaborador.",
+    "duel.noPlanes": "Você ainda não tem um avião construído para apostar.", "duel.use": "Apostar", "duel.go": "Duelo! Lance agora {n}.",
+    "duel.cancelled": "Duelo cancelado. Seu avião fica com você.",
+    "duel.created": "Você voou {d} metros. Seu avião {n} está apostado no duelo. Envie o link para um amigo!",
+    "duel.saveFail": "Não foi possível salvar o duelo. Você precisa de acesso de colaborador a esta página. Seu avião fica com você.",
+    "duel.over": "Este duelo já acabou. Seu avião fica com você.", "duel.overShort": "Este duelo já acabou.",
+    "duel.won": "Você ganhou! {a} contra {b} metros. Você recebe {p} de {n}.", "duel.lost": "Você perdeu. {a} contra {b} metros. {p} agora pertence a {n}.",
+    "duel.draw": "Empate em {a} metros. Cada um fica com o seu avião.", "duel.resFail": "Não foi possível salvar o resultado. Seu avião fica com você.",
+    "duel.ended": "O duelo já acabou.", "duel.cancelOk": "Duelo cancelado. {n} voltou para você.", "duel.fail": "Não deu certo.",
+    "duel.claimWon": "Duelo ganho contra {o}! Você recebe {p}.", "duel.claimDraw": "Empate contra {o}. Sua aposta voltou.",
+    "duel.claimLost": "Duelo perdido contra {o}. {p} agora pertence a {o}.", "duel.none": "Este duelo não existe (mais).",
+    "duel.own": "Este é o seu próprio duelo. Envie o link para um amigo.",
+    "duel.join": "{c} desafia você para um duelo! Recorde: {d} metros, aposta: {p}. Escolha o seu avião para apostar. Quem voar mais longe ganha o avião do outro.",
+    "duel.loadFail": "Não foi possível carregar o duelo.", "plane.default": "Avião"
+  },
+  tr: {
+    "app.name": "Kağıt Pilotlar",
+    "btn.craft": "Uçak yap", "btn.duel": "Düello", "btn.tunnel": "Rüzgar tüneli",
+    "player": "Oyuncu: {n}",
+    "lead": "Uçağını terastan fırlat, jeton topla; daha iyi kağıt ve daha fazla atış gücü satın al.",
+    "panel.aria": "Oyun durumu",
+    "coins": "Jeton", "strength": "Atış gücü: seviye {n}", "upgradeBtn": "{n} jetona geliştir",
+    "planes": "Uçaklarım", "field.aria": "Oyun alanı",
+    "reset": "Oyunu sıfırla", "reset.sure": "Gerçekten sıfırlansın mı?", "reset.done": "Oyun sıfırlandı.",
+    "best": "En iyi atış: {n} metre", "lang.label": "Dil", "close": "Kapat",
+    "login.title": "Hoş geldin!", "login.text": "Başlamadan önce bir takma ad seç. Oynamak için buna ihtiyacın var.",
+    "login.ph": "Takma adın", "login.aria": "Takma ad", "login.go": "Başlayalım", "login.err": "Takma ad en az 2 karakter olmalı.",
+    "login.lang": "Dilini seç", "login.dlg": "Giriş",
+    "ov.duel": "Düello: bahse koyduğun {n} uçağını fırlat! (Düello düğmesi = iptal)",
+    "ov.practice": "Alıştırma atışı {i} / 3: geriye çek, öne doğru salla ve tam çizginin üstünde bırak!",
+    "ov.hint": "Uçağı tut, geriye çek, öne doğru salla ve bırak",
+    "note.perfect": "Mükemmel atış! ×1,8", "note.near": "Neredeyse mükemmel! ×1,25", "note.practiceDone": "Alıştırma tamam! Çizgi artık görünmüyor.",
+    "land": "İndi! {d} metre, +{c} jeton.", "land.record": "Yeni rekor!",
+    "craft.title": "Uçak yap",
+    "craft.text": "Bir köşeyi istediğin yere sürükle: kağıt başlangıçla hedefin tam ortasından katlanır. İstediğin kadar katla.",
+    "craft.guide": "Rehber, adım {i} / {n}: {t}", "craft.guideDone": "Harika, uçağın katlandı! “Uçağı al” düğmesine bas.",
+    "guide.0": "Sol üst köşeyi ortadaki halkaya sürükle.", "guide.1": "Şimdi sağ üst köşeyi de halkaya sürükle.",
+    "guide.2": "Sol alt köşeyi halkaya sürükle; kenar orta çizgiye otursun.", "guide.3": "Aynısını sağ tarafta yap.",
+    "craft.stats": "Simetri %{a}, incelik %{b}, denge %{c}, kaldırma %{d}. Hız ×{e}", "craft.none": "Henüz katlanmadı.",
+    "craft.nameLabel": "Uçağının adı", "craft.nameRoll": "🎲 Yeni öneri", "craft.nameRollAria": "Yeni bir ad öner",
+    "craft.view3d": "3D görünüm", "craft.view3dHint": "(döndürmek için sürükle)", "craft.view3dAria": "Uçağının 3D görünümü",
+    "craft.paint": "Boya (30 jeton)", "craft.sticker": "Çıkartma (tanesi 10 jeton)", "craft.done": "Uçağı al", "craft.undo": "Geri al", "craft.redo": "Baştan başla",
+    "craft.ready": "Uçağın hazır! Hız ×{s}, simetri %{y}",
+    "sticker.none": "Hepsini kaldır", "sticker.poor": "Bir çıkartma daha için jeton yetmiyor.", "paint.poor": "Boya için jeton yetmiyor.",
+    "sticker.hintOn": "Çıkartmayı yapıştırmak için kağıda dokun. Tekrar katlamak için yukarıdaki çıkartmaya bir kez daha dokun.",
+    "sticker.hintOff": "Bir çıkartma seç, sonra kağıda dokun.", "sticker.cost": "Bedel: {c} jeton (sende {h} var).", "aria.color": "Renk {c}",
+    "pl.dlg": "Uçak", "pl.img": "Uçağın", "pl.renameAria": "Uçağın yeni adı", "pl.rename": "Yeniden adlandır", "pl.saved": "Kaydedildi ✓",
+    "pl.noteSaved": "Kaydedildi: {n}", "pl.empty": "Ad boş olamaz.",
+    "pl.stats": "Hız ×{s}, süzülme %{g}", "pl.statsLvl": ", rüzgar tüneli seviyesi {n}", "pl.statsUp": " (gelişmelerle)",
+    "pl.training": "Şu an antrenman yapıyor", "pl.selected": "Seçili", "pl.select": "Seç", "pl.upgrades": "Geliştirmeler",
+    "pl.boosts": "Boostlar (aynı anda en fazla {n})", "pl.remove": "Çıkar", "pl.attach": "Tak", "pl.buy": "{n} jetona satın al",
+    "pl.paper": "Daha iyi kağıt", "pl.now": "Şimdi: {n}", "pl.best": " – daha iyisi yok.", "pl.upgradeFor": "{n} jetona geliştir",
+    "pl.delete": "Uçağı sil", "pl.deleteSure": "Gerçekten silinsin mi?",
+    "hg.away": "Rüzgar tünelinde", "hg.stats": "Hız ×{s}", "hg.lvl": "Seviye {n} · ",
+    "boost.clip": "Ataç burun", "boost.tape": "Bantlı kanatlar", "boost.rocket": "Roketle fırlatma", "boost.sail": "Rüzgar yelkeni",
+    "boostd.clip": "Hız ×1,12", "boostd.tape": "Daha uzun süzülür (düşüş ×0,85)", "boostd.rocket": "Daha yüksek atış, hız ×1,05", "boostd.sail": "Hız ×1,2, düşüş ×0,9",
+    "paper.heft": "Defter kağıdı", "paper.glanz": "Parlak kağıt", "paper.perga": "Parşömen", "paper.carbon": "Karbon kağıdı", "paper.eigen": "El yapımı", "paper.order": "Sipariş uçağı",
+    "tn.dlg": "Rüzgar tüneli",
+    "tn.info": "Yaptığın bir uçağı rüzgar tüneline koy. Orada uçtuğu sürece antrenman yapar: her 3 dakikada bir seviye atlar ve daha iyi olur. Pencereyi kapatsan da devam eder. Antrenman yaparken onu fırlatamazsın.",
+    "tn.canvas": "Pervaneli rüzgar tüneli", "tn.bar": "Sonraki seviyeye ilerleme", "tn.out": "Çıkar", "tn.emptyState": "Rüzgar tüneli boş.",
+    "tn.full": "{n} tamamen eğitildi (seviye {m}).", "tn.status": "{n}, seviye {l} / {m}. Sonraki seviyeye {t} var ({g}).",
+    "tn.gainSpeed": "Hız +0,03", "tn.gainGlide": "Süzülme +%5", "tn.up": "{n} rüzgar tünelinde {l}. seviyeye çıktı!",
+    "tn.noPlanes": "Henüz uçak yapmadın. Bir tane yap, sonra buraya koy.",
+    "tn.level": "Seviye {l} / {m} · Hız ×{s} · Süzülme %{g}", "tn.in": "Antrenmanda", "tn.put": "İçeri koy", "tn.empty": "Boş", "tn.stage": "Seviye {n}",
+    "duel.dlg": "Düello", "duel.new": "Yeni düello", "duel.share": "Paylaş", "duel.shareTitle": "Kağıt Pilotlar düellosu",
+    "duel.info.stake": "Yaptığın uçaklardan birini bahse koy. Daha uzağa uçan, diğerinin uçağını kazanır.",
+    "duel.info.simple": "Bahisli düellolar için bir claude.ai hesabı ve bu sayfaya katkıda bulunan erişimi gerekir. Yine de basit bir meydan okuma gönderebilirsin.",
+    "duel.text.head": "Seni düelloya davet ediyorum!", "duel.text.record": "Kağıt Pilotlar rekorum: {n} metre. Daha fazlasını başarabilir misin?",
+    "duel.text.who": "Kağıt uçağını kim en uzağa uçurabilir?", "duel.text.stake": "Bahsim hazır!",
+    "duel.copied": "Bağlantılı mesaj kopyalandı. Bir sohbete yapıştır.", "duel.copyManual": "Metni seç ve kendin kopyala.",
+    "duel.open": "Açık: {n} ({d} m)", "duel.link": "Bağlantı", "duel.cancel": "İptal",
+    "duel.noStake": "Bahisli düellolar burada çalışmıyor. Bir claude.ai hesabı ve katkıda bulunan erişimi gerekir.",
+    "duel.noPlanes": "Bahse koyacak yapılmış bir uçağın henüz yok.", "duel.use": "Bahse koy", "duel.go": "Düello! Şimdi {n} uçağını fırlat.",
+    "duel.cancelled": "Düello iptal edildi. Uçağın sende kalıyor.",
+    "duel.created": "{d} metre uçtun. {n} uçağın düelloda bahse konuldu. Bağlantıyı bir arkadaşına gönder!",
+    "duel.saveFail": "Düello kaydedilemedi. Bu sayfaya katkıda bulunan erişimi gerekir. Uçağın sende kalıyor.",
+    "duel.over": "Bu düello zaten bitti. Uçağın sende kalıyor.", "duel.overShort": "Bu düello zaten bitti.",
+    "duel.won": "Kazandın! {a} - {b} metre. {n} kişisinden {p} uçağını alıyorsun.", "duel.lost": "Kaybettin. {a} - {b} metre. {p} artık {n} kişisinin.",
+    "duel.draw": "{a} metrede berabere. Herkes kendi uçağını tutuyor.", "duel.resFail": "Sonuç kaydedilemedi. Uçağın sende kalıyor.",
+    "duel.ended": "Düello zaten bitti.", "duel.cancelOk": "Düello iptal edildi. {n} sana geri döndü.", "duel.fail": "Olmadı.",
+    "duel.claimWon": "{o} karşısında düelloyu kazandın! {p} uçağını alıyorsun.", "duel.claimDraw": "{o} ile berabere. Bahsin geri döndü.",
+    "duel.claimLost": "{o} karşısında düelloyu kaybettin. {p} artık {o} kişisinin.", "duel.none": "Bu düello yok (artık).",
+    "duel.own": "Bu senin kendi düellon. Bağlantıyı bir arkadaşına gönder.",
+    "duel.join": "{c} seni düelloya davet ediyor! Rekor: {d} metre, bahis: {p}. Bahse koyacağın uçağı seç. Daha uzağa uçan, diğerinin uçağını kazanır.",
+    "duel.loadFail": "Düello yüklenemedi.", "plane.default": "Uçak"
+  }
+};
+// Namen für neue Flieger je Sprache. mode "pre": Vorsilbe + Endung zusammengeschrieben (de), "ap": "Vorwort Tier" (en, tr), "ba": "Tier Vorwort" (Romanisch)
+const NAMEDATA = {
+  de: { mode: "pre",
+    a: ["Blitz", "Sturm", "Wolken", "Silber", "Turbo", "Donner", "Stern", "Feuer", "Eis", "Wirbel", "Mond", "Sonnen", "Nebel", "Schatten", "Nacht", "Gold", "Düsen", "Zack", "Flitz", "Sause",
+      "Regenbogen", "Gewitter", "Polar", "Kristall", "Rubin", "Smaragd", "Wüsten", "Dschungel", "Ozean", "Vulkan", "Nordlicht", "Morgen", "Abend", "Mitternacht", "Zucker", "Pfeffer", "Himmel", "Wind", "Funken", "Glitzer", "Kupfer", "Bernstein", "Lava", "Orkan", "Frost", "Zimt"],
+    fast: ["pfeil", "jäger", "blitz", "rakete", "komet", "flitzer", "hai", "wolf", "panther", "gepard", "speer", "düse", "sprinter", "geschoss"],
+    glide: ["schwalbe", "adler", "möwe", "kolibri", "falke", "segler", "fuchs", "specht", "eule", "kranich", "storch", "libelle", "pelikan", "schmetterling"],
+    extra: ["kobold", "drache", "geist", "wirbel", "phönix", "delfin", "pirat", "ritter", "zauberer", "känguru"] },
+  en: { mode: "ap",
+    a: ["Thunder", "Storm", "Cloud", "Silver", "Turbo", "Lightning", "Star", "Fire", "Ice", "Whirlwind", "Moon", "Sun", "Mist", "Shadow", "Night", "Golden", "Jet", "Zip", "Flash", "Breeze",
+      "Rainbow", "Crystal", "Ruby", "Emerald", "Desert", "Jungle", "Ocean", "Volcano", "Aurora", "Morning", "Midnight", "Sugar", "Pepper", "Sky", "Wind", "Spark", "Glitter", "Copper", "Amber", "Lava", "Frost", "Cinnamon"],
+    fast: ["Arrow", "Hunter", "Bolt", "Rocket", "Comet", "Dart", "Shark", "Wolf", "Panther", "Cheetah", "Spear", "Jet", "Sprinter", "Bullet"],
+    glide: ["Swallow", "Eagle", "Gull", "Hummingbird", "Falcon", "Glider", "Fox", "Woodpecker", "Owl", "Crane", "Stork", "Dragonfly", "Pelican", "Butterfly"],
+    extra: ["Goblin", "Dragon", "Ghost", "Phoenix", "Dolphin", "Pirate", "Knight", "Wizard", "Kangaroo"] },
+  es: { mode: "ba",
+    a: ["Trueno", "Tormenta", "Nube", "Plata", "Turbo", "Relámpago", "Estrella", "Fuego", "Hielo", "Torbellino", "Luna", "Sol", "Niebla", "Sombra", "Noche", "Oro", "Rayo", "Chispa", "Destello", "Brisa",
+      "Arcoíris", "Cristal", "Rubí", "Esmeralda", "Desierto", "Selva", "Océano", "Volcán", "Aurora", "Medianoche", "Azúcar", "Canela", "Cielo", "Viento", "Lava", "Escarcha", "Ámbar"],
+    fast: ["Flecha", "Cazador", "Cohete", "Cometa", "Tiburón", "Lobo", "Pantera", "Guepardo", "Lanza", "Bala"],
+    glide: ["Golondrina", "Águila", "Gaviota", "Colibrí", "Halcón", "Planeador", "Zorro", "Búho", "Grulla", "Cigüeña", "Libélula", "Pelícano", "Mariposa"],
+    extra: ["Duende", "Dragón", "Fantasma", "Fénix", "Delfín", "Pirata", "Caballero", "Mago", "Canguro"] },
+  fr: { mode: "ba",
+    a: ["Tonnerre", "Tempête", "Nuage", "Argent", "Turbo", "Éclair", "Étoile", "Feu", "Glace", "Tourbillon", "Lune", "Soleil", "Brume", "Ombre", "Nuit", "Or", "Foudre", "Étincelle", "Flash", "Brise",
+      "Arc-en-ciel", "Cristal", "Rubis", "Émeraude", "Désert", "Jungle", "Océan", "Volcan", "Aurore", "Minuit", "Sucre", "Cannelle", "Ciel", "Vent", "Lave", "Givre", "Ambre"],
+    fast: ["Flèche", "Chasseur", "Fusée", "Comète", "Requin", "Loup", "Panthère", "Guépard", "Lance", "Boulet"],
+    glide: ["Hirondelle", "Aigle", "Mouette", "Colibri", "Faucon", "Planeur", "Renard", "Hibou", "Grue", "Cigogne", "Libellule", "Pélican", "Papillon"],
+    extra: ["Lutin", "Dragon", "Fantôme", "Phénix", "Dauphin", "Pirate", "Chevalier", "Magicien", "Kangourou"] },
+  it: { mode: "ba",
+    a: ["Tuono", "Tempesta", "Nuvola", "Argento", "Turbo", "Fulmine", "Stella", "Fuoco", "Ghiaccio", "Vortice", "Luna", "Sole", "Nebbia", "Ombra", "Notte", "Oro", "Lampo", "Scintilla", "Bagliore", "Brezza",
+      "Arcobaleno", "Cristallo", "Rubino", "Smeraldo", "Deserto", "Giungla", "Oceano", "Vulcano", "Aurora", "Mezzanotte", "Zucchero", "Cannella", "Cielo", "Vento", "Lava", "Brina", "Ambra"],
+    fast: ["Freccia", "Cacciatore", "Razzo", "Cometa", "Squalo", "Lupo", "Pantera", "Ghepardo", "Lancia", "Proiettile"],
+    glide: ["Rondine", "Aquila", "Gabbiano", "Colibrì", "Falco", "Aliante", "Volpe", "Gufo", "Gru", "Cicogna", "Libellula", "Pellicano", "Farfalla"],
+    extra: ["Folletto", "Drago", "Fantasma", "Fenice", "Delfino", "Pirata", "Cavaliere", "Mago", "Canguro"] },
+  pt: { mode: "ba",
+    a: ["Trovão", "Tempestade", "Nuvem", "Prata", "Turbo", "Relâmpago", "Estrela", "Fogo", "Gelo", "Redemoinho", "Lua", "Sol", "Névoa", "Sombra", "Noite", "Ouro", "Raio", "Faísca", "Clarão", "Brisa",
+      "Arco-íris", "Cristal", "Rubi", "Esmeralda", "Deserto", "Selva", "Oceano", "Vulcão", "Aurora", "Meia-noite", "Açúcar", "Canela", "Céu", "Vento", "Lava", "Geada", "Âmbar"],
+    fast: ["Flecha", "Caçador", "Foguete", "Cometa", "Tubarão", "Lobo", "Pantera", "Guepardo", "Lança", "Bala"],
+    glide: ["Andorinha", "Águia", "Gaivota", "Beija-flor", "Falcão", "Planador", "Raposa", "Coruja", "Grou", "Cegonha", "Libélula", "Pelicano", "Borboleta"],
+    extra: ["Duende", "Dragão", "Fantasma", "Fênix", "Golfinho", "Pirata", "Cavaleiro", "Mago", "Canguru"] },
+  tr: { mode: "ap",
+    a: ["Fırtına", "Bulut", "Gümüş", "Turbo", "Şimşek", "Yıldız", "Ateş", "Buz", "Kasırga", "Ay", "Güneş", "Sis", "Gölge", "Gece", "Altın", "Yıldırım", "Kıvılcım", "Parıltı", "Meltem", "Kristal",
+      "Yakut", "Zümrüt", "Çöl", "Orman", "Okyanus", "Volkan", "Şafak", "Şeker", "Tarçın", "Gök", "Rüzgar", "Lav", "Kırağı", "Kehribar"],
+    fast: ["Ok", "Avcı", "Roket", "Kuyrukluyıldız", "Köpekbalığı", "Kurt", "Panter", "Çita", "Mızrak", "Kurşun"],
+    glide: ["Kırlangıç", "Kartal", "Martı", "Sinekkuşu", "Şahin", "Planör", "Tilki", "Baykuş", "Turna", "Leylek", "Yusufçuk", "Pelikan", "Kelebek"],
+    extra: ["Cin", "Ejderha", "Hayalet", "Anka", "Yunus", "Korsan", "Şövalye", "Büyücü", "Kanguru"] }
+};
+function detectLang() {
+  try {
+    const s = localStorage.getItem("pf_lang");
+    if (s && LANGS[s]) return s;
+    if (localStorage.getItem("papierflieger")) return "de";   // Spielstand aus der rein deutschen Zeit
+  } catch (e) {}
+  const n = String((navigator.languages && navigator.languages[0]) || navigator.language || "en").slice(0, 2).toLowerCase();
+  return LANGS[n] ? n : "en";
+}
+let lang = detectLang();
+// Text in der gewählten Sprache; {name} wird durch params.name ersetzt. Fehlt ein Text, gilt Deutsch.
+function t(key, params) {
+  let s = (I18N[lang] && I18N[lang][key]);
+  if (s === undefined) s = I18N.de[key];
+  if (s === undefined) return key;
+  if (params) for (const k in params) s = s.split("{" + k + "}").join(params[k]);
+  return s;
+}
 
 const PAPERS = [
   { id: "heft",   name: "Schulheftpapier", cost: 0,   speed: 1.0,  gravity: 0.050, color: "#ffffff" },
@@ -240,7 +815,6 @@ const PAPERS = [
   { id: "order",  name: "Bestellter Flieger", cost: 0, speed: 1.2, gravity: 0.04, color: "#d5dcec" }
 ];
 
-const PAPER_DEFAULT = Object.fromEntries(PAPERS.map(p => [p.id, p.name]));   // ursprüngliche Namen (Papiere kann man umbenennen)
 let coins = 0, strength = 1, upgradeCost = 10, best = 0;
 let owned = ["heft"], equipped = "heft";
 let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
@@ -277,7 +851,6 @@ function load() {
       tunnel = s.tunnel && custom.some(c => c.id === s.tunnel.id) ? s.tunnel : null;
       if (tunnel && equipped === tunnel.id) equipped = "heft";
       pupg = s.pupg || {};
-      PAPERS.forEach(x => { const nm = pupg[x.id] && pupg[x.id].name; if (typeof nm === "string" && nm.trim()) x.name = nm.trim().slice(0, 24); });
       if (attached.length) {   // alte Version: Boosts gehörten zum ganzen Spiel, jetzt zum ausgewählten Flieger
         upOf(planeById(equipped) || PAPERS[0]).boosts = attached.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP);
         attached = [];
@@ -309,10 +882,10 @@ function save() {
 
 function updateUI() {
   document.getElementById("coins").textContent = Math.floor(coins);
-  document.getElementById("nick-label").textContent = nick ? "Spieler: " + nick : "";
-  document.getElementById("strength-level").textContent = strength;
-  document.getElementById("upgrade-cost").textContent = upgradeCost;
-  document.getElementById("best").textContent = best;
+  document.getElementById("nick-label").textContent = nick ? t("player", { n: nick }) : "";
+  document.getElementById("strength-h").textContent = t("strength", { n: strength });
+  document.getElementById("upgrade-btn").textContent = t("upgradeBtn", { n: upgradeCost });
+  document.getElementById("best-line").innerHTML = t("best", { n: "<strong>" + best + "</strong>" });
   document.getElementById("craft-btn").disabled = isFlying;
   document.getElementById("upgrade-btn").disabled = coins < upgradeCost || isFlying;
   renderHangar();
@@ -426,7 +999,7 @@ function drawOverlay() {
   if (isFlying || pullPos()) return;
   ctx.textAlign = "left"; ctx.font = "600 " + uiFont(11) + "px Fredoka, sans-serif";
   const top = uiFont(11) + 6;
-  if (duelCtx) { ctx.fillStyle = css("--ink"); drawText("Duell: wirf deinen Einsatz-Flieger " + duelCtx.plane.name + "! (Duell-Knopf = abbrechen)", 10, top, false, true); return; }
+  if (duelCtx) { ctx.fillStyle = css("--ink"); drawText(t("ov.duel", { n: duelCtx.plane.name }), 10, top, false, true); return; }
   if (throwHint) {
     const y = 250, x0 = 30, x1 = SX + 30, ac = css("--accent");
     ctx.strokeStyle = ac; ctx.fillStyle = ac; ctx.lineWidth = 5;
@@ -434,13 +1007,13 @@ function drawOverlay() {
     ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 - 16, y - 10); ctx.lineTo(x1 - 16, y + 10); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + 16, y - 10); ctx.lineTo(x0 + 16, y + 10); ctx.closePath(); ctx.fill();
     ctx.fillStyle = css("--ink");
-    drawText("Übungswurf " + (practiceThrows + 1) + " von 3: Ziehen, nach vorne schwingen und genau auf der Linie loslassen!", 10, y - 18, true);
+    drawText(t("ov.practice", { i: practiceThrows + 1 }), 10, y - 18, true);
     ctx.strokeStyle = ac; ctx.lineWidth = 3; ctx.setLineDash([8, 6]);
     ctx.beginPath(); ctx.moveTo(SX, 170); ctx.lineTo(SX, 380); ctx.stroke();
     ctx.setLineDash([]);
   } else {
     ctx.globalAlpha = 0.7; ctx.fillStyle = css("--ink");
-    drawText("Flieger greifen, zurückziehen, nach vorne schwingen und loslassen", 10, top, false, true);
+    drawText(t("ov.hint"), 10, top, false, true);
     ctx.globalAlpha = 1;
   }
 }
@@ -479,7 +1052,7 @@ canvas.addEventListener("pointerup", e => {
   if (power > 0 && !isFlying) {
     const off = Math.abs(p[0] - SX);
     const bonus = off <= 10 ? 1.8 : off <= 30 ? 1.25 : 1;
-    throwNote = off <= 10 ? " Perfekter Wurf! ×1,8" : off <= 30 ? " Fast perfekt! ×1,25" : "";
+    throwNote = off <= 10 ? " " + t("note.perfect") : off <= 30 ? " " + t("note.near") : "";
     throwPlane((0.5 + 0.7 * power) * bonus, tilt, [clamp(p[0], 12, SX + 160), clamp(p[1], 170, TERRACE_Y - 14)]);
     if (throwNote) showResult(throwNote.trim());
   }
@@ -490,7 +1063,7 @@ function throwPlane(pm, tm, lp) {
   if (typeof pm !== "number") { pm = 1; tm = 1; }
   if (throwHint && !isFlying) {
     practiceThrows++;
-    if (practiceThrows >= 3) { throwHint = false; throwNote += " Übung geschafft! Die Linie ist jetzt unsichtbar."; }
+    if (practiceThrows >= 3) { throwHint = false; throwNote += " " + t("note.practiceDone"); }
     save();
   }
   if (isFlying) return;
@@ -519,7 +1092,7 @@ function finish() {
   coins += earned;
   const record = distance > best;
   if (record) best = distance;
-  showResult("Gelandet! " + distance + " Meter, +" + earned + " Münzen." + (record ? " Neuer Rekord!" : "") + throwNote);
+  showResult(t("land", { d: distance, c: earned }) + (record ? " " + t("land.record") : "") + throwNote);
   plane.x = SX; plane.y = 300; camX = 0;
   document.getElementById("live").textContent = "0";
   save(); updateUI();
@@ -554,14 +1127,14 @@ function resetGame() {
   if (isFlying) return;
   const rb = document.getElementById("reset-btn");
   if (rb.dataset.armed !== "1") {
-    rb.dataset.armed = "1"; rb.textContent = "Wirklich zurücksetzen?";
-    setTimeout(() => { rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen"; }, 4000);
+    rb.dataset.armed = "1"; rb.textContent = t("reset.sure");
+    setTimeout(() => { rb.dataset.armed = ""; rb.textContent = t("reset"); }, 4000);
     return;
   }
-  rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen";
+  rb.dataset.armed = ""; rb.textContent = t("reset");
   coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null; pupg = {};
-  PAPERS.forEach(x => { x.name = PAPER_DEFAULT[x.id]; });
-  save(); updateUI(); showResult("Spielstand zurückgesetzt."); askNick();
+  refreshNames();
+  save(); updateUI(); showResult(t("reset.done")); askNick();
 }
 
 document.getElementById("upgrade-btn").addEventListener("click", buyUpgrade);
@@ -610,7 +1183,7 @@ function craftFill(back) {
 }
 function placeSticker(p) {
   if (!pendingSticker || !layers.some(l => inside(l.pts, p[0], p[1]))) return;
-  if (craftStickers.length < 8 && coins < styleCost() + STICKER_COST) { document.getElementById("sticker-hint").textContent = "Zu wenig Münzen für einen weiteren Sticker."; return; }
+  if (craftStickers.length < 8 && coins < styleCost() + STICKER_COST) { document.getElementById("sticker-hint").textContent = t("sticker.poor"); return; }
   if (craftStickers.length >= 8) craftStickers.shift();
   craftStickers.push({ e: pendingSticker, x: p[0], y: p[1] });
   drawCraft();
@@ -618,16 +1191,16 @@ function placeSticker(p) {
 function refreshStyleUI() {
   document.querySelectorAll("#paint-row .sw").forEach(b => b.classList.toggle("on", (b.dataset.c === "#ffffff" ? null : b.dataset.c) === craftPaint));
   document.querySelectorAll("#sticker-row .stk").forEach(b => b.classList.toggle("on", b.dataset.e === pendingSticker));
-  document.getElementById("sticker-hint").textContent = pendingSticker ? "Tippe aufs Blatt, um den Sticker zu kleben. Tippe den Sticker oben noch einmal an, um wieder zu falten." : "Wähle einen Sticker und tippe dann aufs Blatt.";
-  document.getElementById("sticker-hint").textContent += " Kosten: " + styleCost() + " Münzen (du hast " + Math.floor(coins) + ").";
+  document.querySelectorAll("#paint-row .sw").forEach(b => b.setAttribute("aria-label", t("aria.color", { c: b.dataset.c })));
+  document.getElementById("sticker-hint").textContent = t(pendingSticker ? "sticker.hintOn" : "sticker.hintOff") + " " + t("sticker.cost", { c: styleCost(), h: Math.floor(coins) });
 }
 (function buildStyle() {
   const pr = document.getElementById("paint-row"), sr = document.getElementById("sticker-row");
   PAINTS.forEach(c => {
     const b = document.createElement("button");
-    b.type = "button"; b.className = "sw"; b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", "Farbe " + c);
+    b.type = "button"; b.className = "sw"; b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", t("aria.color", { c }));
     b.onclick = () => {
-      if (c !== "#ffffff" && !craftPaint && coins < styleCost() + PAINT_COST) { document.getElementById("sticker-hint").textContent = "Zu wenig Münzen für den Lack."; return; }
+      if (c !== "#ffffff" && !craftPaint && coins < styleCost() + PAINT_COST) { document.getElementById("sticker-hint").textContent = t("paint.poor"); return; }
       craftPaint = c === "#ffffff" ? null : c; refreshStyleUI(); drawCraft();
     };
     pr.appendChild(b);
@@ -639,7 +1212,7 @@ function refreshStyleUI() {
     sr.appendChild(b);
   });
   const x = document.createElement("button");
-  x.type = "button"; x.className = "stk"; x.textContent = "Alle weg";
+  x.type = "button"; x.className = "stk"; x.dataset.i18n = "sticker.none"; x.textContent = t("sticker.none");
   x.onclick = () => { craftStickers = []; drawCraft(); };
   sr.appendChild(x);
 })();
@@ -759,11 +1332,11 @@ const OX = 60, OY = 70;
 let gstep = 0;
 let craftPaint = null, craftStickers = [], pendingSticker = null;
 const GSTEPS = [
-  { a: [0, 0],     b: [100, 100],   t: "Zieh die linke obere Ecke auf den Ring in der Mitte." },
-  { a: [200, 0],   b: [100, 100],   t: "Jetzt die rechte obere Ecke auch auf den Ring ziehen." },
-  { a: [0, 260],   b: [100, 278.6], t: "Zieh die linke untere Ecke zum Ring, sodass die Kante an der Mittellinie liegt." },
-  { a: [200, 260], b: [100, 278.6], t: "Das Gleiche auf der rechten Seite." }
-];
+  { a: [0, 0],     b: [100, 100]   },
+  { a: [200, 0],   b: [100, 100]   },
+  { a: [0, 260],   b: [100, 278.6] },
+  { a: [200, 260], b: [100, 278.6] }
+];   // Texte: guide.0 bis guide.3
 function guideStep() { return !tutorialDone && gstep < GSTEPS.length ? GSTEPS[gstep] : null; }
 const dlg = document.getElementById("craft-dialog");
 const cc = document.getElementById("craft-canvas");
@@ -830,23 +1403,27 @@ function analyze(ls, folds) {
     speed: 1 + (0.3 * slender * sym + 0.1 * stiff) * ff,
     gravity: 0.05 - 0.016 * lift * sym * ff };
 }
-// Coole Namen für neue Flieger: Vorsilbe + Tierchen oder Wort; schlanke Flieger bekommen Tempo-Namen,
+// Coole Namen für neue Flieger (je Sprache, siehe NAMEDATA); schlanke Flieger bekommen Tempo-Namen,
 // Flieger mit viel Auftrieb Gleiter-Namen.
-const NAME_A = ["Blitz", "Sturm", "Wolken", "Silber", "Turbo", "Donner", "Stern", "Feuer", "Eis", "Wirbel", "Mond", "Sonnen", "Nebel", "Schatten", "Nacht", "Gold", "Düsen", "Zack", "Flitz", "Sause",
-  "Regenbogen", "Gewitter", "Polar", "Kristall", "Rubin", "Smaragd", "Wüsten", "Dschungel", "Ozean", "Vulkan", "Nordlicht", "Morgen", "Abend", "Mitternacht", "Zucker", "Pfeffer", "Himmel", "Wind", "Funken", "Glitzer", "Kupfer", "Bernstein", "Lava", "Orkan", "Frost", "Zimt"];
-const NAME_FAST = ["pfeil", "jäger", "blitz", "rakete", "komet", "flitzer", "hai", "wolf", "panther", "gepard", "speer", "düse", "sprinter", "geschoss"];
-const NAME_GLIDE = ["schwalbe", "adler", "möwe", "kolibri", "falke", "segler", "fuchs", "specht", "eule", "kranich", "storch", "libelle", "pelikan", "schmetterling"];
-const NAME_ANY = NAME_FAST.concat(NAME_GLIDE, ["kobold", "drache", "geist", "wirbel", "phönix", "delfin", "pirat", "ritter", "zauberer", "känguru"]);
 let craftNameSet = false;
 const usedNames = new Set();   // schon vorgeschlagene Namen: kommen erst wieder, wenn alle durch sind
+function nameCombos(kind) {
+  const d = NAMEDATA[lang] || NAMEDATA.de;
+  const pool = kind === "fast" ? d.fast : kind === "glide" ? d.glide : d.fast.concat(d.glide, d.extra);
+  const all = [];
+  d.a.forEach(a => pool.forEach(b => {
+    if (d.mode === "pre") { if (!b.startsWith(a.toLowerCase()) && !a.toLowerCase().startsWith(b)) all.push(a + b); }
+    else if (d.mode === "ap") all.push(a + " " + b);
+    else all.push(b + " " + a);
+  }));
+  return all;
+}
 function suggestName(stats) {
   const s = stats || analyze(layers, hist.length);
-  const pool = s.slender > 0.45 ? NAME_FAST : s.lift > 0.6 ? NAME_GLIDE : NAME_ANY;
-  const all = [];
-  NAME_A.forEach(a => pool.forEach(b => { if (!b.startsWith(a.toLowerCase()) && !a.toLowerCase().startsWith(b)) all.push(a + b); }));
+  const all = nameCombos(s.slender > 0.45 ? "fast" : s.lift > 0.6 ? "glide" : "any");
   let free = all.filter(n => !usedNames.has(n) && !custom.some(c => c.name === n));
   if (!free.length) { all.forEach(n => usedNames.delete(n)); free = all.filter(n => !custom.some(c => c.name === n)); }
-  const n = free.length ? free[Math.floor(Math.random() * free.length)] : NAME_A[0] + pool[0] + " " + (custom.length + 1);
+  const n = free.length ? free[Math.floor(Math.random() * free.length)] : all[0] + " " + (custom.length + 1);
   usedNames.add(n);
   return n;
 }
@@ -858,14 +1435,14 @@ function newSheet() {
   refreshCraft();
 }
 function refreshCraft() {
-  const s = analyze(layers, hist.length), pc = v => Math.round(v * 100) + " %";
+  const s = analyze(layers, hist.length);
   document.getElementById("craft-stats").textContent = hist.length
-    ? "Symmetrie " + pc(s.sym) + ", Schlankheit " + pc(s.slender) + ", Stabilität " + pc(s.stiff) + ", Auftrieb " + pc(s.lift) + ". Tempo ×" + s.speed.toFixed(2)
-    : "Noch nicht gefaltet.";
+    ? t("craft.stats", { a: Math.round(s.sym * 100), b: Math.round(s.slender * 100), c: Math.round(s.stiff * 100), d: Math.round(s.lift * 100), e: s.speed.toFixed(2) })
+    : t("craft.none");
   const needGuide = !tutorialDone;
   document.getElementById("craft-text").textContent = needGuide
-    ? (gstep < GSTEPS.length ? "Anleitung, Schritt " + (gstep + 1) + " von " + GSTEPS.length + ": " + GSTEPS[gstep].t : "Super, dein Flieger ist fertig gefaltet! Drück auf „Flieger übernehmen“.")
-    : "Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.";
+    ? (gstep < GSTEPS.length ? t("craft.guide", { i: gstep + 1, n: GSTEPS.length, t: t("guide." + gstep) }) : t("craft.guideDone"))
+    : t("craft.text");
   document.getElementById("craft-done").disabled = needGuide ? gstep < GSTEPS.length : !hist.length;
   document.getElementById("craft-style").hidden = document.getElementById("craft-done").disabled;
   if (!document.getElementById("craft-style").hidden && !craftNameSet) {   // fertig gefaltet: einen Namen vorschlagen
@@ -947,30 +1524,30 @@ document.getElementById("craft-done").addEventListener("click", () => {
   const name = document.getElementById("craft-name").value.trim().replace(/\s+/g, " ") || suggestName();
   addCustom(name, s.speed, s.gravity, layers, craftPaint, craftStickers.slice());
   dlg.close();
-  showResult("Dein Flieger ist fertig! Tempo ×" + s.speed.toFixed(2) + ", Symmetrie " + Math.round(s.sym * 100) + " %");
+  showResult(t("craft.ready", { s: s.speed.toFixed(2), y: Math.round(s.sym * 100) }));
 });
 
 // ---------- Duell ----------
 const DUEL_LINK = "https://claude.ai/artifact/RkQxGKGJDdBzs2ds8AyLL7";
 const duelDlg = document.getElementById("duel-dialog");
 function duelText() {
-  return "Ich fordere dich heraus zum Duell! " + (best ? "Mein Rekord bei Papier Piloten:" + best + " Meter. Schaffst du mehr?" : "Wer schafft mit dem Papierflieger die größte Weite?") + (nick ? " – " + nick : "");
+  return t("duel.text.head") + " " + (best ? t("duel.text.record", { n: best }) : t("duel.text.who")) + (nick ? " – " + nick : "");
 }
 document.getElementById("duel-btn").addEventListener("click", () => {
   if (duelCtx) { cancelDuelThrow(); return; }
   const ok = dbRef && myId;
-  openDuelDialog(ok ? "Setze einen deiner selbstgebauten Flieger ein. Wer weiter fliegt, gewinnt den Flieger des anderen." : "Für Einsatz-Duelle brauchst du ein claude.ai-Konto und Mitwirkenden-Zugriff auf diese Seite. Eine einfache Herausforderung kannst du trotzdem verschicken.");
+  openDuelDialog(ok ? t("duel.info.stake") : t("duel.info.simple"));
   if (!ok) showPlainChallenge();
 });
 document.getElementById("duel-close").addEventListener("click", () => duelDlg.close());
 document.getElementById("duel-share").addEventListener("click", async () => {
   const ta = document.getElementById("duel-text"), note = document.getElementById("duel-note");
   try {
-    if (navigator.share) { await navigator.share({ title: "Papier Piloten Duell", text: duelText(), url: duelShareLink }); return; }
+    if (navigator.share) { await navigator.share({ title: t("duel.shareTitle"), text: duelText(), url: duelShareLink }); return; }
   } catch (e) { if (e && e.name === "AbortError") return; }
-  try { await navigator.clipboard.writeText(ta.value); note.textContent = "Nachricht mit Link kopiert. Füge sie in einen Chat ein."; return; } catch (e) {}
-  try { ta.select(); document.execCommand("copy"); note.textContent = "Nachricht mit Link kopiert. Füge sie in einen Chat ein."; }
-  catch (e) { note.textContent = "Markiere den Text und kopiere ihn selbst."; }
+  try { await navigator.clipboard.writeText(ta.value); note.textContent = t("duel.copied"); return; } catch (e) {}
+  try { ta.select(); document.execCommand("copy"); note.textContent = t("duel.copied"); }
+  catch (e) { note.textContent = t("duel.copyManual"); }
 });
 
 // ---------- Duell-Modus mit Einsatz ----------
@@ -979,7 +1556,7 @@ let joinId = (location.hash.match(/^#d_([A-Za-z0-9_~.-]+)$/) || [])[1] || null;
 const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0, boosts: c.boosts || [], pap: c.pap || "heft" });
 function addPlaneCopy(p) {
   if (!p) return;
-  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || "Flieger").slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
+  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || t("plane.default")).slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
 }
 function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = "heft"; }
 function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
@@ -996,7 +1573,7 @@ function openDuelDialog(text) {
 }
 function showDuelLink(id) {
   duelShareLink = DUEL_LINK + "#d_" + id;
-  document.getElementById("duel-text").value = duelText() + " Mein Einsatz liegt bereit!\n" + duelShareLink;
+  document.getElementById("duel-text").value = duelText() + " " + t("duel.text.stake") + "\n" + duelShareLink;
   document.getElementById("duel-text").hidden = false;
   document.getElementById("duel-share").hidden = false;
 }
@@ -1013,10 +1590,10 @@ function renderDuelList() {
     const row = document.createElement("div");
     row.className = "boost-row";
     const sp = document.createElement("span");
-    sp.textContent = "Offen: " + d.cPlane.name + " (" + d.cDist + " m)";
-    const b1 = document.createElement("button"); b1.type = "button"; b1.textContent = "Link";
+    sp.textContent = t("duel.open", { n: d.cPlane.name, d: d.cDist });
+    const b1 = document.createElement("button"); b1.type = "button"; b1.textContent = t("duel.link");
     b1.onclick = () => showDuelLink(d.id);
-    const b2 = document.createElement("button"); b2.type = "button"; b2.textContent = "Abbrechen";
+    const b2 = document.createElement("button"); b2.type = "button"; b2.textContent = t("duel.cancel");
     b2.onclick = () => cancelDuel(d);
     row.append(sp, b1, b2);
     box.appendChild(row);
@@ -1025,14 +1602,14 @@ function renderDuelList() {
 function renderPick(mode, d, id) {
   const box = document.getElementById("duel-pick");
   box.innerHTML = "";
-  if (mode === "create" && !(dbRef && myId)) { box.textContent = "Duelle mit Einsatz gehen hier nicht. Du brauchst ein claude.ai-Konto und Mitwirkenden-Zugriff."; return; }
-  if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten Flieger zum Einsetzen."; return; }
+  if (mode === "create" && !(dbRef && myId)) { box.textContent = t("duel.noStake"); return; }
+  if (!custom.length) { box.textContent = t("duel.noPlanes"); return; }
   custom.filter(c => !(tunnel && tunnel.id === c.id)).forEach(c => {
     const row = document.createElement("div");
     row.className = "boost-row";
     const sp = document.createElement("span");
-    sp.textContent = c.name + " · Tempo ×" + c.speed.toFixed(2);
-    const b = document.createElement("button"); b.type = "button"; b.textContent = "Einsetzen";
+    sp.textContent = c.name + " · " + t("hg.stats", { s: c.speed.toFixed(2) });
+    const b = document.createElement("button"); b.type = "button"; b.textContent = t("duel.use");
     b.onclick = () => startDuelThrow(c, mode, d, id);
     row.append(sp, b);
     box.appendChild(row);
@@ -1042,11 +1619,11 @@ function startDuelThrow(c, mode, d, id) {
   duelCtx = { mode, plane: c, duel: d, id };
   duelPrevEq = equipped; equipped = c.id;
   duelDlg.close(); updateUI();
-  showResult("Duell! Wirf jetzt " + c.name + ".");
+  showResult(t("duel.go", { n: c.name }));
 }
 function cancelDuelThrow() {
   equipped = duelPrevEq || "heft"; duelCtx = null; updateUI();
-  showResult("Duell abgebrochen. Dein Flieger bleibt bei dir.");
+  showResult(t("duel.cancelled"));
 }
 async function duelDone(dc, distance) {
   equipped = duelPrevEq || "heft";
@@ -1056,11 +1633,11 @@ async function duelDone(dc, distance) {
       const ref = dbRef.collection("duels").doc();
       await ref.set({ cId: myId, cNick: nick, cPlane: planePack(c), cDist: distance, status: "open", claimed: false, created: Date.now() });
       removePlane(c.id); save(); updateUI();
-      openDuelDialog("Du bist " + distance + " Meter weit geflogen. Dein Flieger " + c.name + " liegt als Einsatz im Duell. Schick den Link an einen Freund!");
+      openDuelDialog(t("duel.created", { d: distance, n: c.name }));
       showDuelLink(ref.id);
     } catch (e) {
       updateUI();
-      openDuelDialog("Das Duell konnte nicht gespeichert werden. Du brauchst Mitwirkenden-Zugriff auf diese Seite. Dein Flieger bleibt bei dir.");
+      openDuelDialog(t("duel.saveFail"));
     }
     return;
   }
@@ -1068,29 +1645,29 @@ async function duelDone(dc, distance) {
   try {
     const ref = dbRef.doc("duels/" + dc.id);
     const s = await ref.get();
-    if (!s.exists || s.data().status !== "open") { updateUI(); openDuelDialog("Dieses Duell ist schon vorbei. Dein Flieger bleibt bei dir."); return; }
+    if (!s.exists || s.data().status !== "open") { updateUI(); openDuelDialog(t("duel.over")); return; }
     const result = distance > d.cDist ? "o" : distance < d.cDist ? "c" : "draw";
     await ref.update({ status: "done", oId: myId, oNick: nick, oPlane: planePack(c), oDist: distance, result, claimed: false });
     let msg;
-    if (result === "o") { addPlaneCopy(d.cPlane); msg = "Gewonnen! " + distance + " gegen " + d.cDist + " Meter. Du bekommst " + d.cPlane.name + " von " + d.cNick + "."; }
-    else if (result === "c") { removePlane(c.id); msg = "Verloren. " + distance + " gegen " + d.cDist + " Meter. " + c.name + " gehört jetzt " + d.cNick + "."; }
-    else msg = "Unentschieden bei " + distance + " Metern. Jeder behält seinen Flieger.";
+    if (result === "o") { addPlaneCopy(d.cPlane); msg = t("duel.won", { a: distance, b: d.cDist, p: d.cPlane.name, n: d.cNick }); }
+    else if (result === "c") { removePlane(c.id); msg = t("duel.lost", { a: distance, b: d.cDist, p: c.name, n: d.cNick }); }
+    else msg = t("duel.draw", { a: distance });
     save(); updateUI();
     openDuelDialog(msg);
   } catch (e) {
     updateUI();
-    openDuelDialog("Das Ergebnis konnte nicht gespeichert werden. Dein Flieger bleibt bei dir.");
+    openDuelDialog(t("duel.resFail"));
   }
 }
 async function cancelDuel(d) {
   try {
     const ref = dbRef.doc("duels/" + d.id);
     const s = await ref.get();
-    if (!s.exists || s.data().status !== "open") { duelNote("Das Duell ist schon beendet."); return; }
+    if (!s.exists || s.data().status !== "open") { duelNote(t("duel.ended")); return; }
     await ref.update({ status: "cancelled", claimed: true });
     addPlaneCopy(d.cPlane); save(); updateUI();
-    duelNote("Duell abgebrochen. " + d.cPlane.name + " ist wieder bei dir.");
-  } catch (e) { duelNote("Das hat nicht geklappt."); }
+    duelNote(t("duel.cancelOk", { n: d.cPlane.name }));
+  } catch (e) { duelNote(t("duel.fail")); }
 }
 function claimDuels() {
   const done = getClaimed();
@@ -1098,9 +1675,9 @@ function claimDuels() {
     if (d.status !== "done" || d.claimed || done.includes(d.id)) return;
     addClaimed(d.id);
     let msg;
-    if (d.result === "c") { addPlaneCopy(d.cPlane); addPlaneCopy(d.oPlane); msg = "Duell gewonnen gegen " + d.oNick + "! Du bekommst " + d.oPlane.name + "."; }
-    else if (d.result === "draw") { addPlaneCopy(d.cPlane); msg = "Unentschieden gegen " + d.oNick + ". Dein Einsatz ist zurück."; }
-    else msg = "Duell verloren gegen " + d.oNick + ". " + d.cPlane.name + " gehört jetzt " + d.oNick + ".";
+    if (d.result === "c") { addPlaneCopy(d.cPlane); addPlaneCopy(d.oPlane); msg = t("duel.claimWon", { o: d.oNick, p: d.oPlane.name }); }
+    else if (d.result === "draw") { addPlaneCopy(d.cPlane); msg = t("duel.claimDraw", { o: d.oNick }); }
+    else msg = t("duel.claimLost", { o: d.oNick, p: d.cPlane.name });
     save(); updateUI();
     showResult(msg);
     try { dbRef.doc("duels/" + d.id).update({ claimed: true }); } catch (e) {}
@@ -1111,13 +1688,13 @@ async function tryJoin() {
   const id = joinId; joinId = null;
   try {
     const s = await dbRef.doc("duels/" + id).get();
-    if (!s.exists) { openDuelDialog("Dieses Duell gibt es nicht (mehr)."); return; }
+    if (!s.exists) { openDuelDialog(t("duel.none")); return; }
     const d = s.data();
-    if (d.status !== "open") { openDuelDialog("Dieses Duell ist schon vorbei."); return; }
-    if (d.cId === myId) { openDuelDialog("Das ist dein eigenes Duell. Schick den Link an einen Freund."); showDuelLink(id); return; }
-    openDuelDialog(String(d.cNick).slice(0, 20) + " fordert dich zum Duell heraus! Rekord: " + d.cDist + " Meter, Einsatz: " + String(d.cPlane.name).slice(0, 40) + ". Wähle deinen Einsatz-Flieger. Wer weiter fliegt, gewinnt den Flieger des anderen.");
+    if (d.status !== "open") { openDuelDialog(t("duel.overShort")); return; }
+    if (d.cId === myId) { openDuelDialog(t("duel.own")); showDuelLink(id); return; }
+    openDuelDialog(t("duel.join", { c: String(d.cNick).slice(0, 20), d: d.cDist, p: String(d.cPlane.name).slice(0, 40) }));
     renderPick("join", d, id);
-  } catch (e) { openDuelDialog("Das Duell konnte nicht geladen werden."); }
+  } catch (e) { openDuelDialog(t("duel.loadFail")); }
 }
 async function initDuel() {
   try {
@@ -1158,7 +1735,7 @@ function drawHangar(cv, p, away) {
   g.restore();
   if (away) {
     g.fillStyle = css("--ink"); g.font = "700 11px Fredoka, sans-serif"; g.textAlign = "center";
-    g.fillText("Im Windkanal", 60, 54);
+    g.fillText(t("hg.away"), 60, 54);
   }
 }
 function renderHangar() {
@@ -1176,7 +1753,7 @@ function renderHangar() {
     cv.setAttribute("role", "img"); cv.setAttribute("aria-label", p.name);
     const n = document.createElement("span"); n.className = "hn"; n.textContent = p.name;
     const s = document.createElement("span"); s.className = "hs";
-    s.textContent = away ? "Trainiert gerade" : on ? "Ausgewählt" : (p.lvl ? "Stufe " + p.lvl + " · " : "") + "Tempo ×" + p.speed.toFixed(2);
+    s.textContent = away ? t("pl.training") : on ? t("pl.selected") : (p.lvl ? t("hg.lvl", { n: p.lvl }) : "") + t("hg.stats", { s: p.speed.toFixed(2) });
     b.append(cv, n, s);
     b.onclick = () => openPlane(p.id);
     box.appendChild(b);
@@ -1222,9 +1799,9 @@ function renderPlane() {
     g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
   }
   g.restore();
-  document.getElementById("pl-stats").textContent = "Tempo ×" + e.speed.toFixed(2) + ", Gleitflug " + Math.round(0.05 / e.gravity * 100) + " %" + (p.lvl ? ", Windkanal-Stufe " + p.lvl : "") + (u.boosts.length || u.pap !== "heft" ? " (mit Upgrades)" : "");
+  document.getElementById("pl-stats").textContent = t("pl.stats", { s: e.speed.toFixed(2), g: Math.round(0.05 / e.gravity * 100) }) + (p.lvl ? t("pl.statsLvl", { n: p.lvl }) : "") + (u.boosts.length || u.pap !== "heft" ? t("pl.statsUp") : "");
   const sel = document.getElementById("pl-select");
-  sel.textContent = away ? "Trainiert gerade" : on ? "Ausgewählt" : "Auswählen";
+  sel.textContent = away ? t("pl.training") : on ? t("pl.selected") : t("pl.select");
   sel.disabled = away || on || isFlying || !!duelCtx;
   const box = document.getElementById("pl-up");
   box.innerHTML = "";
@@ -1236,27 +1813,27 @@ function renderPlane() {
     const b = document.createElement("button"); b.type = "button"; b.textContent = btnText; b.disabled = off; b.onclick = fn;
     r.append(s, b); box.appendChild(r);
   };
-  head("Upgrades");
-  head("Boosts (höchstens " + MAX_UP + " gleichzeitig)");
+  head(t("pl.upgrades"));
+  head(t("pl.boosts", { n: MAX_UP }));
   BOOSTS.forEach(b => {
     const on = u.boosts.includes(b.id), has = ownedBoosts.includes(b.id);
-    if (on) row(b.name, b.desc, "Entfernen", false, () => { u.boosts = u.boosts.filter(x => x !== b.id); save(); renderPlane(); });
-    else if (has) row(b.name, b.desc, "Anbringen", u.boosts.length >= MAX_UP, () => { u.boosts.push(b.id); save(); renderPlane(); });
-    else row(b.name, b.desc, "Kaufen für " + b.cost + " Münzen", coins < b.cost, () => {
+    if (on) row(b.name, b.desc, t("pl.remove"), false, () => { u.boosts = u.boosts.filter(x => x !== b.id); save(); renderPlane(); });
+    else if (has) row(b.name, b.desc, t("pl.attach"), u.boosts.length >= MAX_UP, () => { u.boosts.push(b.id); save(); renderPlane(); });
+    else row(b.name, b.desc, t("pl.buy", { n: b.cost }), coins < b.cost, () => {
       if (coins < b.cost) return;
       coins -= b.cost; ownedBoosts.push(b.id);
       if (u.boosts.length < MAX_UP) u.boosts.push(b.id);
       save(); updateUI();
     });
   });
-  head("Besseres Papier");
+  head(t("pl.paper"));
   const cur = PAPERS.find(x => x.id === u.pap) || PAPERS[0];
   const better = PAPERS.filter(x => x.cost > cur.cost && x.id !== "eigen" && x.id !== "order");
   const p0 = document.createElement("p"); p0.style.cssText = "margin:4px 0;color:var(--muted);font-size:0.9rem";
-  p0.textContent = "Jetzt: " + cur.name + (better.length ? "" : " – besser geht es nicht."); box.appendChild(p0);
+  p0.textContent = t("pl.now", { n: cur.name }) + (better.length ? "" : t("pl.best")); box.appendChild(p0);
   better.forEach(x => {
     const price = x.cost - cur.cost;
-    row(x.name, "Tempo ×" + x.speed.toFixed(2) + ", Gleitflug " + Math.round(0.05 / x.gravity * 100) + " %", "Upgrade für " + price + " Münzen", coins < price, () => {
+    row(x.name, t("pl.stats", { s: x.speed.toFixed(2), g: Math.round(0.05 / x.gravity * 100) }), t("pl.upgradeFor", { n: price }), coins < price, () => {
       if (coins < price) return;
       coins -= price; u.pap = x.id; save(); updateUI();
     });
@@ -1264,7 +1841,7 @@ function renderPlane() {
   if (p.custom) {   // selbstgebaute Flieger kann man hier wieder löschen (zwei Klicks)
     const d = document.createElement("div"); d.className = "dlg-actions";
     const x = document.createElement("button"); x.type = "button"; x.className = "small";
-    x.textContent = pendingDelete === p.id ? "Wirklich löschen?" : "Flieger löschen";
+    x.textContent = pendingDelete === p.id ? t("pl.deleteSure") : t("pl.delete");
     x.disabled = isFlying || away;
     x.onclick = () => deleteCustom(p.id);
     d.appendChild(x); box.appendChild(d);
@@ -1287,13 +1864,13 @@ function renamePlane() {
   const p = planeById(planeOpenId), ri = document.getElementById("pl-rename"), btn = document.getElementById("pl-rename-save");
   if (!p) return;
   const n = ri.value.trim().replace(/\s+/g, " ").slice(0, 24);
-  if (!n) { ri.value = p.name; renameDirty = false; renameNote("Der Name darf nicht leer sein."); return; }
+  if (!n) { ri.value = p.name; renameDirty = false; renameNote(t("pl.empty")); return; }
   p.name = n; ri.value = n; renameDirty = false;
   if (!p.custom) upOf(p).name = n;
   save();
-  btn.textContent = "Gespeichert ✓";
-  renameNote("Gespeichert: " + n);
-  setTimeout(() => { btn.textContent = "Umbenennen"; }, 1500);
+  btn.textContent = t("pl.saved");
+  renameNote(t("pl.noteSaved", { n }));
+  setTimeout(() => { btn.textContent = t("pl.rename"); }, 1500);
   try { updateUI(); } catch (e) { console.error(e); }
 }
 document.getElementById("pl-rename-save").addEventListener("click", renamePlane);
@@ -1319,7 +1896,7 @@ document.getElementById("pl-rename-roll").addEventListener("click", () => {
 const TUNNEL_MS = 180000, TUNNEL_MAX = 20;
 const tunnelDlg = document.getElementById("tunnel-dialog"), tc = document.getElementById("tunnel-canvas"), tg = tc.getContext("2d");
 const tunnelPlane = () => tunnel ? custom.find(c => c.id === tunnel.id) || null : null;
-const nextGain = lvl => (lvl + 1) % 2 ? "Tempo +0,03" : "Gleitflug +5 %";
+const nextGain = lvl => t((lvl + 1) % 2 ? "tn.gainSpeed" : "tn.gainGlide");
 function levelUp(c) {
   c.lvl = (c.lvl || 0) + 1;
   if (c.lvl % 2) c.speed = +(c.speed + 0.03).toFixed(3);
@@ -1335,7 +1912,7 @@ function tickTunnel() {
   while ((c.lvl || 0) < TUNNEL_MAX && now - tunnel.since >= TUNNEL_MS) { tunnel.since += TUNNEL_MS; levelUp(c); }
   if (c.lvl === from) return;
   save(); updateUI(); renderTunnelList();
-  showResult(c.name + " ist im Windkanal auf Stufe " + c.lvl + " gestiegen!" + (c.lvl - from === 1 ? " (" + (c.lvl % 2 ? "Tempo +0,03" : "Gleitflug +5 %") + ")" : ""));
+  showResult(t("tn.up", { n: c.name, l: c.lvl }) + (c.lvl - from === 1 ? " (" + t(c.lvl % 2 ? "tn.gainSpeed" : "tn.gainGlide") + ")" : ""));
 }
 function takeOutTunnel() {
   tickTunnel();
@@ -1356,19 +1933,19 @@ function renderTunnelList() {
   const box = document.getElementById("tunnel-list");
   box.innerHTML = "";
   document.getElementById("tunnel-out").hidden = !tunnel;
-  if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten Flieger. Bastel einen und leg ihn dann hier hinein."; return; }
+  if (!custom.length) { box.textContent = t("tn.noPlanes"); return; }
   custom.forEach(c => {
     const row = document.createElement("div");
     row.className = "boost-row";
     const sp = document.createElement("span");
     sp.textContent = c.name;
     const sm = document.createElement("small");
-    sm.textContent = "Stufe " + (c.lvl || 0) + " von " + TUNNEL_MAX + " · Tempo ×" + c.speed.toFixed(2) + " · Gleitflug " + Math.round(0.05 / c.gravity * 100) + " %";
+    sm.textContent = t("tn.level", { l: c.lvl || 0, m: TUNNEL_MAX, s: c.speed.toFixed(2), g: Math.round(0.05 / c.gravity * 100) });
     sp.appendChild(sm);
     const b = document.createElement("button");
     b.type = "button";
     const here = !!tunnel && tunnel.id === c.id;
-    b.textContent = here ? "Trainiert" : "Hineinlegen";
+    b.textContent = here ? t("tn.in") : t("tn.put");
     b.disabled = here || isFlying || !!duelCtx;
     b.onclick = () => putInTunnel(c.id);
     row.append(sp, b);
@@ -1378,12 +1955,12 @@ function renderTunnelList() {
 function updateTunnelStatus() {
   const c = tunnelPlane(), bar = document.querySelector("#tunnel-bar div"), st = document.getElementById("tunnel-status");
   let txt, pct = 0;
-  if (!c) txt = "Der Windkanal ist leer.";
-  else if ((c.lvl || 0) >= TUNNEL_MAX) { txt = c.name + " ist voll trainiert (Stufe " + TUNNEL_MAX + ")."; pct = 100; }
+  if (!c) txt = t("tn.emptyState");
+  else if ((c.lvl || 0) >= TUNNEL_MAX) { txt = t("tn.full", { n: c.name, m: TUNNEL_MAX }); pct = 100; }
   else {
     const el = Math.min(TUNNEL_MS, Math.max(0, Date.now() - tunnel.since)), left = Math.ceil((TUNNEL_MS - el) / 1000);
     pct = el / TUNNEL_MS * 100;
-    txt = c.name + ", Stufe " + (c.lvl || 0) + " von " + TUNNEL_MAX + ". Nächste Stufe in " + Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " (" + nextGain(c.lvl || 0) + ").";
+    txt = t("tn.status", { n: c.name, l: c.lvl || 0, m: TUNNEL_MAX, t: Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0"), g: nextGain(c.lvl || 0) });
   }
   if (st.textContent !== txt) st.textContent = txt;
   bar.style.width = pct.toFixed(1) + "%";
@@ -1438,12 +2015,12 @@ function drawTunnel() {
     g.restore();
   } else {
     g.fillStyle = css("--muted"); g.font = "600 14px Fredoka, sans-serif"; g.textAlign = "center";
-    g.fillText("Leer", 160, 95);
+    g.fillText(t("tn.empty"), 160, 95);
   }
   // Ventilatoren vorne und hinten
   const a = t * (c ? 0.02 : 0.002);
   drawFan(g, 35, 90, a, !!c); drawFan(g, 285, 90, -a, !!c);
-  if (c) { g.fillStyle = css("--ink"); g.font = "600 13px Fredoka, sans-serif"; g.textAlign = "center"; g.fillText("Stufe " + (c.lvl || 0), 160, 162); }
+  if (c) { g.fillStyle = css("--ink"); g.font = "600 13px Fredoka, sans-serif"; g.textAlign = "center"; g.fillText(t("tn.stage", { n: c.lvl || 0 }), 160, 162); }
 }
 document.getElementById("tunnel-btn").addEventListener("click", () => { tickTunnel(); renderTunnelList(); updateTunnelStatus(); if (!tunnelDlg.open) tunnelDlg.showModal(); });
 document.getElementById("tunnel-close").addEventListener("click", () => tunnelDlg.close());
@@ -1459,7 +2036,7 @@ function askNick() {
 }
 function submitNick() {
   const v = document.getElementById("nick-in").value.trim().replace(/\s+/g, " ");
-  if (v.length < 2) { document.getElementById("nick-err").textContent = "Der Spitzname braucht mindestens 2 Zeichen."; return; }
+  if (v.length < 2) { document.getElementById("nick-err").textContent = t("login.err"); return; }
   nick = v; save(); updateUI(); loginDlg.close();
   if (!tutorialDone) { newSheet(); dlg.showModal(); } else tryJoin();
 }
@@ -1467,7 +2044,51 @@ loginDlg.addEventListener("cancel", e => e.preventDefault());
 document.getElementById("nick-go").addEventListener("click", submitNick);
 document.getElementById("nick-in").addEventListener("keydown", e => { if (e.key === "Enter") submitNick(); });
 
+// ---------- Sprache wechseln ----------
+// Namen der Papiere und Boosts folgen der Sprache; ein selbst vergebener Name des Schulheftpapiers (pupg.heft.name) bleibt.
+function refreshNames() {
+  PAPERS.forEach(p => {
+    if (p.id === "order" && orderQ) return;
+    const own = pupg[p.id] && pupg[p.id].name;
+    p.name = typeof own === "string" && own.trim() ? own.trim().slice(0, 24) : t("paper." + p.id);
+  });
+  BOOSTS.forEach(b => { b.name = t("boost." + b.id); b.desc = t("boostd." + b.id); });
+}
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.title = t("app.name");
+  document.querySelectorAll("[data-i18n]").forEach(e => { e.textContent = t(e.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(e => { e.placeholder = t(e.dataset.i18nPh); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(e => { e.setAttribute("aria-label", t(e.dataset.i18nAria)); });
+  refreshNames();
+  document.getElementById("lang-select").value = lang;
+  document.querySelectorAll("#lang-chips button").forEach(b => {
+    const on = b.dataset.lang === lang;
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+function setLang(l) {
+  if (!LANGS[l] || l === lang) return;
+  lang = l;
+  try { localStorage.setItem("pf_lang", l); } catch (e) {}
+  document.getElementById("nick-err").textContent = "";
+  applyLang();
+  updateUI();
+  if (dlg.open) refreshCraft();
+  renderTunnelList(); updateTunnelStatus();
+}
+(function buildLangUI() {
+  const sel = document.getElementById("lang-select"), chips = document.getElementById("lang-chips");
+  Object.keys(LANGS).forEach(k => {
+    const o = document.createElement("option"); o.value = k; o.textContent = LANGS[k]; o.lang = k; sel.appendChild(o);
+    const b = document.createElement("button"); b.type = "button"; b.dataset.lang = k; b.lang = k; b.textContent = LANGS[k];
+    b.onclick = () => setLang(k); chips.appendChild(b);
+  });
+  sel.addEventListener("change", () => setLang(sel.value));
+})();
+
 load();
+applyLang();
 tickTunnel();
 updateUI();
 if (!nick) askNick();
