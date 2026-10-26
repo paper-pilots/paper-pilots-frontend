@@ -61,15 +61,6 @@ canvas { display: block; width: 100%; height: auto; border-radius: 14px; border:
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
 .actions .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); padding: 8px 14px; font-weight: 400; }
 .best { color: var(--muted); margin-left: auto; }
-.shop { margin-top: 20px; }
-.shop h2 { font-size: 1.3rem; margin: 0 0 10px; }
-.papers { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
-.paper { display: flex; flex-direction: column; gap: 6px; border: 2px solid transparent; }
-.paper.active { border-color: var(--accent); }
-.paper .swatch { height: 28px; border-radius: 8px; border: 1px solid var(--line); }
-.paper .name { font-weight: 700; }
-.paper .stats { color: var(--muted); font-size: 0.9rem; }
-.paper button { margin-top: auto; }
 .craft { margin-bottom: 14px; }
 dialog { background: var(--surface); color: var(--ink); border: 0; border-radius: 16px; padding: 18px; width: min(92vw, 380px); }
 dialog::backdrop { background: rgba(10,20,40,0.55); }
@@ -79,7 +70,9 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .boost-row span { font-size: 0.9rem; }
 .boost-row small { display: block; color: var(--muted); }
 .boost-row button { padding: 6px 12px; font-size: 0.9rem; white-space: nowrap; }
-#craft-boosts { margin-top: 14px; }
+#pl-canvas { background: var(--sky); margin-bottom: 8px; }
+#pl-up h3 { margin: 14px 0 4px; font-size: 1rem; }
+#pl-up small { display: block; color: var(--muted); }
 #paint-row, #sticker-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
 .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
 .stk { padding: 4px 8px; font-size: 1.1rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); }
@@ -97,7 +90,7 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .dlg-actions .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); font-weight: 400; padding: 8px 14px; }
 @media (max-width: 520px) {
   .panel { grid-template-columns: 1fr; } .best { margin-left: 0; width: 100%; }
-  .paper button, .boost-row button, .dlg-actions button, .actions button { min-height: 44px; }
+  .boost-row button, .dlg-actions button, .actions button { min-height: 44px; }
   .sw { width: 36px; height: 36px; }
   .stk { min-width: 40px; min-height: 40px; }
   #craft-canvas, #view3d { width: 80%; }
@@ -149,15 +142,6 @@ dialog { max-height: 92vh; overflow-y: auto; }
     <span class="best">Bester Wurf: <strong id="best">0</strong> Meter</span>
   </div>
 
-  <section class="shop" aria-label="Papier-Laden">
-    <h2>Papier-Laden</h2>
-    <div class="papers" id="papers"></div>
-  </section>
-  <section class="shop" aria-label="Boosts">
-    <h2>Boosts</h2>
-    <p class="lead">Gekaufte Boosts bringst du im Fenster „Flieger basteln" an deinem Flieger an.</p>
-    <div class="papers" id="boosts-shop"></div>
-  </section>
 </main>
 
 <dialog id="login-dialog" aria-label="Anmeldung">
@@ -180,6 +164,15 @@ dialog { max-height: 92vh; overflow-y: auto; }
     <button id="duel-share" type="button" hidden>Teilen</button>
     <button id="duel-close" class="small" type="button">Schließen</button>
   </div>
+</dialog>
+
+<dialog id="plane-dialog" aria-label="Flugzeug">
+  <h2 id="pl-name"></h2>
+  <canvas id="pl-canvas" width="640" height="320" aria-label="Dein Flugzeug"></canvas>
+  <p id="pl-stats" style="margin:0 0 8px"></p>
+  <div class="dlg-actions" style="margin-top:0"><button id="pl-select" type="button"></button></div>
+  <div id="pl-up"></div>
+  <div class="dlg-actions"><button id="pl-close" class="small" type="button">Schließen</button></div>
 </dialog>
 
 <dialog id="tunnel-dialog" aria-label="Windkanal">
@@ -207,7 +200,6 @@ dialog { max-height: 92vh; overflow-y: auto; }
     <strong>Sticker (je 10 Münzen)</strong><div id="sticker-row"></div>
     <span id="sticker-hint" style="color:var(--muted)"></span>
   </div>
-  <div id="craft-boosts"></div>
   <div class="dlg-actions">
     <button id="craft-done" type="button" disabled>Flieger übernehmen</button>
     <button id="craft-undo" class="small" type="button">Rückgängig</button>
@@ -234,7 +226,7 @@ const PAPERS = [
 let coins = 0, strength = 1, upgradeCost = 10, best = 0;
 let owned = ["heft"], equipped = "heft";
 let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
-let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], coinLevel = 0, nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null, tunnel = null;
+let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null, tunnel = null, pupg = {};
 const BOOSTS = [
   { id: "clip",   name: "Büroklammer-Nase", cost: 80,  desc: "Tempo ×1,12",                 speed: 1.12, gravity: 1,    lift: 0 },
   { id: "tape",   name: "Klebeband-Flügel", cost: 150, desc: "Gleitet länger (Fall ×0,85)", speed: 1,    gravity: 0.85, lift: 0 },
@@ -260,13 +252,22 @@ function load() {
       orderQ = s.orderQ || null; if (orderQ) applyOrder(orderQ);
       shapes = s.shapes || {};
       custom = s.custom || [];
-      coinLevel = s.coinLevel || 0;
       nick = s.nick || "";
       tutorialDone = s.tutorialDone !== undefined ? s.tutorialDone : true;
       throwHint = !!s.throwHint;
       practiceThrows = s.practiceThrows || 0;
       tunnel = s.tunnel && custom.some(c => c.id === s.tunnel.id) ? s.tunnel : null;
       if (tunnel && equipped === tunnel.id) equipped = "heft";
+      pupg = s.pupg || {};
+      if (attached.length) {   // alte Version: Boosts gehörten zum ganzen Spiel, jetzt zum ausgewählten Flieger
+        upOf(planeById(equipped) || PAPERS[0]).boosts = attached.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP);
+        attached = [];
+      }
+      // Papiere aus dem früheren Papier-Laden: das beste besessene Papier wird zum Papier-Upgrade des Schulheftpapiers
+      const bestPaper = PAPERS.filter(x => owned.includes(x.id) && x.cost > 0 && x.id !== "eigen" && x.id !== "order").sort((a, b) => b.cost - a.cost)[0];
+      const hu = upOf(PAPERS[0]);
+      if (bestPaper && bestPaper.cost > (PAPERS.find(x => x.id === hu.pap) || PAPERS[0]).cost) hu.pap = bestPaper.id;
+      if (equipped !== "heft" && PAPERS.some(x => x.id === equipped)) equipped = "heft";
       if (!s.custom) {
         const map = {};
         if (owned.includes("eigen") && shapes.eigen) {
@@ -284,44 +285,7 @@ function load() {
   } catch (e) {}
 }
 function save() {
-  try { localStorage.setItem("papierflieger", JSON.stringify({ coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes, custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows, tunnel })); } catch (e) {}
-}
-
-function renderShop() {
-  const box = document.getElementById("papers");
-  box.innerHTML = "";
-  PAPERS.concat(custom).forEach(p => {
-    if ((p.id === "eigen" || p.id === "order") && !owned.includes(p.id)) return;
-    const has = owned.includes(p.id) || !!p.custom, on = equipped === p.id;
-    const d = document.createElement("div");
-    d.className = "card paper" + (on ? " active" : "");
-    d.innerHTML = '<div class="swatch" style="background:' + p.color + '"></div>' +
-      '<div class="name">' + esc(p.name) + '</div>' +
-      '<div class="stats">Tempo ×' + p.speed.toFixed(2) + ', Gleitflug ' + Math.round((0.05 / p.gravity) * 100) + ' %' + (p.lvl ? ', Stufe ' + p.lvl : '') + (!!tunnel && tunnel.id === p.id ? ' · im Windkanal' : '') + '</div>';
-    const b = document.createElement("button");
-    b.type = "button";
-    const inTunnel = !!tunnel && tunnel.id === p.id;
-    if (inTunnel) { b.textContent = "Trainiert gerade"; b.disabled = true; }
-    else if (on) { b.textContent = "Ausgewählt"; b.disabled = true; }
-    else if (has) { b.textContent = "Auswählen"; b.onclick = () => { if (!isFlying && !duelCtx) { equipped = p.id; save(); updateUI(); } }; }
-    else { b.textContent = "Kaufen für " + p.cost + " Münzen"; b.disabled = coins < p.cost; b.onclick = () => buyPaper(p); }
-    if (isFlying && !on) b.disabled = true;
-    d.appendChild(b);
-    if (p.custom) {
-      const x = document.createElement("button");
-      x.type = "button"; x.textContent = pendingDelete === p.id ? "Wirklich löschen?" : "Löschen"; x.disabled = isFlying || inTunnel;
-      x.style.cssText = "background:transparent;color:var(--muted);border:1px solid var(--muted);font-weight:400;padding:6px 12px;font-size:0.9rem";
-      x.onclick = () => deleteCustom(p.id);
-      d.appendChild(x);
-    }
-    box.appendChild(d);
-  });
-}
-
-function buyPaper(p) {
-  if (isFlying || owned.includes(p.id) || coins < p.cost) return;
-  coins -= p.cost; owned.push(p.id); equipped = p.id;
-  save(); updateUI();
+  try { localStorage.setItem("papierflieger", JSON.stringify({ coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, orderQ, shapes, custom, nick, tutorialDone, throwHint, practiceThrows, tunnel, pupg })); } catch (e) {}
 }
 
 function updateUI() {
@@ -331,10 +295,9 @@ function updateUI() {
   document.getElementById("upgrade-cost").textContent = upgradeCost;
   document.getElementById("best").textContent = best;
   document.getElementById("craft-btn").disabled = isFlying;
-  renderBoosts();
   document.getElementById("upgrade-btn").disabled = coins < upgradeCost || isFlying;
-  renderShop();
   renderHangar();
+  if (planeDlg.open) renderPlane();
 }
 
 function showResult(t) {
@@ -516,11 +479,10 @@ function throwPlane(pm, tm, lp) {
   resultEl.hidden = true;
   const p = paper();
   plane.x = lp ? lp[0] : SX; plane.y = lp ? lp[1] : 300; launchX = plane.x; camX = 0;
-  let sm = 1, gm = 1, lift = 0;
-  attached.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { sm *= b.speed; gm *= b.gravity; lift += b.lift; } });
-  plane.vx = (2 + strength * 0.5) * p.speed * sm * pm;
-  plane.vy = (-1 - strength * 0.2 - lift) * tm;
-  flightGravity = p.gravity * gm;
+  const e = effStats(p);   // Werte des Fliegers samt Papier und Boosts aus seinen Upgrades
+  plane.vx = (2 + strength * 0.5) * e.speed * pm;
+  plane.vy = (-1 - strength * 0.2 - e.lift) * tm;
+  flightGravity = e.gravity;
   updateUI();
 }
 
@@ -534,7 +496,7 @@ function finish() {
     updateUI(); duelDone(dc, distance);
     return;
   }
-  const earned = Math.floor(distance / 10) * Math.pow(2, coinLevel);
+  const earned = Math.floor(distance / 10);
   coins += earned;
   const record = distance > best;
   if (record) best = distance;
@@ -578,7 +540,7 @@ function resetGame() {
     return;
   }
   rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen";
-  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; coinLevel = 0; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null;
+  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null; pupg = {};
   save(); updateUI(); showResult("Spielstand zurückgesetzt."); askNick();
 }
 
@@ -771,61 +733,6 @@ v3.addEventListener("pointermove", e => {
 });
 v3.addEventListener("pointerup", () => { drag3 = null; });
 v3.addEventListener("pointercancel", () => { drag3 = null; });
-
-// ---------- Boosts ----------
-function renderBoosts() {
-  const shop = document.getElementById("boosts-shop");
-  shop.innerHTML = "";
-  BOOSTS.forEach(b => {
-    const has = ownedBoosts.includes(b.id);
-    const d = document.createElement("div");
-    d.className = "card paper";
-    d.innerHTML = '<div class="name">' + b.name + '</div><div class="stats">' + b.desc + '</div>';
-    const btn = document.createElement("button");
-    btn.type = "button";
-    if (has) { btn.textContent = "Gekauft"; btn.disabled = true; }
-    else {
-      btn.textContent = "Kaufen für " + b.cost + " Münzen";
-      btn.disabled = coins < b.cost || isFlying;
-      btn.onclick = () => { if (coins >= b.cost) { coins -= b.cost; ownedBoosts.push(b.id); save(); updateUI(); } };
-    }
-    d.appendChild(btn);
-    shop.appendChild(d);
-  });
-  const mult = Math.pow(2, coinLevel), price = 3000 * mult;
-  const dc = document.createElement("div");
-  dc.className = "card paper";
-  dc.innerHTML = '<div class="name">Doppelmünzen' + (coinLevel ? ' (Stufe ' + coinLevel + ')' : '') + '</div><div class="stats">Aktuell ×' + mult + ' Münzen pro Wurf. Nächste Stufe: ×' + (mult * 2) + '</div>';
-  const cb = document.createElement("button");
-  cb.type = "button";
-  cb.textContent = "Kaufen für " + price.toLocaleString("de-DE") + " Münzen";
-  cb.disabled = coins < price || isFlying;
-  cb.onclick = () => { if (coins >= price) { coins -= price; coinLevel++; save(); updateUI(); } };
-  dc.appendChild(cb);
-  shop.appendChild(dc);
-  const box = document.getElementById("craft-boosts");
-  box.innerHTML = "<strong>Boosts (max. 2 gleichzeitig)</strong>";
-  const mine = BOOSTS.filter(b => ownedBoosts.includes(b.id));
-  if (!mine.length) {
-    const p = document.createElement("p");
-    p.style.cssText = "margin:6px 0 0;color:var(--muted);font-size:0.9rem";
-    p.textContent = "Noch keine Boosts. Kauf welche im Laden unter dem Papier.";
-    box.appendChild(p);
-  }
-  mine.forEach(b => {
-    const on = attached.includes(b.id);
-    const row = document.createElement("div");
-    row.className = "boost-row";
-    row.innerHTML = "<span>" + b.name + "<small>" + b.desc + "</small></span>";
-    const t = document.createElement("button");
-    t.type = "button";
-    t.textContent = on ? "Entfernen" : "Anbringen";
-    t.disabled = !on && attached.length >= 2;
-    t.onclick = () => { attached = on ? attached.filter(x => x !== b.id) : attached.concat(b.id); save(); renderBoosts(); };
-    row.appendChild(t);
-    box.appendChild(row);
-  });
-}
 
 // ---------- Flieger basteln (freies Falten) ----------
 const OX = 60, OY = 70;
@@ -1023,10 +930,10 @@ document.getElementById("duel-share").addEventListener("click", async () => {
 // ---------- Duell-Modus mit Einsatz ----------
 let duelShareLink = DUEL_LINK, dbRef = null, myId = null, duelCtx = null, duelPrevEq = null, myDuels = [];
 let joinId = (location.hash.match(/^#d_([A-Za-z0-9_~.-]+)$/) || [])[1] || null;
-const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0 });
+const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0, boosts: c.boosts || [], pap: c.pap || "heft" });
 function addPlaneCopy(p) {
   if (!p) return;
-  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || "Flieger").slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), custom: true });
+  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || "Flieger").slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
 }
 function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = "heft"; }
 function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
@@ -1225,13 +1132,100 @@ function renderHangar() {
     const s = document.createElement("span"); s.className = "hs";
     s.textContent = away ? "Trainiert gerade" : on ? "Ausgewählt" : (p.lvl ? "Stufe " + p.lvl + " · " : "") + "Tempo ×" + p.speed.toFixed(2);
     b.append(cv, n, s);
-    b.disabled = away;
-    b.onclick = () => { if (!isFlying && !duelCtx && !away) { equipped = p.id; save(); updateUI(); } };
+    b.onclick = () => openPlane(p.id);
     box.appendChild(b);
     drawHangar(cv, p, away);
   });
   box.scrollLeft = scroll;
 }
+
+// ---------- Seite eines Flugzeugs: Upgrades ----------
+// Jedes Flugzeug hat eigene Upgrades: bis zu 2 Boosts und ein besseres Papier. Bei selbstgebauten Fliegern liegen sie
+// direkt am Flieger (c.boosts, c.pap), bei den Standardpapieren in pupg[id].
+const MAX_UP = 2;
+const planeDlg = document.getElementById("plane-dialog");
+let planeOpenId = null;
+const planeById = id => PAPERS.find(p => p.id === id) || custom.find(c => c.id === id) || null;
+function upOf(p) {
+  if (p.custom) { p.boosts = p.boosts || []; p.pap = p.pap || "heft"; return p; }
+  return (pupg[p.id] = pupg[p.id] || { boosts: [], pap: "heft" });
+}
+// Werte eines Fliegers mit Papier und Boosts
+function effStats(p) {
+  const u = upOf(p), pp = PAPERS.find(x => x.id === u.pap) || PAPERS[0];
+  let speed = p.speed * pp.speed, gravity = p.gravity * pp.gravity / 0.05, lift = 0;
+  u.boosts.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { speed *= b.speed; gravity *= b.gravity; lift += b.lift; } });
+  return { speed, gravity, lift };
+}
+function openPlane(id) { planeOpenId = id; renderPlane(); if (!planeDlg.open) planeDlg.showModal(); }
+function renderPlane() {
+  const p = planeById(planeOpenId);
+  if (!p) { if (planeDlg.open) planeDlg.close(); return; }
+  const u = upOf(p), e = effStats(p), away = !!tunnel && tunnel.id === p.id, on = equipped === p.id;
+  document.getElementById("pl-name").textContent = p.name;
+  const cv = document.getElementById("pl-canvas"), g = cv.getContext("2d"), k = cv.width / 320;
+  g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, 320, 160);
+  g.save(); g.translate(160, 80); g.rotate(-0.1); g.scale(2.6, 2.6);
+  if (!drawShape(p.shape, p, g)) {
+    g.scale(1.7, 1.7);
+    g.fillStyle = p.paint || p.color || "#ffffff"; g.strokeStyle = "#1f2a44"; g.lineWidth = 0.8; g.lineJoin = "round";
+    g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
+  }
+  g.restore();
+  document.getElementById("pl-stats").textContent = "Tempo ×" + e.speed.toFixed(2) + ", Gleitflug " + Math.round(0.05 / e.gravity * 100) + " %" + (p.lvl ? ", Windkanal-Stufe " + p.lvl : "") + (u.boosts.length || u.pap !== "heft" ? " (mit Upgrades)" : "");
+  const sel = document.getElementById("pl-select");
+  sel.textContent = away ? "Trainiert gerade" : on ? "Ausgewählt" : "Auswählen";
+  sel.disabled = away || on || isFlying || !!duelCtx;
+  const box = document.getElementById("pl-up");
+  box.innerHTML = "";
+  const head = t => { const h = document.createElement("h3"); h.textContent = t; box.appendChild(h); };
+  const row = (title, sub, btnText, off, fn) => {
+    const r = document.createElement("div"); r.className = "boost-row";
+    const s = document.createElement("span"); s.textContent = title;
+    const sm = document.createElement("small"); sm.textContent = sub; s.appendChild(sm);
+    const b = document.createElement("button"); b.type = "button"; b.textContent = btnText; b.disabled = off; b.onclick = fn;
+    r.append(s, b); box.appendChild(r);
+  };
+  head("Upgrades");
+  head("Boosts (höchstens " + MAX_UP + " gleichzeitig)");
+  BOOSTS.forEach(b => {
+    const on = u.boosts.includes(b.id), has = ownedBoosts.includes(b.id);
+    if (on) row(b.name, b.desc, "Entfernen", false, () => { u.boosts = u.boosts.filter(x => x !== b.id); save(); renderPlane(); });
+    else if (has) row(b.name, b.desc, "Anbringen", u.boosts.length >= MAX_UP, () => { u.boosts.push(b.id); save(); renderPlane(); });
+    else row(b.name, b.desc, "Kaufen für " + b.cost + " Münzen", coins < b.cost, () => {
+      if (coins < b.cost) return;
+      coins -= b.cost; ownedBoosts.push(b.id);
+      if (u.boosts.length < MAX_UP) u.boosts.push(b.id);
+      save(); updateUI();
+    });
+  });
+  head("Besseres Papier");
+  const cur = PAPERS.find(x => x.id === u.pap) || PAPERS[0];
+  const better = PAPERS.filter(x => x.cost > cur.cost && x.id !== "eigen" && x.id !== "order");
+  const p0 = document.createElement("p"); p0.style.cssText = "margin:4px 0;color:var(--muted);font-size:0.9rem";
+  p0.textContent = "Jetzt: " + cur.name + (better.length ? "" : " – besser geht es nicht."); box.appendChild(p0);
+  better.forEach(x => {
+    const price = x.cost - cur.cost;
+    row(x.name, "Tempo ×" + x.speed.toFixed(2) + ", Gleitflug " + Math.round(0.05 / x.gravity * 100) + " %", "Upgrade für " + price + " Münzen", coins < price, () => {
+      if (coins < price) return;
+      coins -= price; u.pap = x.id; save(); updateUI();
+    });
+  });
+  if (p.custom) {   // selbstgebaute Flieger kann man hier wieder löschen (zwei Klicks)
+    const d = document.createElement("div"); d.className = "dlg-actions";
+    const x = document.createElement("button"); x.type = "button"; x.className = "small";
+    x.textContent = pendingDelete === p.id ? "Wirklich löschen?" : "Flieger löschen";
+    x.disabled = isFlying || away;
+    x.onclick = () => deleteCustom(p.id);
+    d.appendChild(x); box.appendChild(d);
+  }
+}
+document.getElementById("pl-select").addEventListener("click", () => {
+  const p = planeById(planeOpenId);
+  if (!p || isFlying || duelCtx || (tunnel && tunnel.id === p.id)) return;
+  equipped = p.id; save(); updateUI(); renderPlane();
+});
+document.getElementById("pl-close").addEventListener("click", () => planeDlg.close());
 
 // ---------- Windkanal ----------
 // Ein Flieger im Windkanal trainiert: Alle 3 Minuten steigt er eine Stufe auf (höchstens Stufe 20).
