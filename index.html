@@ -76,6 +76,11 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .sw.on, .stk.on { outline: 3px solid var(--accent); outline-offset: 1px; }
 #craft-style { margin-top: 12px; font-size: 0.9rem; }
 #view3d { display: block; width: 100%; max-width: 320px; margin: 0 auto 10px; border-radius: 12px; background: linear-gradient(var(--sky), var(--surface)); touch-action: pan-y; cursor: grab; }
+#tunnel-canvas { background: var(--sky); }
+#tunnel-bar { height: 12px; border-radius: 6px; background: var(--bg); border: 1px solid var(--muted); margin: 10px 0 4px; overflow: hidden; }
+#tunnel-bar div { height: 100%; width: 0; background: var(--accent); }
+#tunnel-status { margin: 0 0 10px; min-height: 2.6em; font-size: 0.95rem; }
+#tunnel-list .boost-row small { display: block; color: var(--muted); }
 #craft-text { min-height: 3em; margin: 0 0 10px; color: var(--muted); }
 #craft-canvas { max-width: 320px; margin: 0 auto; touch-action: none; background: var(--sky); cursor: grab; }
 .dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
@@ -87,6 +92,20 @@ dialog { max-height: 92vh; overflow-y: auto; }
   .stk { min-width: 40px; min-height: 40px; }
   #craft-canvas, #view3d { width: 80%; }
 }
+/* Handy im Querformat: Spielfeld füllt die Höhe, alles andere wird kompakt */
+@media (orientation: landscape) and (max-height: 520px) {
+  main { max-width: none; padding: 6px max(12px, env(safe-area-inset-right)) 16px max(12px, env(safe-area-inset-left)); }
+  h1, main > .lead { display: none; }
+  .craft { margin-bottom: 6px; padding: 8px 14px; }
+  .panel { grid-template-columns: auto auto; justify-content: start; gap: 8px; margin-bottom: 6px; }
+  .panel .card { padding: 6px 14px; }
+  .card h2 { font-size: 0.8rem; margin: 0 0 2px; }
+  .big { font-size: 1.2rem; }
+  #upgrade-btn { padding: 6px 12px; font-size: 0.9rem; }
+  .stage { width: min(100%, calc((100vh - 118px) * 2)); width: min(100%, calc((100dvh - 118px) * 2)); margin: 0 auto; }
+  .hud { top: 6px; right: 8px; }
+  .actions { margin-top: 8px; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -94,6 +113,7 @@ dialog { max-height: 92vh; overflow-y: auto; }
 <main>
   <button id="craft-btn" class="craft" type="button">Flieger basteln</button>
   <button id="duel-btn" class="craft" type="button">Duell</button>
+  <button id="tunnel-btn" class="craft" type="button">Windkanal</button>
   <span id="nick-label" style="margin-left:12px;font-weight:600"></span>
   <h1>Papier Piloten</h1>
   <p class="lead">Wirf deinen Flieger von der Terrasse, sammle Münzen und kaufe besseres Papier und mehr Wurfstärke.</p>
@@ -153,6 +173,19 @@ dialog { max-height: 92vh; overflow-y: auto; }
   </div>
 </dialog>
 
+<dialog id="tunnel-dialog" aria-label="Windkanal">
+  <h2>Windkanal</h2>
+  <p id="tunnel-info" style="color:var(--muted);margin:0 0 10px">Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Alle 3 Minuten steigt er eine Stufe auf und wird besser. Das läuft auch weiter, wenn du das Fenster schließt. Du kannst den Flieger trotzdem im Spiel werfen.</p>
+  <canvas id="tunnel-canvas" width="640" height="360" aria-label="Windkanal mit Ventilatoren"></canvas>
+  <div id="tunnel-bar" role="progressbar" aria-label="Fortschritt bis zur nächsten Stufe"><div></div></div>
+  <p id="tunnel-status" role="status"></p>
+  <div id="tunnel-list"></div>
+  <div class="dlg-actions">
+    <button id="tunnel-out" type="button" hidden>Herausnehmen</button>
+    <button id="tunnel-close" class="small" type="button">Schließen</button>
+  </div>
+</dialog>
+
 <dialog id="craft-dialog" aria-label="Flieger basteln">
   <h2>Flieger basteln</h2>
   <p id="craft-text">Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.</p>
@@ -192,7 +225,7 @@ const PAPERS = [
 let coins = 0, strength = 1, upgradeCost = 10, best = 0;
 let owned = ["heft"], equipped = "heft";
 let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
-let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], coinLevel = 0, nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null;
+let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], coinLevel = 0, nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null, tunnel = null;
 const BOOSTS = [
   { id: "clip",   name: "Büroklammer-Nase", cost: 80,  desc: "Tempo ×1,12",                 speed: 1.12, gravity: 1,    lift: 0 },
   { id: "tape",   name: "Klebeband-Flügel", cost: 150, desc: "Gleitet länger (Fall ×0,85)", speed: 1,    gravity: 0.85, lift: 0 },
@@ -223,6 +256,7 @@ function load() {
       tutorialDone = s.tutorialDone !== undefined ? s.tutorialDone : true;
       throwHint = !!s.throwHint;
       practiceThrows = s.practiceThrows || 0;
+      tunnel = s.tunnel && custom.some(c => c.id === s.tunnel.id) ? s.tunnel : null;
       if (!s.custom) {
         const map = {};
         if (owned.includes("eigen") && shapes.eigen) {
@@ -240,7 +274,7 @@ function load() {
   } catch (e) {}
 }
 function save() {
-  try { localStorage.setItem("papierflieger", JSON.stringify({ coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes, custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows })); } catch (e) {}
+  try { localStorage.setItem("papierflieger", JSON.stringify({ coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes, custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows, tunnel })); } catch (e) {}
 }
 
 function renderShop() {
@@ -253,9 +287,10 @@ function renderShop() {
     d.className = "card paper" + (on ? " active" : "");
     d.innerHTML = '<div class="swatch" style="background:' + p.color + '"></div>' +
       '<div class="name">' + esc(p.name) + '</div>' +
-      '<div class="stats">Tempo ×' + p.speed.toFixed(2) + ', Gleitflug ' + Math.round((0.05 / p.gravity) * 100) + ' %</div>';
+      '<div class="stats">Tempo ×' + p.speed.toFixed(2) + ', Gleitflug ' + Math.round((0.05 / p.gravity) * 100) + ' %' + (p.lvl ? ', Stufe ' + p.lvl : '') + (!!tunnel && tunnel.id === p.id ? ' · trainiert im Windkanal' : '') + '</div>';
     const b = document.createElement("button");
     b.type = "button";
+    const inTunnel = !!tunnel && tunnel.id === p.id;
     if (on) { b.textContent = "Ausgewählt"; b.disabled = true; }
     else if (has) { b.textContent = "Auswählen"; b.onclick = () => { if (!isFlying && !duelCtx) { equipped = p.id; save(); updateUI(); } }; }
     else { b.textContent = "Kaufen für " + p.cost + " Münzen"; b.disabled = coins < p.cost; b.onclick = () => buyPaper(p); }
@@ -332,23 +367,24 @@ function drawWorld() {
   ctx.fillRect(-camX, TERRACE_Y, SX * 2, groundY - TERRACE_Y);
 }
 
-function drawShape(ls, c) {
+function drawShape(ls, c, g) {
+  g = g || ctx;
   if (!ls || !ls.length) return false;
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   ls.forEach(l => l.pts.forEach(p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }));
   const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, s = 46 / Math.max(x1 - x0, y1 - y0, 1);
-  ctx.lineWidth = 1; ctx.lineJoin = "round"; ctx.strokeStyle = "#1f2a44";
+  g.lineWidth = 1; g.lineJoin = "round"; g.strokeStyle = "#1f2a44";
   ls.forEach(l => {
-    ctx.beginPath();
-    l.pts.forEach((p, i) => ctx[i ? "lineTo" : "moveTo"](-(p[1] - my) * s, (p[0] - mx) * s));
-    ctx.closePath();
-    ctx.fillStyle = (c && c.paint) ? (l.back ? shade(c.paint, 0.82) : c.paint) : (l.back ? "#ddd0b8" : "#ffffff");
-    ctx.fill(); ctx.stroke();
+    g.beginPath();
+    l.pts.forEach((p, i) => g[i ? "lineTo" : "moveTo"](-(p[1] - my) * s, (p[0] - mx) * s));
+    g.closePath();
+    g.fillStyle = (c && c.paint) ? (l.back ? shade(c.paint, 0.82) : c.paint) : (l.back ? "#ddd0b8" : "#ffffff");
+    g.fill(); g.stroke();
   });
   if (c && c.stickers && c.stickers.length) {
-    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "11px sans-serif";
-    c.stickers.forEach(st => ctx.fillText(st.e, -(st.y - my) * s, (st.x - mx) * s));
-    ctx.textBaseline = "alphabetic";
+    g.textAlign = "center"; g.textBaseline = "middle"; g.font = "11px sans-serif";
+    c.stickers.forEach(st => g.fillText(st.e, -(st.y - my) * s, (st.x - mx) * s));
+    g.textBaseline = "alphabetic";
   }
   return true;
 }
@@ -511,6 +547,7 @@ function animate() {
   drawWorld();
   drawOverlay();
   drawPlane();
+  if (tunnelDlg.open) { drawTunnel(); updateTunnelStatus(); }
 }
 
 function buyUpgrade() {
@@ -529,7 +566,7 @@ function resetGame() {
     return;
   }
   rb.dataset.armed = ""; rb.textContent = "Spielstand zurücksetzen";
-  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; coinLevel = 0; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0;
+  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; coinLevel = 0; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null;
   save(); updateUI(); showResult("Spielstand zurückgesetzt."); askNick();
 }
 
@@ -551,6 +588,7 @@ function deleteCustom(id) {
     return;
   }
   pendingDelete = null;
+  if (tunnel && tunnel.id === id) tunnel = null;
   custom = custom.filter(c => c.id !== id);
   if (equipped === id) equipped = "heft";
   save(); updateUI();
@@ -973,10 +1011,10 @@ document.getElementById("duel-share").addEventListener("click", async () => {
 // ---------- Duell-Modus mit Einsatz ----------
 let duelShareLink = DUEL_LINK, dbRef = null, myId = null, duelCtx = null, duelPrevEq = null, myDuels = [];
 let joinId = (location.hash.match(/^#d_([A-Za-z0-9_~.-]+)$/) || [])[1] || null;
-const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0" });
+const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0 });
 function addPlaneCopy(p) {
   if (!p) return;
-  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || "Flieger").slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", custom: true });
+  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || "Flieger").slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), custom: true });
 }
 function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = "heft"; }
 function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
@@ -1134,6 +1172,141 @@ async function initDuel() {
 }
 document.getElementById("duel-new").addEventListener("click", () => { document.getElementById("duel-text").hidden = true; document.getElementById("duel-share").hidden = true; renderPick("create"); });
 
+// ---------- Windkanal ----------
+// Ein Flieger im Windkanal trainiert: Alle 3 Minuten steigt er eine Stufe auf (höchstens Stufe 20).
+// Ungerade Stufen bringen mehr Tempo, gerade Stufen besseren Gleitflug. Die Zeit läuft auch bei geschlossenem Fenster.
+const TUNNEL_MS = 180000, TUNNEL_MAX = 20;
+const tunnelDlg = document.getElementById("tunnel-dialog"), tc = document.getElementById("tunnel-canvas"), tg = tc.getContext("2d");
+const tunnelPlane = () => tunnel ? custom.find(c => c.id === tunnel.id) || null : null;
+const nextGain = lvl => (lvl + 1) % 2 ? "Tempo +0,03" : "Gleitflug +5 %";
+function levelUp(c) {
+  c.lvl = (c.lvl || 0) + 1;
+  if (c.lvl % 2) c.speed = +(c.speed + 0.03).toFixed(3);
+  else c.gravity = +Math.max(0.02, c.gravity * 0.95).toFixed(5);
+}
+function tickTunnel() {
+  const c = tunnelPlane();
+  if (!c) { tunnel = null; return; }
+  const now = Date.now();
+  if (tunnel.since > now) tunnel.since = now;
+  if ((c.lvl || 0) >= TUNNEL_MAX) { tunnel.since = now; return; }
+  const from = c.lvl || 0;
+  while ((c.lvl || 0) < TUNNEL_MAX && now - tunnel.since >= TUNNEL_MS) { tunnel.since += TUNNEL_MS; levelUp(c); }
+  if (c.lvl === from) return;
+  save(); updateUI(); renderTunnelList();
+  showResult(c.name + " ist im Windkanal auf Stufe " + c.lvl + " gestiegen!" + (c.lvl - from === 1 ? " (" + (c.lvl % 2 ? "Tempo +0,03" : "Gleitflug +5 %") + ")" : ""));
+}
+function takeOutTunnel() {
+  tickTunnel();
+  const c = tunnelPlane();
+  if (c) c.prog = Math.min(TUNNEL_MS - 1, Math.max(0, Date.now() - tunnel.since));
+  tunnel = null;
+}
+function putInTunnel(id) {
+  const c = custom.find(x => x.id === id);
+  if (!c) return;
+  takeOutTunnel();
+  tunnel = { id, since: Date.now() - (c.prog || 0) };
+  save(); updateUI(); renderTunnelList(); updateTunnelStatus();
+}
+function renderTunnelList() {
+  const box = document.getElementById("tunnel-list");
+  box.innerHTML = "";
+  document.getElementById("tunnel-out").hidden = !tunnel;
+  if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten Flieger. Bastel einen und leg ihn dann hier hinein."; return; }
+  custom.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "boost-row";
+    const sp = document.createElement("span");
+    sp.textContent = c.name;
+    const sm = document.createElement("small");
+    sm.textContent = "Stufe " + (c.lvl || 0) + " von " + TUNNEL_MAX + " · Tempo ×" + c.speed.toFixed(2) + " · Gleitflug " + Math.round(0.05 / c.gravity * 100) + " %";
+    sp.appendChild(sm);
+    const b = document.createElement("button");
+    b.type = "button";
+    const here = !!tunnel && tunnel.id === c.id;
+    b.textContent = here ? "Trainiert" : "Hineinlegen";
+    b.disabled = here;
+    b.onclick = () => putInTunnel(c.id);
+    row.append(sp, b);
+    box.appendChild(row);
+  });
+}
+function updateTunnelStatus() {
+  const c = tunnelPlane(), bar = document.querySelector("#tunnel-bar div"), st = document.getElementById("tunnel-status");
+  let txt, pct = 0;
+  if (!c) txt = "Der Windkanal ist leer.";
+  else if ((c.lvl || 0) >= TUNNEL_MAX) { txt = c.name + " ist voll trainiert (Stufe " + TUNNEL_MAX + ")."; pct = 100; }
+  else {
+    const el = Math.min(TUNNEL_MS, Math.max(0, Date.now() - tunnel.since)), left = Math.ceil((TUNNEL_MS - el) / 1000);
+    pct = el / TUNNEL_MS * 100;
+    txt = c.name + ", Stufe " + (c.lvl || 0) + " von " + TUNNEL_MAX + ". Nächste Stufe in " + Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + " (" + nextGain(c.lvl || 0) + ").";
+  }
+  if (st.textContent !== txt) st.textContent = txt;
+  bar.style.width = pct.toFixed(1) + "%";
+}
+function tubePath(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+}
+function drawFan(g, x, y, a, fast) {
+  g.save(); g.translate(x, y);
+  g.fillStyle = "#2b3550"; g.beginPath(); g.arc(0, 0, 32, 0, 7); g.fill();
+  g.strokeStyle = "#9aa8c7"; g.lineWidth = 3; g.stroke();
+  g.fillStyle = "#1b2338"; g.beginPath(); g.arc(0, 0, 27, 0, 7); g.fill();
+  for (let i = 0; i < 5; i++) {
+    g.save(); g.rotate(a + i * Math.PI * 2 / 5);
+    g.fillStyle = "#cfd8ee"; g.beginPath();
+    g.moveTo(3, 0); g.bezierCurveTo(8, -17, 22, -19, 26, -6); g.bezierCurveTo(20, -2, 10, 3, 3, 0); g.fill();
+    g.restore();
+  }
+  if (fast) { g.fillStyle = "rgba(207,216,238,0.16)"; g.beginPath(); g.arc(0, 0, 26, 0, 7); g.fill(); }
+  g.fillStyle = "#eef3ff"; g.beginPath(); g.arc(0, 0, 6, 0, 7); g.fill();
+  g.fillStyle = "#5b6785"; g.beginPath(); g.arc(0, 0, 2.2, 0, 7); g.fill();
+  g.restore();
+}
+function drawTunnel() {
+  const g = tg, k = tc.width / 320, t = performance.now(), c = tunnelPlane();
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.clearRect(0, 0, 320, 180);
+  // Röhre aus Glas
+  const gl = g.createLinearGradient(0, 40, 0, 140);
+  gl.addColorStop(0, "rgba(255,255,255,0.9)"); gl.addColorStop(0.5, "rgba(190,215,235,0.45)"); gl.addColorStop(1, "rgba(255,255,255,0.85)");
+  tubePath(g, 56, 40, 208, 100, 18); g.fillStyle = gl; g.fill();
+  // Windlinien
+  if (c) {
+    g.save(); tubePath(g, 56, 40, 208, 100, 18); g.clip();
+    g.strokeStyle = "rgba(91,103,133,0.45)"; g.lineWidth = 2; g.lineCap = "round";
+    for (let i = 0; i < 7; i++) {
+      const x = 40 + ((t * 0.18 + i * 61) % 260), y = 52 + i * 13;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + 24, y); g.stroke();
+    }
+    g.restore();
+  }
+  tubePath(g, 56, 40, 208, 100, 18); g.strokeStyle = "#5b6785"; g.lineWidth = 3; g.stroke();
+  if (c) {
+    g.save(); g.translate(160, 90 + Math.sin(t / 380) * 5); g.rotate(Math.sin(t / 700) * 0.05); g.scale(1.9, 1.9);
+    if (!drawShape(c.shape, c, g)) {   // ohne gespeicherte Form: einfaches Papierflugzeug
+      g.scale(1.7, 1.7);
+      g.fillStyle = c.paint || c.color || "#ffffff"; g.strokeStyle = "#1f2a44"; g.lineWidth = 1; g.lineJoin = "round";
+      g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
+    }
+    g.restore();
+  } else {
+    g.fillStyle = css("--muted"); g.font = "600 14px Fredoka, sans-serif"; g.textAlign = "center";
+    g.fillText("Leer", 160, 95);
+  }
+  // Ventilatoren vorne und hinten
+  const a = t * (c ? 0.02 : 0.002);
+  drawFan(g, 35, 90, a, !!c); drawFan(g, 285, 90, -a, !!c);
+  if (c) { g.fillStyle = css("--ink"); g.font = "600 13px Fredoka, sans-serif"; g.textAlign = "center"; g.fillText("Stufe " + (c.lvl || 0), 160, 162); }
+}
+document.getElementById("tunnel-btn").addEventListener("click", () => { tickTunnel(); renderTunnelList(); updateTunnelStatus(); if (!tunnelDlg.open) tunnelDlg.showModal(); });
+document.getElementById("tunnel-close").addEventListener("click", () => tunnelDlg.close());
+document.getElementById("tunnel-out").addEventListener("click", () => { takeOutTunnel(); save(); updateUI(); renderTunnelList(); updateTunnelStatus(); });
+setInterval(tickTunnel, 1000);
+
 // ---------- Anmeldung ----------
 const loginDlg = document.getElementById("login-dialog");
 function askNick() {
@@ -1152,6 +1325,7 @@ document.getElementById("nick-go").addEventListener("click", submitNick);
 document.getElementById("nick-in").addEventListener("keydown", e => { if (e.key === "Enter") submitNick(); });
 
 load();
+tickTunnel();
 updateUI();
 if (!nick) askNick();
 requestAnimationFrame(loop3d);

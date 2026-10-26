@@ -36,8 +36,14 @@
 - 3D-Ansicht (`draw3d`): Canvas-Painter-Algorithmus, Lagen von unten nach oben, V-Flügel, Kiel, Perspektive. Schleife `loop3d` startet erst am Ende des Skripts (Falle bei `const`/`let` und Reihenfolge der Deklarationen beachten).
 - Katalog A1–Z20 und Flugzeug-Suche im Basteln-Fenster wurden entfernt (Wunsch des Nutzers). Nur `applyOrder`/`orderQ` bleiben, damit alte Spielstände mit bestellten Fliegern weiter geladen werden. Bereits bestellte Flieger liegen als normale `custom[]`-Einträge vor.
 
+## Windkanal
+- Knopf „Windkanal“ zwischen „Duell“ und „Spieler“. Dialog `tunnel-dialog` mit Canvas (Glasröhre, Ventilator vorne und hinten, Flieger schwebt in der Mitte).
+- Ein selbstgebauter Flieger (`custom[]`) liegt im Windkanal (`tunnel = {id, since}`, gespeichert). Alle `TUNNEL_MS` (3 Minuten) steigt er eine Stufe (`lvl`, höchstens `TUNNEL_MAX` = 20): ungerade Stufen Tempo +0,03, gerade Stufen Gleitflug +5 % (`gravity × 0,95`, mindestens 0,02). Die Zeit läuft per Zeitstempel auch bei geschlossenem Fenster und beim Neuladen weiter (`tickTunnel`).
+- Es liegt höchstens ein Flieger im Windkanal. Beim Herausnehmen bleibt die angefangene Zeit im Flieger (`prog`). Ein Flieger im Windkanal bleibt ganz normal benutzbar (auswählen, werfen, Duell); die Stufen zählen weiter. Wird er gelöscht oder im Duell verloren, ist der Windkanal wieder leer. `lvl` wird beim Duell mitgegeben (`planePack`).
+- Idee für später: Symmetrie/Stabilität als weitere Werte (heute nur beim Falten berechnet und nicht gespeichert), Offline-Obergrenze.
+
 ## Speicherstand (localStorage)
-- Schlüssel `papierflieger` mit: `coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes (alt), custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows`.
+- Schlüssel `papierflieger` mit: `coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes (alt), custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows, tunnel`.
 - Weiterer Schlüssel: `pf_claimed` (schon verbuchte Duelle).
 - Die früheren Testlinks `#muenzen0` und `#plus10k` sind entfernt. Zum Testen Münzen in der Konsole setzen (`coins = 10000; save(); updateUI()`).
 - Alte Spielstände ohne `custom` werden beim Laden migriert (`eigen`/`order` → `custom[]`).
