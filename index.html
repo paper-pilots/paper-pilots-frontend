@@ -43,6 +43,7 @@ button:hover:not(:disabled) { filter: brightness(1.08); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hangar-box { margin-bottom: 16px; }
+.hg-none { margin: 0; padding: 14px 16px; background: var(--surface); border-radius: 14px; color: var(--muted); }
 .hangar-box h2 { margin: 0 0 8px; font-size: 1.1rem; }
 .hangar-row { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; scroll-snap-type: x proximity; }
 .hangar-house { flex: 0 0 auto; width: 136px; padding: 6px 6px 8px; border-radius: 14px; background: var(--surface); color: var(--ink); border: 2px solid transparent; font-weight: 400; text-align: center; scroll-snap-align: start; }
@@ -252,6 +253,8 @@ const I18N = {
     "panel.aria": "Spielstand",
     "coins": "Münzen", "strength": "Wurfstärke: Stufe {n}", "upgradeBtn": "Upgrade für {n} Münzen",
     "planes": "Meine Flugzeuge", "field.aria": "Spielfeld",
+    "noPlane": "Du hast noch keinen Flieger. Tippe oben auf „Flieger basteln“, um deinen ersten zu falten.",
+    "allTraining": "Alle deine Flieger trainieren gerade im Windkanal. Nimm einen heraus oder bastle einen neuen.",
     "reset": "Spielstand zurücksetzen", "reset.sure": "Wirklich zurücksetzen?", "reset.done": "Spielstand zurückgesetzt.",
     "best": "Bester Wurf: {n} Meter", "lang.label": "Sprache", "close": "Schließen",
     "login.title": "Willkommen!", "login.text": "Gib dir einen Spitznamen, bevor es losgeht. Du brauchst ihn, um zu spielen.",
@@ -323,6 +326,8 @@ const I18N = {
     "panel.aria": "Game status",
     "coins": "Coins", "strength": "Throwing power: level {n}", "upgradeBtn": "Upgrade for {n} coins",
     "planes": "My planes", "field.aria": "Playing field",
+    "noPlane": "You don’t have a plane yet. Tap “Build a plane” above to fold your first one.",
+    "allTraining": "All your planes are training in the wind tunnel. Take one out or build a new one.",
     "reset": "Reset game", "reset.sure": "Really reset?", "reset.done": "Game reset.",
     "best": "Best throw: {n} meters", "lang.label": "Language", "close": "Close",
     "login.title": "Welcome!", "login.text": "Pick a nickname before you start. You need it to play.",
@@ -394,6 +399,8 @@ const I18N = {
     "panel.aria": "Estado del juego",
     "coins": "Monedas", "strength": "Fuerza de lanzamiento: nivel {n}", "upgradeBtn": "Mejorar por {n} monedas",
     "planes": "Mis aviones", "field.aria": "Campo de juego",
+    "noPlane": "Aún no tienes ningún avión. Toca «Crear avión» arriba para doblar el primero.",
+    "allTraining": "Todos tus aviones están entrenando en el túnel de viento. Saca uno o crea uno nuevo.",
     "reset": "Reiniciar partida", "reset.sure": "¿Reiniciar de verdad?", "reset.done": "Partida reiniciada.",
     "best": "Mejor lanzamiento: {n} metros", "lang.label": "Idioma", "close": "Cerrar",
     "login.title": "¡Bienvenido!", "login.text": "Elige un apodo antes de empezar. Lo necesitas para jugar.",
@@ -465,6 +472,8 @@ const I18N = {
     "panel.aria": "État de la partie",
     "coins": "Pièces", "strength": "Puissance de lancer : niveau {n}", "upgradeBtn": "Améliorer pour {n} pièces",
     "planes": "Mes avions", "field.aria": "Terrain de jeu",
+    "noPlane": "Tu n’as pas encore d’avion. Appuie sur « Fabriquer un avion » en haut pour plier le premier.",
+    "allTraining": "Tous tes avions s’entraînent dans la soufflerie. Sors-en un ou fabrique-en un nouveau.",
     "reset": "Réinitialiser la partie", "reset.sure": "Vraiment réinitialiser ?", "reset.done": "Partie réinitialisée.",
     "best": "Meilleur lancer : {n} mètres", "lang.label": "Langue", "close": "Fermer",
     "login.title": "Bienvenue !", "login.text": "Choisis un pseudo avant de commencer. Il te faut un pseudo pour jouer.",
@@ -536,6 +545,8 @@ const I18N = {
     "panel.aria": "Stato del gioco",
     "coins": "Monete", "strength": "Forza di lancio: livello {n}", "upgradeBtn": "Potenzia per {n} monete",
     "planes": "I miei aerei", "field.aria": "Campo di gioco",
+    "noPlane": "Non hai ancora nessun aereo. Tocca «Costruisci un aereo» in alto per piegare il primo.",
+    "allTraining": "Tutti i tuoi aerei si stanno allenando nella galleria del vento. Togline uno oppure costruiscine uno nuovo.",
     "reset": "Azzera la partita", "reset.sure": "Azzerare davvero?", "reset.done": "Partita azzerata.",
     "best": "Miglior lancio: {n} metri", "lang.label": "Lingua", "close": "Chiudi",
     "login.title": "Benvenuto!", "login.text": "Scegli un soprannome prima di iniziare. Ti serve per giocare.",
@@ -607,6 +618,8 @@ const I18N = {
     "panel.aria": "Estado do jogo",
     "coins": "Moedas", "strength": "Força de lançamento: nível {n}", "upgradeBtn": "Melhorar por {n} moedas",
     "planes": "Meus aviões", "field.aria": "Campo de jogo",
+    "noPlane": "Você ainda não tem nenhum avião. Toque em “Construir avião” acima para dobrar o primeiro.",
+    "allTraining": "Todos os seus aviões estão treinando no túnel de vento. Tire um de lá ou construa um novo.",
     "reset": "Reiniciar jogo", "reset.sure": "Reiniciar mesmo?", "reset.done": "Jogo reiniciado.",
     "best": "Melhor lançamento: {n} metros", "lang.label": "Idioma", "close": "Fechar",
     "login.title": "Bem-vindo!", "login.text": "Escolha um apelido antes de começar. Você precisa dele para jogar.",
@@ -678,6 +691,8 @@ const I18N = {
     "panel.aria": "Oyun durumu",
     "coins": "Jeton", "strength": "Atış gücü: seviye {n}", "upgradeBtn": "{n} jetona geliştir",
     "planes": "Uçaklarım", "field.aria": "Oyun alanı",
+    "noPlane": "Henüz uçağın yok. İlkini katlamak için yukarıdaki “Uçak yap” düğmesine dokun.",
+    "allTraining": "Tüm uçakların rüzgar tünelinde antrenman yapıyor. Birini çıkar ya da yeni bir tane yap.",
     "reset": "Oyunu sıfırla", "reset.sure": "Gerçekten sıfırlansın mı?", "reset.done": "Oyun sıfırlandı.",
     "best": "En iyi atış: {n} metre", "lang.label": "Dil", "close": "Kapat",
     "login.title": "Hoş geldin!", "login.text": "Başlamadan önce bir takma ad seç. Oynamak için buna ihtiyacın var.",
@@ -816,7 +831,7 @@ const PAPERS = [
 ];
 
 let coins = 0, strength = 1, upgradeCost = 10, best = 0;
-let owned = ["heft"], equipped = "heft";
+let owned = ["heft"], equipped = "";   // equipped: Id eines selbstgebauten Fliegers, leer = noch keiner
 let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
 let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null, tunnel = null, pupg = {};
 const BOOSTS = [
@@ -829,7 +844,15 @@ const SX = 150, TERRACE_Y = 300;   // Terrasse: Oberkante bei y = 300, reicht vo
 let launchX = SX, throwNote = "";
 const plane = { x: SX, y: 300, vx: 0, vy: 0 };
 
-const paper = () => PAPERS.find(p => p.id === equipped) || custom.find(c => c.id === equipped) || PAPERS[0];
+const paper = () => custom.find(c => c.id === equipped) || null;
+// Selbstgebaute Flieger, die in „Meine Flugzeuge“ stehen (mit eigener Form)
+function ownPlanes() { return custom.filter(c => Array.isArray(c.shape) && c.shape.length); }
+// Der ausgewählte Flieger muss es geben und darf nicht im Windkanal trainieren; sonst nimmt das Spiel den ersten freien.
+function ensureEquipped() {
+  if (isFlying || duelCtx) return;
+  const ok = ownPlanes().some(c => c.id === equipped && !(tunnel && tunnel.id === c.id));
+  if (!ok) { const f = ownPlanes().find(c => !(tunnel && tunnel.id === c.id)); equipped = f ? f.id : ""; }
+}
 function css(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
@@ -838,7 +861,7 @@ function load() {
     const s = JSON.parse(localStorage.getItem("papierflieger") || "null");
     if (s) {
       coins = s.coins || 0; strength = s.strength || 1; upgradeCost = s.upgradeCost || 10; best = s.best || 0;
-      owned = s.owned || ["heft"]; equipped = s.equipped || "heft";
+      owned = s.owned || ["heft"]; equipped = s.equipped || "";
       craftQ = s.craftQ || 0; applyCraft(craftQ);
       ownedBoosts = s.ownedBoosts || []; attached = s.attached || [];
       orderQ = s.orderQ || null; if (orderQ) applyOrder(orderQ);
@@ -849,18 +872,8 @@ function load() {
       throwHint = !!s.throwHint;
       practiceThrows = s.practiceThrows || 0;
       tunnel = s.tunnel && custom.some(c => c.id === s.tunnel.id) ? s.tunnel : null;
-      if (tunnel && equipped === tunnel.id) equipped = "heft";
       pupg = s.pupg || {};
-      if (attached.length) {   // alte Version: Boosts gehörten zum ganzen Spiel, jetzt zum ausgewählten Flieger
-        upOf(planeById(equipped) || PAPERS[0]).boosts = attached.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP);
-        attached = [];
-      }
-      // Papiere aus dem früheren Papier-Laden: das beste besessene Papier wird zum Papier-Upgrade des Schulheftpapiers
-      const bestPaper = PAPERS.filter(x => owned.includes(x.id) && x.cost > 0 && x.id !== "eigen" && x.id !== "order").sort((a, b) => b.cost - a.cost)[0];
-      const hu = upOf(PAPERS[0]);
-      if (bestPaper && bestPaper.cost > (PAPERS.find(x => x.id === hu.pap) || PAPERS[0]).cost) hu.pap = bestPaper.id;
-      if (equipped !== "heft" && PAPERS.some(x => x.id === equipped)) equipped = "heft";
-      if (!s.custom) {
+      if (!s.custom) {   // ganz alte Spielstände: Eigenbau und bestellter Flieger werden zu selbstgebauten Fliegern
         const map = {};
         if (owned.includes("eigen") && shapes.eigen) {
           custom.push({ id: "c1", name: "Eigenbau 1", speed: (craftQ && craftQ.speed) || 1.1, gravity: (craftQ && craftQ.gravity) || 0.046, shape: shapes.eigen, color: "#e8e0d0", custom: true });
@@ -870,9 +883,18 @@ function load() {
           custom.push({ id: "c2", name: orderQ.name, speed: orderQ.speed, gravity: orderQ.gravity, shape: shapes.order, color: "#e8e0d0", custom: true });
           map.order = "c2";
         }
-        if (equipped === "eigen" || equipped === "order") equipped = map[equipped] || "heft";
+        if (equipped === "eigen" || equipped === "order") equipped = map[equipped] || "";
         owned = owned.filter(x => x !== "eigen" && x !== "order");
       }
+      if (attached.length) {   // alte Version: Boosts gehörten zum ganzen Spiel, jetzt zum ausgewählten (oder ersten) Flieger
+        const target = custom.find(c => c.id === equipped) || ownPlanes()[0];
+        if (target) upOf(target).boosts = attached.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP);
+        attached = [];
+      }
+      // Papiere aus dem früheren Papier-Laden: das beste besessene Papier wird zum Papier-Upgrade der selbstgebauten Flieger
+      const bestPaper = PAPERS.filter(x => owned.includes(x.id) && x.cost > 0 && x.id !== "eigen" && x.id !== "order").sort((a, b) => b.cost - a.cost)[0];
+      if (bestPaper) custom.forEach(c => { if (bestPaper.cost > (PAPERS.find(x => x.id === c.pap) || PAPERS[0]).cost) c.pap = bestPaper.id; });
+      ensureEquipped();   // das Schulheftpapier-Flugzeug gibt es nicht mehr
     }
   } catch (e) {}
 }
@@ -881,6 +903,7 @@ function save() {
 }
 
 function updateUI() {
+  ensureEquipped();
   document.getElementById("coins").textContent = Math.floor(coins);
   document.getElementById("nick-label").textContent = nick ? t("player", { n: nick }) : "";
   document.getElementById("strength-h").textContent = t("strength", { n: strength });
@@ -957,6 +980,8 @@ function drawShape(ls, c, g) {
 }
 
 function drawPlane() {
+  const cp = paper();
+  if (!cp) return;   // noch kein Flieger gebaut
   const angle = isFlying ? Math.atan2(plane.vy, plane.vx) : 0;
   ctx.save();
   const dp = pullPos();
@@ -964,8 +989,8 @@ function drawPlane() {
   ctx.rotate(angle);
   const zoom = Math.max(1, 0.62 / viewScale());
   ctx.scale(zoom, zoom);
-  if (drawShape((custom.find(c => c.id === equipped) || {}).shape, custom.find(c => c.id === equipped))) { ctx.restore(); return; }
-  ctx.fillStyle = paper().color;
+  if (drawShape(cp.shape, cp)) { ctx.restore(); return; }
+  ctx.fillStyle = cp.paint || cp.color || "#ffffff";
   ctx.strokeStyle = "#1f2a44";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -999,6 +1024,7 @@ function drawOverlay() {
   if (isFlying || pullPos()) return;
   ctx.textAlign = "left"; ctx.font = "600 " + uiFont(11) + "px Fredoka, sans-serif";
   const top = uiFont(11) + 6;
+  if (!paper()) { ctx.fillStyle = css("--ink"); drawText(t(ownPlanes().length ? "allTraining" : "noPlane"), 10, top, false, true); return; }
   if (duelCtx) { ctx.fillStyle = css("--ink"); drawText(t("ov.duel", { n: duelCtx.plane.name }), 10, top, false, true); return; }
   if (throwHint) {
     const y = 250, x0 = 30, x1 = SX + 30, ac = css("--accent");
@@ -1023,7 +1049,7 @@ function gpos(e) {
 }
 let samples = [];
 canvas.addEventListener("pointerdown", e => {
-  if (isFlying) return;
+  if (isFlying || !paper()) return;
   const p = gpos(e);
   if (Math.hypot(p[0] - plane.x, p[1] - plane.y) < Math.max(50, 34 / viewScale())) {
     pull = p; samples = [[performance.now(), p[0], p[1]]];
@@ -1060,6 +1086,7 @@ canvas.addEventListener("pointerup", e => {
 canvas.addEventListener("pointercancel", () => { pull = null; samples = []; });
 
 function throwPlane(pm, tm, lp) {
+  if (!paper()) return;
   if (typeof pm !== "number") { pm = 1; tm = 1; }
   if (throwHint && !isFlying) {
     practiceThrows++;
@@ -1132,7 +1159,7 @@ function resetGame() {
     return;
   }
   rb.dataset.armed = ""; rb.textContent = t("reset");
-  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = "heft"; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null; pupg = {};
+  coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = ""; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null; pupg = {};
   refreshNames();
   save(); updateUI(); showResult(t("reset.done")); askNick();
 }
@@ -1157,7 +1184,7 @@ function deleteCustom(id) {
   pendingDelete = null;
   if (tunnel && tunnel.id === id) tunnel = null;
   custom = custom.filter(c => c.id !== id);
-  if (equipped === id) equipped = "heft";
+  if (equipped === id) equipped = "";
   save(); updateUI();
 }
 
@@ -1558,7 +1585,7 @@ function addPlaneCopy(p) {
   if (!p) return;
   custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || t("plane.default")).slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
 }
-function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = "heft"; }
+function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = ""; }
 function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
 function addClaimed(id) { try { const c = getClaimed(); c.push(id); localStorage.setItem("pf_claimed", JSON.stringify(c.slice(-200))); } catch (e) {} }
 function duelNote(t) { document.getElementById("duel-note").textContent = t; }
@@ -1622,11 +1649,11 @@ function startDuelThrow(c, mode, d, id) {
   showResult(t("duel.go", { n: c.name }));
 }
 function cancelDuelThrow() {
-  equipped = duelPrevEq || "heft"; duelCtx = null; updateUI();
+  equipped = duelPrevEq || ""; duelCtx = null; updateUI();
   showResult(t("duel.cancelled"));
 }
 async function duelDone(dc, distance) {
-  equipped = duelPrevEq || "heft";
+  equipped = duelPrevEq || "";
   const c = dc.plane;
   if (dc.mode === "create") {
     try {
@@ -1717,9 +1744,7 @@ document.getElementById("duel-new").addEventListener("click", () => { document.g
 // ---------- Meine Flugzeuge ----------
 // Reihe mit allen Fliegern (mit Lack und Stickern). Klick = auswählen.
 // Von den Standardfliegern (ohne eigene Form) steht nur das Schulheftpapier hier.
-function hangarItems() {
-  return PAPERS.filter(p => p.id === "heft").concat(custom.filter(c => Array.isArray(c.shape) && c.shape.length));
-}
+function hangarItems() { return ownPlanes(); }
 function drawHangar(cv, p, away) {
   const g = cv.getContext("2d"), k = cv.width / 120;
   g.setTransform(k, 0, 0, k, 0, 0);
@@ -1743,6 +1768,7 @@ function renderHangar() {
   if (!box) return;
   const scroll = box.scrollLeft;
   box.innerHTML = "";
+  if (!hangarItems().length) { const m = document.createElement("p"); m.className = "hg-none"; m.textContent = t("noPlane"); box.appendChild(m); }
   hangarItems().forEach(p => {
     const away = !!tunnel && tunnel.id === p.id, on = equipped === p.id && !away;
     const b = document.createElement("button");
@@ -1926,7 +1952,7 @@ function putInTunnel(id) {
   if (!c) return;
   takeOutTunnel();
   tunnel = { id, since: Date.now() - (c.prog || 0) };
-  if (equipped === id) equipped = "heft";
+  if (equipped === id) equipped = "";
   save(); updateUI(); renderTunnelList(); updateTunnelStatus();
 }
 function renderTunnelList() {
