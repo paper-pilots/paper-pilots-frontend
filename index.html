@@ -175,7 +175,7 @@ dialog { max-height: 92vh; overflow-y: auto; }
 
 <dialog id="tunnel-dialog" aria-label="Windkanal">
   <h2>Windkanal</h2>
-  <p id="tunnel-info" style="color:var(--muted);margin:0 0 10px">Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Alle 3 Minuten steigt er eine Stufe auf und wird besser. Das läuft auch weiter, wenn du das Fenster schließt. Du kannst den Flieger trotzdem im Spiel werfen.</p>
+  <p id="tunnel-info" style="color:var(--muted);margin:0 0 10px">Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Alle 3 Minuten steigt er eine Stufe auf und wird besser. Das läuft auch weiter, wenn du das Fenster schließt. Solange er trainiert, kannst du ihn nicht werfen.</p>
   <canvas id="tunnel-canvas" width="640" height="360" aria-label="Windkanal mit Ventilatoren"></canvas>
   <div id="tunnel-bar" role="progressbar" aria-label="Fortschritt bis zur nächsten Stufe"><div></div></div>
   <p id="tunnel-status" role="status"></p>
@@ -257,6 +257,7 @@ function load() {
       throwHint = !!s.throwHint;
       practiceThrows = s.practiceThrows || 0;
       tunnel = s.tunnel && custom.some(c => c.id === s.tunnel.id) ? s.tunnel : null;
+      if (tunnel && equipped === tunnel.id) equipped = "heft";
       if (!s.custom) {
         const map = {};
         if (owned.includes("eigen") && shapes.eigen) {
@@ -287,18 +288,19 @@ function renderShop() {
     d.className = "card paper" + (on ? " active" : "");
     d.innerHTML = '<div class="swatch" style="background:' + p.color + '"></div>' +
       '<div class="name">' + esc(p.name) + '</div>' +
-      '<div class="stats">Tempo ×' + p.speed.toFixed(2) + ', Gleitflug ' + Math.round((0.05 / p.gravity) * 100) + ' %' + (p.lvl ? ', Stufe ' + p.lvl : '') + (!!tunnel && tunnel.id === p.id ? ' · trainiert im Windkanal' : '') + '</div>';
+      '<div class="stats">Tempo ×' + p.speed.toFixed(2) + ', Gleitflug ' + Math.round((0.05 / p.gravity) * 100) + ' %' + (p.lvl ? ', Stufe ' + p.lvl : '') + (!!tunnel && tunnel.id === p.id ? ' · im Windkanal' : '') + '</div>';
     const b = document.createElement("button");
     b.type = "button";
     const inTunnel = !!tunnel && tunnel.id === p.id;
-    if (on) { b.textContent = "Ausgewählt"; b.disabled = true; }
+    if (inTunnel) { b.textContent = "Trainiert gerade"; b.disabled = true; }
+    else if (on) { b.textContent = "Ausgewählt"; b.disabled = true; }
     else if (has) { b.textContent = "Auswählen"; b.onclick = () => { if (!isFlying && !duelCtx) { equipped = p.id; save(); updateUI(); } }; }
     else { b.textContent = "Kaufen für " + p.cost + " Münzen"; b.disabled = coins < p.cost; b.onclick = () => buyPaper(p); }
     if (isFlying && !on) b.disabled = true;
     d.appendChild(b);
     if (p.custom) {
       const x = document.createElement("button");
-      x.type = "button"; x.textContent = pendingDelete === p.id ? "Wirklich löschen?" : "Löschen"; x.disabled = isFlying;
+      x.type = "button"; x.textContent = pendingDelete === p.id ? "Wirklich löschen?" : "Löschen"; x.disabled = isFlying || inTunnel;
       x.style.cssText = "background:transparent;color:var(--muted);border:1px solid var(--muted);font-weight:400;padding:6px 12px;font-size:0.9rem";
       x.onclick = () => deleteCustom(p.id);
       d.appendChild(x);
@@ -581,7 +583,7 @@ function addCustom(name, speed, gravity, shape, paint, stk) {
   save(); updateUI();
 }
 function deleteCustom(id) {
-  if (isFlying || duelCtx) return;
+  if (isFlying || duelCtx || (tunnel && tunnel.id === id)) return;
   if (pendingDelete !== id) {
     pendingDelete = id; updateUI();
     setTimeout(() => { if (pendingDelete === id) { pendingDelete = null; updateUI(); } }, 4000);
@@ -1062,7 +1064,7 @@ function renderPick(mode, d, id) {
   box.innerHTML = "";
   if (mode === "create" && !(dbRef && myId)) { box.textContent = "Duelle mit Einsatz gehen hier nicht. Du brauchst ein claude.ai-Konto und Mitwirkenden-Zugriff."; return; }
   if (!custom.length) { box.textContent = "Du hast noch keinen selbstgebauten Flieger zum Einsetzen."; return; }
-  custom.forEach(c => {
+  custom.filter(c => !(tunnel && tunnel.id === c.id)).forEach(c => {
     const row = document.createElement("div");
     row.className = "boost-row";
     const sp = document.createElement("span");
@@ -1203,10 +1205,12 @@ function takeOutTunnel() {
   tunnel = null;
 }
 function putInTunnel(id) {
+  if (isFlying || duelCtx) return;
   const c = custom.find(x => x.id === id);
   if (!c) return;
   takeOutTunnel();
   tunnel = { id, since: Date.now() - (c.prog || 0) };
+  if (equipped === id) equipped = "heft";
   save(); updateUI(); renderTunnelList(); updateTunnelStatus();
 }
 function renderTunnelList() {
@@ -1226,7 +1230,7 @@ function renderTunnelList() {
     b.type = "button";
     const here = !!tunnel && tunnel.id === c.id;
     b.textContent = here ? "Trainiert" : "Hineinlegen";
-    b.disabled = here;
+    b.disabled = here || isFlying || !!duelCtx;
     b.onclick = () => putInTunnel(c.id);
     row.append(sp, b);
     box.appendChild(row);

@@ -39,7 +39,7 @@
 ## Windkanal
 - Knopf „Windkanal“ zwischen „Duell“ und „Spieler“. Dialog `tunnel-dialog` mit Canvas (Glasröhre, Ventilator vorne und hinten, Flieger schwebt in der Mitte).
 - Ein selbstgebauter Flieger (`custom[]`) liegt im Windkanal (`tunnel = {id, since}`, gespeichert). Alle `TUNNEL_MS` (3 Minuten) steigt er eine Stufe (`lvl`, höchstens `TUNNEL_MAX` = 20): ungerade Stufen Tempo +0,03, gerade Stufen Gleitflug +5 % (`gravity × 0,95`, mindestens 0,02). Die Zeit läuft per Zeitstempel auch bei geschlossenem Fenster und beim Neuladen weiter (`tickTunnel`).
-- Es liegt höchstens ein Flieger im Windkanal. Beim Herausnehmen bleibt die angefangene Zeit im Flieger (`prog`). Ein Flieger im Windkanal bleibt ganz normal benutzbar (auswählen, werfen, Duell); die Stufen zählen weiter. Wird er gelöscht oder im Duell verloren, ist der Windkanal wieder leer. `lvl` wird beim Duell mitgegeben (`planePack`).
+- Es liegt höchstens ein Flieger im Windkanal. Beim Herausnehmen bleibt die angefangene Zeit im Flieger (`prog`). Ein Flieger im Windkanal ist gesperrt: Im Laden steht „Trainiert gerade" statt „Auswählen", er kann nicht gelöscht und nicht ins Duell gesetzt werden. Beim Hineinlegen wird er abgewählt (Standardpapier). Herausnehmen gibt ihn wieder frei. `lvl` wird beim Duell mitgegeben (`planePack`).
 - Idee für später: Symmetrie/Stabilität als weitere Werte (heute nur beim Falten berechnet und nicht gespeichert), Offline-Obergrenze.
 
 ## Speicherstand (localStorage)
