@@ -53,6 +53,9 @@
 - Es liegt höchstens ein Flieger im Windkanal. Beim Herausnehmen bleibt die angefangene Zeit im Flieger (`prog`). Ein Flieger im Windkanal ist gesperrt: Auf seiner Seite steht „Trainiert gerade" statt „Auswählen", er kann nicht gelöscht und nicht ins Duell gesetzt werden. Beim Hineinlegen wird er abgewählt (Standardpapier). Herausnehmen gibt ihn wieder frei. `lvl` wird beim Duell mitgegeben (`planePack`).
 - Idee für später: Symmetrie/Stabilität als weitere Werte (heute nur beim Falten berechnet und nicht gespeichert), Offline-Obergrenze.
 
+## Namen neuer Flieger
+- Sobald ein Flieger fertig gefaltet ist (Bereich `#craft-style` wird sichtbar), schlägt das Spiel einen coolen Namen vor (`suggestName`: Vorsilbe `NAME_A` + Endung, z. B. „Blitzfalke“, „Sturmschwalbe“). Schlanke Flieger bekommen Tempo-Namen (`NAME_FAST`), Flieger mit viel Auftrieb Gleiter-Namen (`NAME_GLIDE`). Bereits vergebene Namen werden vermieden.
+- Im Feld `#craft-name` kann man den Namen ändern; „🎲 Neuer Vorschlag“ würfelt neu. Der Vorschlag kommt einmal pro Blatt (`craftNameSet`), spätere Falten ändern ihn nicht. Bleibt das Feld leer, wird ein neuer Vorschlag genommen. „Eigenbau n“ gibt es nicht mehr (alte Flieger behalten ihren Namen).
 ## Speicherstand (localStorage)
 - Schlüssel `papierflieger` mit: `coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, orderQ, shapes (alt), custom, nick, tutorialDone, throwHint, practiceThrows, tunnel, pupg`.
 - Weiterer Schlüssel: `pf_claimed` (schon verbuchte Duelle).

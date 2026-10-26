@@ -78,6 +78,9 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .stk { padding: 4px 8px; font-size: 1.1rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); }
 .sw.on, .stk.on { outline: 3px solid var(--accent); outline-offset: 1px; }
 #craft-style { margin-top: 12px; font-size: 0.9rem; }
+.name-row { display: flex; gap: 8px; margin: 4px 0 12px; }
+#craft-name { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
+.name-row .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); font-weight: 400; padding: 8px 12px; white-space: nowrap; font-size: 0.9rem; }
 #view3d { display: block; width: 100%; max-width: 320px; margin: 0 auto 10px; border-radius: 12px; background: linear-gradient(var(--sky), var(--surface)); touch-action: pan-y; cursor: grab; }
 #tunnel-canvas { background: var(--sky); }
 #tunnel-bar { height: 12px; border-radius: 6px; background: var(--bg); border: 1px solid var(--muted); margin: 10px 0 4px; overflow: hidden; }
@@ -194,6 +197,11 @@ dialog { max-height: 92vh; overflow-y: auto; }
   <canvas id="craft-canvas" width="320" height="400"></canvas>
   <p id="craft-stats" style="margin:8px 0 0;font-size:0.9rem;color:var(--muted)"></p>
   <div id="craft-style" hidden>
+    <strong>Name deines Fliegers</strong>
+    <div class="name-row">
+      <input id="craft-name" type="text" maxlength="24" aria-label="Name deines Fliegers" autocomplete="off">
+      <button id="craft-name-roll" class="small" type="button" aria-label="Neuen Namen vorschlagen">🎲 Neuer Vorschlag</button>
+    </div>
     <strong>3D-Ansicht</strong> <span style="color:var(--muted)">(zum Drehen ziehen)</span>
     <canvas id="view3d" width="320" height="220" aria-label="3D-Ansicht deines Fliegers"></canvas>
     <strong>Lackieren (30 Münzen)</strong><div id="paint-row"></div>
@@ -810,10 +818,28 @@ function analyze(ls, folds) {
     speed: 1 + (0.3 * slender * sym + 0.1 * stiff) * ff,
     gravity: 0.05 - 0.016 * lift * sym * ff };
 }
+// Coole Namen für neue Flieger: Vorsilbe + Tierchen oder Wort; schlanke Flieger bekommen Tempo-Namen,
+// Flieger mit viel Auftrieb Gleiter-Namen.
+const NAME_A = ["Blitz", "Sturm", "Wolken", "Silber", "Turbo", "Donner", "Stern", "Feuer", "Eis", "Wirbel", "Mond", "Sonnen", "Nebel", "Schatten", "Nacht", "Gold", "Düsen", "Zack", "Flitz", "Sause"];
+const NAME_FAST = ["pfeil", "jäger", "blitz", "rakete", "komet", "flitzer", "hai", "wolf"];
+const NAME_GLIDE = ["schwalbe", "adler", "möwe", "kolibri", "falke", "segler", "fuchs", "specht"];
+const NAME_ANY = NAME_FAST.concat(NAME_GLIDE, ["kobold", "drache", "geist", "wirbel"]);
+let craftNameSet = false;
+function suggestName() {
+  const s = analyze(layers, hist.length);
+  const pool = s.slender > 0.45 ? NAME_FAST : s.lift > 0.6 ? NAME_GLIDE : NAME_ANY;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  for (let i = 0; i < 40; i++) {
+    const a = pick(NAME_A), b = pick(pool), n = a + b;
+    if (a.toLowerCase() !== b && !custom.some(c => c.name === n)) return n;
+  }
+  return pick(NAME_A) + pick(pool) + " " + (custom.length + 1);
+}
 function newSheet() {
   layers = [{ pts: [[0, 0], [200, 0], [200, 260], [0, 260]], back: false }];
   hist = []; drag = null; from = null; gstep = 0;
   craftPaint = null; craftStickers = []; pendingSticker = null;
+  craftNameSet = false;
   refreshCraft();
 }
 function refreshCraft() {
@@ -827,6 +853,9 @@ function refreshCraft() {
     : "Zieh eine Ecke irgendwohin: Das Papier faltet sich genau in der Mitte zwischen Start und Ziel. Falte, so oft du willst.";
   document.getElementById("craft-done").disabled = needGuide ? gstep < GSTEPS.length : !hist.length;
   document.getElementById("craft-style").hidden = document.getElementById("craft-done").disabled;
+  if (!document.getElementById("craft-style").hidden && !craftNameSet) {   // fertig gefaltet: einen Namen vorschlagen
+    document.getElementById("craft-name").value = suggestName(); craftNameSet = true;
+  }
   refreshStyleUI();
   document.getElementById("craft-undo").disabled = !hist.length;
   drawCraft();
@@ -893,13 +922,15 @@ cc.addEventListener("pointercancel", () => { drag = null; from = null; drawCraft
 document.getElementById("craft-btn").addEventListener("click", () => { if (!isFlying) { newSheet(); dlg.showModal(); } });
 document.getElementById("craft-close").addEventListener("click", () => dlg.close());
 document.getElementById("craft-redo").addEventListener("click", () => newSheet());
+document.getElementById("craft-name-roll").addEventListener("click", () => { document.getElementById("craft-name").value = suggestName(); });
 document.getElementById("craft-undo").addEventListener("click", () => { if (hist.length) { layers = hist.pop(); craftStickers = []; if (!tutorialDone && gstep > 0) gstep--; refreshCraft(); } });
 document.getElementById("craft-done").addEventListener("click", () => {
   const s = analyze(layers, hist.length);
   if (!tutorialDone) { throwHint = true; practiceThrows = 0; }
   tutorialDone = true;
   coins -= Math.min(coins, styleCost());
-  addCustom("Eigenbau " + (custom.length + 1), s.speed, s.gravity, layers, craftPaint, craftStickers.slice());
+  const name = document.getElementById("craft-name").value.trim().replace(/\s+/g, " ") || suggestName();
+  addCustom(name, s.speed, s.gravity, layers, craftPaint, craftStickers.slice());
   dlg.close();
   showResult("Dein Flieger ist fertig! Tempo ×" + s.speed.toFixed(2) + ", Symmetrie " + Math.round(s.sym * 100) + " %");
 });
