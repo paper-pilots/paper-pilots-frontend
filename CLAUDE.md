@@ -38,8 +38,8 @@
 
 ## Speicherstand (localStorage)
 - Schlüssel `papierflieger` mit: `coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, attached, orderQ, shapes (alt), custom, coinLevel, nick, tutorialDone, throwHint, practiceThrows`.
-- Weitere Schlüssel: `pf_claimed` (schon verbuchte Duelle), `m0done`, `p10kdone`.
-- Testlinks im Code: `#muenzen0` (Münzen auf 0, einmalig) und `#plus10k` (+10.000 Münzen, einmalig). **Vor einer öffentlichen Veröffentlichung entfernen.**
+- Weiterer Schlüssel: `pf_claimed` (schon verbuchte Duelle).
+- Die früheren Testlinks `#muenzen0` und `#plus10k` sind entfernt. Zum Testen Münzen in der Konsole setzen (`coins = 10000; save(); updateUI()`).
 - Alte Spielstände ohne `custom` werden beim Laden migriert (`eigen`/`order` → `custom[]`).
 
 ## Duell-Modus (hängt an claude.ai!)
@@ -53,7 +53,7 @@
 ## Plattform-Einschränkungen (aus dem Artifact-Sandbox-Betrieb)
 - Kein `alert`, `confirm`, `prompt` (werden blockiert). Bestätigungen laufen über Zwei-Klick-Knöpfe.
 - Die Spielfläche hat `touch-action: none` (Ziehen am Handy; Scrollen nur außerhalb).
-- Hash-Links nur als einfaches Token (`#d_…`, `#plus10k`).
+- Hash-Links nur als einfaches Token (`#d_…`).
 
 ## Stand und offene Punkte
 - **Nichts davon wurde im Browser getestet.** Es gab nur Syntaxprüfungen mit `node --check`. Vor dem ersten Release alles einmal durchspielen: Anmeldung, Anleitung, Wurf mit Perfekt-Linie, Basteln, Lack/Sticker, 3D-Ansicht, Katalog A–Z, Boosts, Löschen, Duell (mit zweitem Konto).

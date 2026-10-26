@@ -227,21 +227,6 @@ function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<":
 
 function load() {
   try {
-    if (location.hash === "#plus10k" && localStorage.getItem("p10kdone") !== "1") {
-      const t = JSON.parse(localStorage.getItem("papierflieger") || "null") || {};
-      t.coins = (t.coins || 0) + 10000;
-      localStorage.setItem("papierflieger", JSON.stringify(t));
-      localStorage.setItem("p10kdone", "1");
-    }
-  } catch (e) {}
-  try {
-    if (location.hash === "#muenzen0" && localStorage.getItem("m0done") !== "1") {
-      const t = JSON.parse(localStorage.getItem("papierflieger") || "null");
-      if (t) { t.coins = 0; localStorage.setItem("papierflieger", JSON.stringify(t)); }
-      localStorage.setItem("m0done", "1");
-    }
-  } catch (e) {}
-  try {
     const s = JSON.parse(localStorage.getItem("papierflieger") || "null");
     if (s) {
       coins = s.coins || 0; strength = s.strength || 1; upgradeCost = s.upgradeCost || 10; best = s.best || 0;
