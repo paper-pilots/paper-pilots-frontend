@@ -55,6 +55,8 @@ button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hangar-house .hs { display: block; font-size: 0.8rem; color: var(--muted); }
 .stage { position: relative; }
 #gameCanvas { touch-action: none; }
+button, select, input { touch-action: manipulation; }   /* kein Doppeltipp-Zoom und keine Verzoegerung auf dem Handy */
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
 canvas { display: block; width: 100%; height: auto; border-radius: 14px; border: 2px solid var(--line); background: var(--sky); }
 .hud { position: absolute; right: 12px; top: 10px; background: var(--surface); border-radius: 10px; padding: 4px 12px; font-weight: 600; }
 .hud.alt { top: 46px; }
@@ -102,8 +104,8 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
 #bd-note { margin: 0 0 8px; min-height: 1.2em; font-size: 0.85rem; color: var(--muted); }
 .langhead { margin: 0 0 6px; font-weight: 600; font-size: 0.95rem; }
 .langsel { font-size: 0.9rem; color: var(--muted); }
-.langsel select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
-#craft-name { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
+.langsel select { font: inherit; font-size: 1rem; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
+#craft-name, #style-q { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
 #pl-rename { flex: 1; min-width: 0; font: inherit; font-size: 1rem; font-weight: 600; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--muted); background: var(--bg); color: var(--ink); }
 #pl-rename-save { padding: 8px 12px; font-size: 0.9rem; white-space: nowrap; }
 .name-row .small { background: transparent; color: var(--muted); border: 1px solid var(--muted); font-weight: 400; padding: 8px 12px; white-space: nowrap; font-size: 0.9rem; }
@@ -1377,7 +1379,7 @@ canvas.addEventListener("pointerdown", e => {
   const p = gpos(e);
   if (Math.hypot(p[0] - plane.x, p[1] - plane.y) < Math.max(50, 34 / viewScale())) {
     pull = p; samples = [[performance.now(), p[0], p[1]]]; pulledBack = p[0] <= SX - 25; marksBase = SX;
-    canvas.setPointerCapture(e.pointerId);
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   }
 });
 canvas.addEventListener("pointermove", e => {
@@ -1514,7 +1516,7 @@ document.getElementById("settings-close").addEventListener("click", () => settin
 
 let pendingDelete = null;
 function addCustom(name, speed, gravity, shape, paint, stk) {
-  const c = { id: "c" + Date.now(), name: String(name).slice(0, 40), speed, gravity, shape, paint: paint || null, stickers: stk || [], color: paint || "#e8e0d0", custom: true };
+  const c = { id: "c" + Date.now(), name: String(name).slice(0, 40), lvl: 0, speed, gravity, shape, paint: paint || null, stickers: stk || [], color: paint || "#e8e0d0", custom: true };
   custom.push(c);
   equipped = c.id;
   save(); updateUI();
@@ -1912,7 +1914,7 @@ function loop3d() {
   if (dlg.open && !document.getElementById("craft-style").hidden) { if (auto3 && !drag3) yaw += 0.012; draw3d(); }
   requestAnimationFrame(loop3d);
 }
-v3.addEventListener("pointerdown", e => { drag3 = [e.clientX, e.clientY]; v3.setPointerCapture(e.pointerId); });
+v3.addEventListener("pointerdown", e => { drag3 = [e.clientX, e.clientY]; try { v3.setPointerCapture(e.pointerId); } catch (err) {} });
 v3.addEventListener("pointermove", e => {
   if (!drag3) return;
   yaw += (e.clientX - drag3[0]) * 0.01;
@@ -2650,7 +2652,7 @@ function tickTunnel() {
   if ((c.lvl || 0) >= TUNNEL_MAX) { tunnel.since = now; return; }
   const from = c.lvl || 0;
   while ((c.lvl || 0) < TUNNEL_MAX && now - tunnel.since >= TUNNEL_MS) { tunnel.since += TUNNEL_MS; levelUp(c, tunnel.focus); }
-  if (c.lvl === from) return;
+  if ((c.lvl || 0) === from) return;   // ein neuer Flieger hat noch keine Stufe gespeichert (undefined)
   save(); updateUI(); renderTunnelList();
   showResult(t("tn.up", { n: c.name, l: c.lvl }) + (c.lvl - from === 1 ? " (" + nextGain(tunnel.focus) + ")" : ""));
 }
