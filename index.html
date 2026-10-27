@@ -2186,17 +2186,22 @@ cc.addEventListener("pointerdown", e => {
   const p = cpos(e), g = guideStep();
   dragTouch = e.pointerType !== "mouse";
   const v = g ? (Math.hypot(p[0] - g.a[0], p[1] - g.a[1]) < 28 * touchScale() ? g.a : null) : pick(p);
-  if (v) { from = v; drag = p; try { cc.setPointerCapture(e.pointerId); } catch (err) {} drawCraft(); }
+  if (v) { from = v; drag = p; try { cc.setPointerCapture(e.pointerId); } catch (err) {} drawCraft(); crinkle(0.7); }
 });
-cc.addEventListener("pointermove", e => { if (drag) { drag = cpos(e); drawCraft(); } });
+cc.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const p = cpos(e), d = Math.hypot(p[0] - drag[0], p[1] - drag[1]);
+  drag = p; drawCraft();
+  if (d > 0.6) crinkle(Math.min(1, d / 14));   // knistert, solange man die Ecke bewegt
+});
 cc.addEventListener("pointerup", e => {
   if (!drag || !from) return;
   const p = cpos(e), g = guideStep();
   if (g) {
-    if (Math.hypot(p[0] - g.b[0], p[1] - g.b[1]) < 30 * touchScale()) { hist.push(layers); layers = foldLayers(layers, g.a, g.b); gstep++; craftStickers = []; }
+    if (Math.hypot(p[0] - g.b[0], p[1] - g.b[1]) < 30 * touchScale()) { hist.push(layers); layers = foldLayers(layers, g.a, g.b); gstep++; craftStickers = []; paperFold(); }
   } else if (Math.hypot(p[0] - from[0], p[1] - from[1]) > 14) {
     const next = foldLayers(layers, from, p);
-    if (next.length && next.length < 80) { hist.push(layers); layers = next; craftStickers = []; }
+    if (next.length && next.length < 80) { hist.push(layers); layers = next; craftStickers = []; paperFold(); }
   }
   drag = null; from = null;
   refreshCraft();
@@ -3001,6 +3006,33 @@ function klack() {
   };
   tick(t0, 0.3, 2800);          // Taste runter
   tick(t0 + 0.065, 0.11, 2300); // Taste hoch, leiser und etwas dumpfer
+}
+// Papier-Knistern beim Falten: Wer eine Ecke zieht, hört ein leises Knistern (kurze, helle Rauschkörnchen; je schneller man
+// zieht, desto dichter und lauter). `paperFold` ist das kurze Rascheln, wenn eine Falte einrastet.
+let lastCrinkle = 0;
+function crinkle(amount) {
+  if (!soundOn || !aud || aud.ctx.state !== "running") return;
+  const c = aud.ctx, now = performance.now();
+  if (now - lastCrinkle < 26) return;
+  lastCrinkle = now;
+  const n = 1 + Math.floor(Math.random() * (1 + amount * 2));
+  for (let i = 0; i < n; i++) {
+    const t0 = c.currentTime + Math.random() * 0.02;
+    const src = c.createBufferSource(); src.buffer = aud.clickBuf; src.playbackRate.value = 0.6 + Math.random() * 1.1;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1800 + Math.random() * 3600; f.Q.value = 1.1;
+    const g = c.createGain(), amp = (0.045 + 0.08 * amount) * (0.4 + Math.random() * 0.6);
+    g.gain.setValueAtTime(amp, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.045);
+    src.connect(f); f.connect(g); g.connect(aud.master); src.start(t0);
+  }
+}
+function paperFold() {
+  if (!soundOn || !aud || aud.ctx.state !== "running") return;
+  const c = aud.ctx, t0 = c.currentTime;
+  const src = c.createBufferSource(); src.buffer = aud.clickBuf; src.playbackRate.value = 0.35;   // länger gedehntes Rauschen = Rascheln
+  const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 2600; f.Q.value = 0.7;
+  const g = c.createGain(); g.gain.setValueAtTime(0.13, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
+  src.connect(f); f.connect(g); g.connect(aud.master); src.start(t0);
+  crinkle(1);
 }
 document.addEventListener("click", e => {
   const b = e.target.closest && e.target.closest("button");
