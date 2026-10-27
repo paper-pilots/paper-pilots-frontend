@@ -2913,18 +2913,19 @@ function ensureAudio() {
     const ambLp = ctx.createBiquadFilter(); ambLp.type = "lowpass"; ambLp.frequency.value = 350; ambLp.Q.value = 0.3;
     const ambGain = ctx.createGain(); ambGain.gain.value = 0;
     amb.connect(ambHp); ambHp.connect(ambLp); ambLp.connect(ambGain); ambGain.connect(master); amb.start(0, 0.7);
-    // Windkanal: weiches Surren der Ventilatoren (tiefer Motorton + Luftrauschen, das im Takt der Flügel an- und abschwillt)
+    // Windkanal: Surren der Ventilatoren. Gleichmäßiger, heller Motorton mit feinem Schnurren (schnelles, flaches Zittern,
+    // kein langsamer Takt: der klang nach Zug) plus feines Luftrauschen darüber.
     const fanGain = ctx.createGain(); fanGain.gain.value = 0; fanGain.connect(master);
-    const fanOsc = ctx.createOscillator(); fanOsc.type = "triangle"; fanOsc.frequency.value = 70;
-    const fanLp = ctx.createBiquadFilter(); fanLp.type = "lowpass"; fanLp.frequency.value = 380;
+    const fanOsc = ctx.createOscillator(); fanOsc.type = "sawtooth"; fanOsc.frequency.value = 120;
+    const fanBp = ctx.createBiquadFilter(); fanBp.type = "lowpass"; fanBp.frequency.value = 380; fanBp.Q.value = 0.6;   // dumpf: alles Helle abschneiden
     const fanTone = ctx.createGain(); fanTone.gain.value = 0.55;
-    fanOsc.connect(fanLp); fanLp.connect(fanTone); fanTone.connect(fanGain); fanOsc.start();
+    const fanLfo = ctx.createOscillator(), fanLfoDepth = ctx.createGain(); fanLfo.frequency.value = 38; fanLfoDepth.gain.value = 0.12;
+    fanLfo.connect(fanLfoDepth); fanLfoDepth.connect(fanTone.gain); fanLfo.start();
+    fanOsc.connect(fanBp); fanBp.connect(fanTone); fanTone.connect(fanGain); fanOsc.start();
     const fanNoise = ctx.createBufferSource(); fanNoise.buffer = buf; fanNoise.loop = true;
-    const fanBp = ctx.createBiquadFilter(); fanBp.type = "bandpass"; fanBp.frequency.value = 650; fanBp.Q.value = 0.8;
-    const fanAm = ctx.createGain(); fanAm.gain.value = 0.35;
-    const fanLfo = ctx.createOscillator(), fanLfoDepth = ctx.createGain(); fanLfo.frequency.value = 9; fanLfoDepth.gain.value = 0.22;
-    fanLfo.connect(fanLfoDepth); fanLfoDepth.connect(fanAm.gain); fanLfo.start();
-    fanNoise.connect(fanBp); fanBp.connect(fanAm); fanAm.connect(fanGain); fanNoise.start(0, 1.1);
+    const fanHp = ctx.createBiquadFilter(); fanHp.type = "highpass"; fanHp.frequency.value = 1800;
+    const fanAir = ctx.createGain(); fanAir.gain.value = 0.008;
+    fanNoise.connect(fanHp); fanHp.connect(fanAir); fanAir.connect(fanGain); fanNoise.start(0, 1.1);
     // kurzes Rauschen für das Klack (klingt in 40 ms aus)
     const cb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate), cd = cb.getChannelData(0);
     for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / cd.length, 3);
@@ -2973,8 +2974,8 @@ function windTick() {
     // Surren im Windkanal: nur bei offenem Fenster mit einem trainierenden Flieger; Tonhöhe und Takt steigen mit der Stufe etwas
     const fan = soundOn && !document.hidden && tunnelDlg.open && !!tunnelPlane(), lv = fan ? (tunnelPlane().lvl || 0) : 0;
     aud.fanGain.gain.setTargetAtTime(fan ? 0.09 : 0, now, fan ? 0.6 : 0.4);
-    aud.fanOsc.frequency.setTargetAtTime(66 + lv * 1.5, now, 0.5);
-    aud.fanLfo.frequency.setTargetAtTime(8 + lv * 0.25, now, 0.5);
+    aud.fanOsc.frequency.setTargetAtTime(120 + lv * 3, now, 0.5);
+    aud.fanLfo.frequency.setTargetAtTime(38 + lv * 1.2, now, 0.5);
   }
 }
 // Kleines „Klack“ beim Drücken eines Knopfs, wie eine Maustaste: ein scharfer, kurzer Plastik-Knacks mit etwas Körper
