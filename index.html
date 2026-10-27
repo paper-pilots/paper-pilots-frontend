@@ -99,6 +99,10 @@ dialog { max-height: 92vh; overflow-y: auto; }
 #tunnel-bar div { height: 100%; width: 0; background: var(--accent); }
 #tunnel-status { margin: 0 0 10px; min-height: 2.6em; font-size: 0.95rem; }
 #tunnel-list .boost-row small { display: block; color: var(--muted); }
+#tunnel-list .boost-row { align-items: flex-start; }
+.tn-btns { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+#tunnel-list .tn-btns small { display: inline; }
+.tn-btns button.on:disabled { opacity: 1; }
 #craft-text { min-height: 3em; margin: 0 0 10px; color: var(--muted); }
 #craft-canvas { max-width: 320px; margin: 0 auto; touch-action: none; background: var(--sky); cursor: grab; }
 .dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
@@ -296,10 +300,10 @@ const I18N = {
     "boostd.clip": "Tempo ×1,12", "boostd.tape": "Gleitet länger (Fall ×0,85)", "boostd.rocket": "Höherer Abwurf, Tempo ×1,05", "boostd.sail": "Tempo ×1,2, Fall ×0,9",
     "paper.heft": "Schulheftpapier", "paper.glanz": "Glanzpapier", "paper.perga": "Pergament", "paper.carbon": "Carbonpapier", "paper.eigen": "Selbstgebastelt", "paper.order": "Bestellter Flieger",
     "tn.dlg": "Windkanal",
-    "tn.info": "Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Alle 3 Minuten steigt er eine Stufe auf und wird besser. Das läuft auch weiter, wenn du das Fenster schließt. Solange er trainiert, kannst du ihn nicht werfen.",
+    "tn.info": "Leg einen selbstgebauten Flieger in den Windkanal. Solange er dort fliegt, trainiert er: Du wählst, was er verbessern soll (Tempo, Gleitflug oder Abwurf): Alle 3 Minuten steigt er eine Stufe auf, und der gewählte Wert wird um 3 % besser. Das läuft auch weiter, wenn du das Fenster schließt. Solange er trainiert, kannst du ihn nicht werfen.",
     "tn.canvas": "Windkanal mit Ventilatoren", "tn.bar": "Fortschritt bis zur nächsten Stufe", "tn.out": "Herausnehmen", "tn.emptyState": "Der Windkanal ist leer.",
     "tn.full": "{n} ist voll trainiert (Stufe {m}).", "tn.status": "{n}, Stufe {l} von {m}. Nächste Stufe in {t} ({g}).",
-    "tn.gainSpeed": "Tempo +0,03", "tn.gainGlide": "Gleitflug +5 %", "tn.up": "{n} ist im Windkanal auf Stufe {l} gestiegen!",
+    "tn.gainSpeed": "Tempo +3 %", "tn.gainGlide": "Gleitflug +3 %", "tn.train": "Trainieren:", "tn.fTempo": "Tempo", "tn.fGlide": "Gleitflug", "tn.gainLaunch": "Abwurf +3 %", "tn.fLaunch": "Abwurf", "pl.statsLaunch": ", Abwurf +{n} %", "tn.up": "{n} ist im Windkanal auf Stufe {l} gestiegen!",
     "tn.noPlanes": "Du hast noch keinen selbstgebauten Flieger. Bastel einen und leg ihn dann hier hinein.",
     "tn.level": "Stufe {l} von {m} · Tempo ×{s} · Gleitflug {g} %", "tn.in": "Trainiert", "tn.put": "Hineinlegen", "tn.empty": "Leer", "tn.stage": "Stufe {n}",
     "duel.dlg": "Duell", "duel.new": "Neues Duell", "duel.share": "Teilen", "duel.shareTitle": "Papier Piloten Duell",
@@ -370,10 +374,10 @@ const I18N = {
     "boostd.clip": "Speed ×1.12", "boostd.tape": "Glides longer (fall ×0.85)", "boostd.rocket": "Higher launch, speed ×1.05", "boostd.sail": "Speed ×1.2, fall ×0.9",
     "paper.heft": "Notebook paper", "paper.glanz": "Glossy paper", "paper.perga": "Parchment", "paper.carbon": "Carbon paper", "paper.eigen": "Homemade", "paper.order": "Ordered plane",
     "tn.dlg": "Wind tunnel",
-    "tn.info": "Put a plane you built into the wind tunnel. While it flies there, it trains: every 3 minutes it goes up a level and gets better. This keeps running when you close the window. While it trains, you can’t throw it.",
+    "tn.info": "Put a plane you built into the wind tunnel. While it flies there, it trains: you choose what it should improve (speed, glide or launch): every 3 minutes it goes up a level and the chosen value gets 3 % better. This keeps running when you close the window. While it trains, you can’t throw it.",
     "tn.canvas": "Wind tunnel with fans", "tn.bar": "Progress to the next level", "tn.out": "Take out", "tn.emptyState": "The wind tunnel is empty.",
     "tn.full": "{n} is fully trained (level {m}).", "tn.status": "{n}, level {l} of {m}. Next level in {t} ({g}).",
-    "tn.gainSpeed": "Speed +0.03", "tn.gainGlide": "Glide +5 %", "tn.up": "{n} reached level {l} in the wind tunnel!",
+    "tn.gainSpeed": "Speed +3 %", "tn.gainGlide": "Glide +3 %", "tn.train": "Train:", "tn.fTempo": "Speed", "tn.fGlide": "Glide", "tn.gainLaunch": "Launch +3 %", "tn.fLaunch": "Launch", "pl.statsLaunch": ", launch +{n} %", "tn.up": "{n} reached level {l} in the wind tunnel!",
     "tn.noPlanes": "You haven’t built a plane yet. Build one, then put it in here.",
     "tn.level": "Level {l} of {m} · Speed ×{s} · Glide {g} %", "tn.in": "Training", "tn.put": "Put in", "tn.empty": "Empty", "tn.stage": "Level {n}",
     "duel.dlg": "Duel", "duel.new": "New duel", "duel.share": "Share", "duel.shareTitle": "Paper Pilots duel",
@@ -444,10 +448,10 @@ const I18N = {
     "boostd.clip": "Velocidad ×1,12", "boostd.tape": "Planea más (caída ×0,85)", "boostd.rocket": "Lanzamiento más alto, velocidad ×1,05", "boostd.sail": "Velocidad ×1,2, caída ×0,9",
     "paper.heft": "Papel de cuaderno", "paper.glanz": "Papel brillante", "paper.perga": "Pergamino", "paper.carbon": "Papel carbón", "paper.eigen": "Hecho a mano", "paper.order": "Avión encargado",
     "tn.dlg": "Túnel de viento",
-    "tn.info": "Pon un avión que hayas creado en el túnel de viento. Mientras vuela allí, entrena: cada 3 minutos sube un nivel y mejora. Sigue funcionando aunque cierres la ventana. Mientras entrena, no puedes lanzarlo.",
+    "tn.info": "Pon un avión que hayas creado en el túnel de viento. Mientras vuela allí, entrena: eliges qué debe mejorar (velocidad, planeo o lanzamiento): cada 3 minutos sube un nivel y lo elegido mejora un 3 %. Sigue funcionando aunque cierres la ventana. Mientras entrena, no puedes lanzarlo.",
     "tn.canvas": "Túnel de viento con ventiladores", "tn.bar": "Progreso hasta el siguiente nivel", "tn.out": "Sacar", "tn.emptyState": "El túnel de viento está vacío.",
     "tn.full": "{n} está totalmente entrenado (nivel {m}).", "tn.status": "{n}, nivel {l} de {m}. Siguiente nivel en {t} ({g}).",
-    "tn.gainSpeed": "Velocidad +0,03", "tn.gainGlide": "Planeo +5 %", "tn.up": "¡{n} ha subido al nivel {l} en el túnel de viento!",
+    "tn.gainSpeed": "Velocidad +3 %", "tn.gainGlide": "Planeo +3 %", "tn.train": "Entrenar:", "tn.fTempo": "Velocidad", "tn.fGlide": "Planeo", "tn.gainLaunch": "Lanzamiento +3 %", "tn.fLaunch": "Lanzamiento", "pl.statsLaunch": ", lanzamiento +{n} %", "tn.up": "¡{n} ha subido al nivel {l} en el túnel de viento!",
     "tn.noPlanes": "Aún no has creado ningún avión. Crea uno y ponlo aquí.",
     "tn.level": "Nivel {l} de {m} · Velocidad ×{s} · Planeo {g} %", "tn.in": "Entrenando", "tn.put": "Meter", "tn.empty": "Vacío", "tn.stage": "Nivel {n}",
     "duel.dlg": "Duelo", "duel.new": "Nuevo duelo", "duel.share": "Compartir", "duel.shareTitle": "Duelo de Pilotos de Papel",
@@ -518,10 +522,10 @@ const I18N = {
     "boostd.clip": "Vitesse ×1,12", "boostd.tape": "Plane plus longtemps (chute ×0,85)", "boostd.rocket": "Lancer plus haut, vitesse ×1,05", "boostd.sail": "Vitesse ×1,2, chute ×0,9",
     "paper.heft": "Papier de cahier", "paper.glanz": "Papier brillant", "paper.perga": "Parchemin", "paper.carbon": "Papier carbone", "paper.eigen": "Fait maison", "paper.order": "Avion commandé",
     "tn.dlg": "Soufflerie",
-    "tn.info": "Mets un avion que tu as fabriqué dans la soufflerie. Tant qu’il y vole, il s’entraîne : toutes les 3 minutes, il gagne un niveau et s’améliore. Cela continue même si tu fermes la fenêtre. Pendant l’entraînement, tu ne peux pas le lancer.",
+    "tn.info": "Mets un avion que tu as fabriqué dans la soufflerie. Tant qu’il y vole, il s’entraîne : tu choisis ce qu’il doit améliorer (vitesse, plané ou lancer) : toutes les 3 minutes, il gagne un niveau et la valeur choisie s’améliore de 3 %. Cela continue même si tu fermes la fenêtre. Pendant l’entraînement, tu ne peux pas le lancer.",
     "tn.canvas": "Soufflerie avec ventilateurs", "tn.bar": "Progression jusqu’au prochain niveau", "tn.out": "Sortir", "tn.emptyState": "La soufflerie est vide.",
     "tn.full": "{n} est entièrement entraîné (niveau {m}).", "tn.status": "{n}, niveau {l} sur {m}. Prochain niveau dans {t} ({g}).",
-    "tn.gainSpeed": "Vitesse +0,03", "tn.gainGlide": "Plané +5 %", "tn.up": "{n} a atteint le niveau {l} dans la soufflerie !",
+    "tn.gainSpeed": "Vitesse +3 %", "tn.gainGlide": "Plané +3 %", "tn.train": "Entraîner :", "tn.fTempo": "Vitesse", "tn.fGlide": "Plané", "tn.gainLaunch": "Lancer +3 %", "tn.fLaunch": "Lancer", "pl.statsLaunch": ", lancer +{n} %", "tn.up": "{n} a atteint le niveau {l} dans la soufflerie !",
     "tn.noPlanes": "Tu n’as pas encore fabriqué d’avion. Fabrique-en un, puis mets-le ici.",
     "tn.level": "Niveau {l} sur {m} · Vitesse ×{s} · Plané {g} %", "tn.in": "En entraînement", "tn.put": "Mettre", "tn.empty": "Vide", "tn.stage": "Niveau {n}",
     "duel.dlg": "Duel", "duel.new": "Nouveau duel", "duel.share": "Partager", "duel.shareTitle": "Duel de Pilotes de Papier",
@@ -592,10 +596,10 @@ const I18N = {
     "boostd.clip": "Velocità ×1,12", "boostd.tape": "Plana più a lungo (caduta ×0,85)", "boostd.rocket": "Lancio più alto, velocità ×1,05", "boostd.sail": "Velocità ×1,2, caduta ×0,9",
     "paper.heft": "Carta da quaderno", "paper.glanz": "Carta lucida", "paper.perga": "Pergamena", "paper.carbon": "Carta carbone", "paper.eigen": "Fatto a mano", "paper.order": "Aereo ordinato",
     "tn.dlg": "Galleria del vento",
-    "tn.info": "Metti un aereo che hai costruito nella galleria del vento. Finché vola lì, si allena: ogni 3 minuti sale di un livello e migliora. Va avanti anche se chiudi la finestra. Mentre si allena, non puoi lanciarlo.",
+    "tn.info": "Metti un aereo che hai costruito nella galleria del vento. Finché vola lì, si allena: scegli tu cosa deve migliorare (velocità, planata o lancio): ogni 3 minuti sale di un livello e il valore scelto migliora del 3 %. Va avanti anche se chiudi la finestra. Mentre si allena, non puoi lanciarlo.",
     "tn.canvas": "Galleria del vento con ventole", "tn.bar": "Avanzamento verso il prossimo livello", "tn.out": "Togli", "tn.emptyState": "La galleria del vento è vuota.",
     "tn.full": "{n} è allenato al massimo (livello {m}).", "tn.status": "{n}, livello {l} di {m}. Prossimo livello tra {t} ({g}).",
-    "tn.gainSpeed": "Velocità +0,03", "tn.gainGlide": "Planata +5 %", "tn.up": "{n} è salito al livello {l} nella galleria del vento!",
+    "tn.gainSpeed": "Velocità +3 %", "tn.gainGlide": "Planata +3 %", "tn.train": "Allenare:", "tn.fTempo": "Velocità", "tn.fGlide": "Planata", "tn.gainLaunch": "Lancio +3 %", "tn.fLaunch": "Lancio", "pl.statsLaunch": ", lancio +{n} %", "tn.up": "{n} è salito al livello {l} nella galleria del vento!",
     "tn.noPlanes": "Non hai ancora costruito nessun aereo. Costruiscine uno e mettilo qui.",
     "tn.level": "Livello {l} di {m} · Velocità ×{s} · Planata {g} %", "tn.in": "In allenamento", "tn.put": "Metti dentro", "tn.empty": "Vuota", "tn.stage": "Livello {n}",
     "duel.dlg": "Duello", "duel.new": "Nuovo duello", "duel.share": "Condividi", "duel.shareTitle": "Duello di Piloti di Carta",
@@ -666,10 +670,10 @@ const I18N = {
     "boostd.clip": "Velocidade ×1,12", "boostd.tape": "Plana por mais tempo (queda ×0,85)", "boostd.rocket": "Lançamento mais alto, velocidade ×1,05", "boostd.sail": "Velocidade ×1,2, queda ×0,9",
     "paper.heft": "Papel de caderno", "paper.glanz": "Papel brilhante", "paper.perga": "Pergaminho", "paper.carbon": "Papel carbono", "paper.eigen": "Feito à mão", "paper.order": "Avião encomendado",
     "tn.dlg": "Túnel de vento",
-    "tn.info": "Coloque no túnel de vento um avião que você construiu. Enquanto ele voa lá, treina: a cada 3 minutos sobe um nível e melhora. Isso continua mesmo se você fechar a janela. Enquanto treina, você não pode lançá-lo.",
+    "tn.info": "Coloque no túnel de vento um avião que você construiu. Enquanto ele voa lá, treina: você escolhe o que ele deve melhorar (velocidade, planeio ou lançamento): a cada 3 minutos sobe um nível e o valor escolhido melhora 3 %. Isso continua mesmo se você fechar a janela. Enquanto treina, você não pode lançá-lo.",
     "tn.canvas": "Túnel de vento com ventiladores", "tn.bar": "Progresso até o próximo nível", "tn.out": "Tirar", "tn.emptyState": "O túnel de vento está vazio.",
     "tn.full": "{n} está totalmente treinado (nível {m}).", "tn.status": "{n}, nível {l} de {m}. Próximo nível em {t} ({g}).",
-    "tn.gainSpeed": "Velocidade +0,03", "tn.gainGlide": "Planeio +5 %", "tn.up": "{n} subiu para o nível {l} no túnel de vento!",
+    "tn.gainSpeed": "Velocidade +3 %", "tn.gainGlide": "Planeio +3 %", "tn.train": "Treinar:", "tn.fTempo": "Velocidade", "tn.fGlide": "Planeio", "tn.gainLaunch": "Lançamento +3 %", "tn.fLaunch": "Lançamento", "pl.statsLaunch": ", lançamento +{n} %", "tn.up": "{n} subiu para o nível {l} no túnel de vento!",
     "tn.noPlanes": "Você ainda não construiu nenhum avião. Construa um e coloque aqui.",
     "tn.level": "Nível {l} de {m} · Velocidade ×{s} · Planeio {g} %", "tn.in": "Treinando", "tn.put": "Colocar", "tn.empty": "Vazio", "tn.stage": "Nível {n}",
     "duel.dlg": "Duelo", "duel.new": "Novo duelo", "duel.share": "Compartilhar", "duel.shareTitle": "Duelo de Pilotos de Papel",
@@ -740,10 +744,10 @@ const I18N = {
     "boostd.clip": "Hız ×1,12", "boostd.tape": "Daha uzun süzülür (düşüş ×0,85)", "boostd.rocket": "Daha yüksek atış, hız ×1,05", "boostd.sail": "Hız ×1,2, düşüş ×0,9",
     "paper.heft": "Defter kağıdı", "paper.glanz": "Parlak kağıt", "paper.perga": "Parşömen", "paper.carbon": "Karbon kağıdı", "paper.eigen": "El yapımı", "paper.order": "Sipariş uçağı",
     "tn.dlg": "Rüzgar tüneli",
-    "tn.info": "Yaptığın bir uçağı rüzgar tüneline koy. Orada uçtuğu sürece antrenman yapar: her 3 dakikada bir seviye atlar ve daha iyi olur. Pencereyi kapatsan da devam eder. Antrenman yaparken onu fırlatamazsın.",
+    "tn.info": "Yaptığın bir uçağı rüzgar tüneline koy. Orada uçtuğu sürece antrenman yapar: neyi geliştireceğini sen seçersin (hız, süzülme ya da fırlatma): her 3 dakikada bir seviye atlar ve seçilen değer %3 artar. Pencereyi kapatsan da devam eder. Antrenman yaparken onu fırlatamazsın.",
     "tn.canvas": "Pervaneli rüzgar tüneli", "tn.bar": "Sonraki seviyeye ilerleme", "tn.out": "Çıkar", "tn.emptyState": "Rüzgar tüneli boş.",
     "tn.full": "{n} tamamen eğitildi (seviye {m}).", "tn.status": "{n}, seviye {l} / {m}. Sonraki seviyeye {t} var ({g}).",
-    "tn.gainSpeed": "Hız +0,03", "tn.gainGlide": "Süzülme +%5", "tn.up": "{n} rüzgar tünelinde {l}. seviyeye çıktı!",
+    "tn.gainSpeed": "Hız +%3", "tn.gainGlide": "Süzülme +%3", "tn.train": "Antrenman:", "tn.fTempo": "Hız", "tn.fGlide": "Süzülme", "tn.gainLaunch": "Fırlatma +%3", "tn.fLaunch": "Fırlatma", "pl.statsLaunch": ", fırlatma +%{n}", "tn.up": "{n} rüzgar tünelinde {l}. seviyeye çıktı!",
     "tn.noPlanes": "Henüz uçak yapmadın. Bir tane yap, sonra buraya koy.",
     "tn.level": "Seviye {l} / {m} · Hız ×{s} · Süzülme %{g}", "tn.in": "Antrenmanda", "tn.put": "İçeri koy", "tn.empty": "Boş", "tn.stage": "Seviye {n}",
     "duel.dlg": "Düello", "duel.new": "Yeni düello", "duel.share": "Paylaş", "duel.shareTitle": "Kağıt Pilotlar düellosu",
@@ -842,7 +846,15 @@ const PAPERS = [
   { id: "order",  name: "Bestellter Flieger", cost: 0, speed: 1.2, gravity: 0.04, color: "#d5dcec" }
 ];
 
-let coins = 0, strength = 1, upgradeCost = 10, best = 0;
+let coins = 0, strength = 1, upgradeCost = 10, best = 0;   // best in Metern (siehe toMeters)
+// Weite in Metern: Der Flieger fliegt in Bildpunkten, angezeigt wird eine gestauchte Weite. Ein normaler Wurf (450 px)
+// gibt etwa 20 m, mit allen Upgrades nähert man sich nur 75 m (Weltrekord für Papierflieger: 69 m). Münzen zählen
+// weiter nach den Bildpunkten (px / 10), damit sich die Spielwirtschaft nicht ändert.
+const DIST_MAX = 75, DIST_L = 1450;
+const toMeters = px => DIST_MAX * (1 - Math.exp(-px / DIST_L));
+const toPx = m => -DIST_L * Math.log(1 - m / DIST_MAX);
+const round1 = v => Math.round(v * 10) / 10;
+const fmtM = v => round1(v).toLocaleString(lang === "en" ? "en-US" : lang, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 let owned = ["heft"], equipped = "";   // equipped: Id eines selbstgebauten Fliegers, leer = noch keiner
 let isFlying = false, camX = 0, resultTimer = null, craftQ = 0;
 let ownedBoosts = [], attached = [], flightGravity = 0.05, orderQ = null, shapes = {}, custom = [], nick = "", tutorialDone = false, throwHint = false, practiceThrows = 0, pull = null, tunnel = null, pupg = {};
@@ -873,6 +885,7 @@ function load() {
     const s = JSON.parse(localStorage.getItem("papierflieger") || "null");
     if (s) {
       coins = s.coins || 0; strength = s.strength || 1; upgradeCost = s.upgradeCost || 10; best = s.best || 0;
+      if (s.distScale !== 2) best = round1(toMeters(best));   // alter Rekord stand in Bildpunkten
       owned = s.owned || ["heft"]; equipped = s.equipped || "";
       craftQ = s.craftQ || 0; applyCraft(craftQ);
       ownedBoosts = s.ownedBoosts || []; attached = s.attached || [];
@@ -911,7 +924,7 @@ function load() {
   } catch (e) {}
 }
 function save() {
-  try { localStorage.setItem("papierflieger", JSON.stringify({ coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, orderQ, shapes, custom, nick, tutorialDone, throwHint, practiceThrows, tunnel, pupg })); } catch (e) {}
+  try { localStorage.setItem("papierflieger", JSON.stringify({ distScale: 2, coins, strength, upgradeCost, best, owned, equipped, craftQ, ownedBoosts, orderQ, shapes, custom, nick, tutorialDone, throwHint, practiceThrows, tunnel, pupg })); } catch (e) {}
 }
 
 function updateUI() {
@@ -920,7 +933,7 @@ function updateUI() {
   document.getElementById("nick-label").textContent = nick ? t("player", { n: nick }) : "";
   document.getElementById("strength-h").textContent = t("strength", { n: strength });
   document.getElementById("upgrade-btn").textContent = t("upgradeBtn", { n: upgradeCost });
-  document.getElementById("best-line").innerHTML = t("best", { n: "<strong>" + best + "</strong>" });
+  document.getElementById("best-line").innerHTML = t("best", { n: "<strong>" + fmtM(best) + "</strong>" });
   document.getElementById("craft-btn").disabled = isFlying;
   document.getElementById("upgrade-btn").disabled = coins < upgradeCost || isFlying;
   renderHangar();
@@ -1055,16 +1068,15 @@ function drawWorld() {
   ctx.fillStyle = css("--grass");
   ctx.fillRect(0, groundY, W, canvas.height - groundY);
 
-  // Entfernungsmarken alle 100 m
+  // Entfernungsmarken in Metern: je weiter, desto größer der Abstand (die angezeigte Weite ist gestaucht)
   ctx.fillStyle = css("--ink");
   ctx.font = "600 " + uiFont(9) + "px Fredoka, sans-serif";
   ctx.textAlign = "center";
-  const first = Math.floor(camX / 100) * 100;
-  for (let m = first; m <= camX + W + 100; m += 100) {
-    const sx = m + SX - camX;
-    if (m + SX <= SX * 2) continue;
+  for (const m of [10, 20, 30, 40, 50, 60, 65, 70, 73]) {
+    const sx = SX + toPx(m) - camX;
+    if (sx < -30 || sx > W + 30 || SX + toPx(m) <= SX * 2) continue;
     ctx.fillRect(sx - 1, groundY, 2, 6);
-    if (m > 0) ctx.fillText(m + " m", sx, groundY + 17);
+    ctx.fillText(m + " m", sx, groundY + 17);
   }
 
   // Startrampe
@@ -1223,7 +1235,7 @@ function throwPlane(pm, tm, lp) {
 
 function finish() {
   isFlying = false;
-  const distance = Math.max(0, Math.floor(plane.x - launchX));
+  const px = Math.max(0, Math.floor(plane.x - launchX)), distance = round1(toMeters(px));   // distance in Metern
   if (duelCtx) {
     const dc = duelCtx; duelCtx = null;
     plane.x = SX; plane.y = 300; camX = 0;
@@ -1231,11 +1243,11 @@ function finish() {
     updateUI(); duelDone(dc, distance);
     return;
   }
-  const earned = Math.floor(distance / 10);
+  const earned = Math.floor(px / 10);
   coins += earned;
   const record = distance > best;
   if (record) best = distance;
-  showResult(t("land", { d: distance, c: earned }) + (record ? " " + t("land.record") : "") + throwNote);
+  showResult(t("land", { d: fmtM(distance), c: earned }) + (record ? " " + t("land.record") : "") + throwNote);
   plane.x = SX; plane.y = 300; camX = 0;
   document.getElementById("live").textContent = "0";
   save(); updateUI();
@@ -1250,8 +1262,8 @@ function animate() {
     camX = Math.max(0, plane.x - W / 2);
     // Steigt der Flieger über den oberen Rand, fährt die Kamera nach oben mit (und danach wieder zurück)
     camY += (Math.min(0, plane.y - 160) - camY) * 0.15;
-    document.getElementById("live").textContent = Math.max(0, Math.floor(plane.x - launchX));
-    const ah = document.getElementById("alt-hud"), hgt = Math.round(TERRACE_Y - plane.y);
+    document.getElementById("live").textContent = fmtM(toMeters(Math.max(0, plane.x - launchX)));
+    const ah = document.getElementById("alt-hud"), hgt = Math.round((TERRACE_Y - plane.y) / 20);   // Höhe in Metern: 20 Bildpunkte = 1 m
     ah.hidden = plane.y > 150;
     if (!ah.hidden) ah.textContent = "↑ " + hgt + " m";
     // Die Terrasse ist fest: Wer sie von oben trifft, landet darauf
@@ -1681,7 +1693,7 @@ document.getElementById("craft-done").addEventListener("click", () => {
 const DUEL_LINK = "https://claude.ai/artifact/RkQxGKGJDdBzs2ds8AyLL7";
 const duelDlg = document.getElementById("duel-dialog");
 function duelText() {
-  return t("duel.text.head") + " " + (best ? t("duel.text.record", { n: best }) : t("duel.text.who")) + (nick ? " – " + nick : "");
+  return t("duel.text.head") + " " + (best ? t("duel.text.record", { n: fmtM(best) }) : t("duel.text.who")) + (nick ? " – " + nick : "");
 }
 document.getElementById("duel-btn").addEventListener("click", () => {
   if (duelCtx) { cancelDuelThrow(); return; }
@@ -1703,10 +1715,10 @@ document.getElementById("duel-share").addEventListener("click", async () => {
 // ---------- Duell-Modus mit Einsatz ----------
 let duelShareLink = DUEL_LINK, dbRef = null, myId = null, duelCtx = null, duelPrevEq = null, myDuels = [];
 let joinId = (location.hash.match(/^#d_([A-Za-z0-9_~.-]+)$/) || [])[1] || null;
-const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0, boosts: c.boosts || [], pap: c.pap || "heft" });
+const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0, lvlLift: c.lvlLift || 0, boosts: c.boosts || [], pap: c.pap || "heft" });
 function addPlaneCopy(p) {
   if (!p) return;
-  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || t("plane.default")).slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
+  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || t("plane.default")).slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), lvlLift: clamp(Math.floor(+p.lvlLift) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
 }
 function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = ""; }
 function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
@@ -1740,7 +1752,7 @@ function renderDuelList() {
     const row = document.createElement("div");
     row.className = "boost-row";
     const sp = document.createElement("span");
-    sp.textContent = t("duel.open", { n: d.cPlane.name, d: d.cDist });
+    sp.textContent = t("duel.open", { n: d.cPlane.name, d: fmtM(d.cDist) });
     const b1 = document.createElement("button"); b1.type = "button"; b1.textContent = t("duel.link");
     b1.onclick = () => showDuelLink(d.id);
     const b2 = document.createElement("button"); b2.type = "button"; b2.textContent = t("duel.cancel");
@@ -1783,7 +1795,7 @@ async function duelDone(dc, distance) {
       const ref = dbRef.collection("duels").doc();
       await ref.set({ cId: myId, cNick: nick, cPlane: planePack(c), cDist: distance, status: "open", claimed: false, created: Date.now() });
       removePlane(c.id); save(); updateUI();
-      openDuelDialog(t("duel.created", { d: distance, n: c.name }));
+      openDuelDialog(t("duel.created", { d: fmtM(distance), n: c.name }));
       showDuelLink(ref.id);
     } catch (e) {
       updateUI();
@@ -1799,9 +1811,9 @@ async function duelDone(dc, distance) {
     const result = distance > d.cDist ? "o" : distance < d.cDist ? "c" : "draw";
     await ref.update({ status: "done", oId: myId, oNick: nick, oPlane: planePack(c), oDist: distance, result, claimed: false });
     let msg;
-    if (result === "o") { addPlaneCopy(d.cPlane); msg = t("duel.won", { a: distance, b: d.cDist, p: d.cPlane.name, n: d.cNick }); }
-    else if (result === "c") { removePlane(c.id); msg = t("duel.lost", { a: distance, b: d.cDist, p: c.name, n: d.cNick }); }
-    else msg = t("duel.draw", { a: distance });
+    if (result === "o") { addPlaneCopy(d.cPlane); msg = t("duel.won", { a: fmtM(distance), b: fmtM(d.cDist), p: d.cPlane.name, n: d.cNick }); }
+    else if (result === "c") { removePlane(c.id); msg = t("duel.lost", { a: fmtM(distance), b: fmtM(d.cDist), p: c.name, n: d.cNick }); }
+    else msg = t("duel.draw", { a: fmtM(distance) });
     save(); updateUI();
     openDuelDialog(msg);
   } catch (e) {
@@ -1842,7 +1854,7 @@ async function tryJoin() {
     const d = s.data();
     if (d.status !== "open") { openDuelDialog(t("duel.overShort")); return; }
     if (d.cId === myId) { openDuelDialog(t("duel.own")); showDuelLink(id); return; }
-    openDuelDialog(t("duel.join", { c: String(d.cNick).slice(0, 20), d: d.cDist, p: String(d.cPlane.name).slice(0, 40) }));
+    openDuelDialog(t("duel.join", { c: String(d.cNick).slice(0, 20), d: fmtM(d.cDist), p: String(d.cPlane.name).slice(0, 40) }));
     renderPick("join", d, id);
   } catch (e) { openDuelDialog(t("duel.loadFail")); }
 }
@@ -1925,7 +1937,8 @@ function upOf(p) {
 // Werte eines Fliegers mit Papier und Boosts
 function effStats(p) {
   const u = upOf(p), pp = PAPERS.find(x => x.id === u.pap) || PAPERS[0];
-  let speed = p.speed * pp.speed, gravity = p.gravity * pp.gravity / 0.05, lift = 0;
+  // lift: Abwurf nach oben; jede Windkanal-Stufe "Abwurf" bringt 3 % des Grund-Abwurfs (1 + Wurfstärke · 0,2)
+  let speed = p.speed * pp.speed, gravity = p.gravity * pp.gravity / 0.05, lift = (p.lvlLift || 0) * 0.03 * (1 + strength * 0.2);
   u.boosts.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { speed *= b.speed; gravity *= b.gravity; lift += b.lift; } });
   return { speed, gravity, lift };
 }
@@ -1948,7 +1961,7 @@ function renderPlane() {
     g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
   }
   g.restore();
-  document.getElementById("pl-stats").textContent = t("pl.stats", { s: e.speed.toFixed(2), g: Math.round(0.05 / e.gravity * 100) }) + (p.lvl ? t("pl.statsLvl", { n: p.lvl }) : "") + (u.boosts.length || u.pap !== "heft" ? t("pl.statsUp") : "");
+  document.getElementById("pl-stats").textContent = t("pl.stats", { s: e.speed.toFixed(2), g: Math.round(0.05 / e.gravity * 100) }) + (p.lvlLift ? t("pl.statsLaunch", { n: p.lvlLift * 3 }) : "") + (p.lvl ? t("pl.statsLvl", { n: p.lvl }) : "") + (u.boosts.length || u.pap !== "heft" ? t("pl.statsUp") : "");
   const sel = document.getElementById("pl-select");
   sel.textContent = away ? t("pl.training") : on ? t("pl.selected") : t("pl.select");
   sel.disabled = away || on || isFlying || !!duelCtx;
@@ -2045,11 +2058,15 @@ document.getElementById("pl-rename-roll").addEventListener("click", () => {
 const TUNNEL_MS = 180000, TUNNEL_MAX = 20;
 const tunnelDlg = document.getElementById("tunnel-dialog"), tc = document.getElementById("tunnel-canvas"), tg = tc.getContext("2d");
 const tunnelPlane = () => tunnel ? custom.find(c => c.id === tunnel.id) || null : null;
-const nextGain = lvl => t((lvl + 1) % 2 ? "tn.gainSpeed" : "tn.gainGlide");
-function levelUp(c) {
+// Beim Hineinlegen wählt man, was der Flieger trainiert: "speed" (Tempo) oder "glide" (Gleitflug). Jede Stufe bringt 3 % mehr.
+// "launch" = Abwurf: jede Stufe macht den Abwurf nach oben um 3 % des Grund-Abwurfs höher (c.lvlLift zählt die Stufen, effStats rechnet).
+const FOCI = [["speed", "tn.fTempo"], ["glide", "tn.fGlide"], ["launch", "tn.fLaunch"]];
+const nextGain = focus => t(focus === "glide" ? "tn.gainGlide" : focus === "launch" ? "tn.gainLaunch" : "tn.gainSpeed");
+function levelUp(c, focus) {
   c.lvl = (c.lvl || 0) + 1;
-  if (c.lvl % 2) c.speed = +(c.speed + 0.03).toFixed(3);
-  else c.gravity = +Math.max(0.02, c.gravity * 0.95).toFixed(5);
+  if (focus === "glide") c.gravity = +Math.max(0.02, c.gravity / 1.03).toFixed(5);   // Gleitflug % = 0,05 / Fall, also +3 %
+  else if (focus === "launch") c.lvlLift = (c.lvlLift || 0) + 1;
+  else c.speed = +(c.speed * 1.03).toFixed(4);
 }
 function tickTunnel() {
   const c = tunnelPlane();
@@ -2058,10 +2075,10 @@ function tickTunnel() {
   if (tunnel.since > now) tunnel.since = now;
   if ((c.lvl || 0) >= TUNNEL_MAX) { tunnel.since = now; return; }
   const from = c.lvl || 0;
-  while ((c.lvl || 0) < TUNNEL_MAX && now - tunnel.since >= TUNNEL_MS) { tunnel.since += TUNNEL_MS; levelUp(c); }
+  while ((c.lvl || 0) < TUNNEL_MAX && now - tunnel.since >= TUNNEL_MS) { tunnel.since += TUNNEL_MS; levelUp(c, tunnel.focus); }
   if (c.lvl === from) return;
   save(); updateUI(); renderTunnelList();
-  showResult(t("tn.up", { n: c.name, l: c.lvl }) + (c.lvl - from === 1 ? " (" + t(c.lvl % 2 ? "tn.gainSpeed" : "tn.gainGlide") + ")" : ""));
+  showResult(t("tn.up", { n: c.name, l: c.lvl }) + (c.lvl - from === 1 ? " (" + nextGain(tunnel.focus) + ")" : ""));
 }
 function takeOutTunnel() {
   tickTunnel();
@@ -2069,12 +2086,16 @@ function takeOutTunnel() {
   if (c) c.prog = Math.min(TUNNEL_MS - 1, Math.max(0, Date.now() - tunnel.since));
   tunnel = null;
 }
-function putInTunnel(id) {
+// focus: "speed" (Tempo) oder "glide" (Gleitflug). Liegt der Flieger schon im Windkanal, wechselt nur das Trainingsziel
+// (die angefangene Zeit bleibt).
+function putInTunnel(id, focus) {
   if (isFlying || duelCtx) return;
   const c = custom.find(x => x.id === id);
   if (!c) return;
+  focus = FOCI.some(f => f[0] === focus) ? focus : "speed";
+  if (tunnel && tunnel.id === id) { tickTunnel(); tunnel.focus = focus; save(); renderTunnelList(); updateTunnelStatus(); return; }
   takeOutTunnel();
-  tunnel = { id, since: Date.now() - (c.prog || 0) };
+  tunnel = { id, since: Date.now() - (c.prog || 0), focus };
   if (equipped === id) equipped = "";
   save(); updateUI(); renderTunnelList(); updateTunnelStatus();
 }
@@ -2091,13 +2112,21 @@ function renderTunnelList() {
     const sm = document.createElement("small");
     sm.textContent = t("tn.level", { l: c.lvl || 0, m: TUNNEL_MAX, s: c.speed.toFixed(2), g: Math.round(0.05 / c.gravity * 100) });
     sp.appendChild(sm);
-    const b = document.createElement("button");
-    b.type = "button";
-    const here = !!tunnel && tunnel.id === c.id;
-    b.textContent = here ? t("tn.in") : t("tn.put");
-    b.disabled = here || isFlying || !!duelCtx;
-    b.onclick = () => putInTunnel(c.id);
-    row.append(sp, b);
+    // Auswahl, was trainiert werden soll; der aktive Knopf zeigt, was gerade trainiert wird
+    const here = !!tunnel && tunnel.id === c.id, cur = tunnel && FOCI.some(f => f[0] === tunnel.focus) ? tunnel.focus : "speed";
+    const btns = document.createElement("div"); btns.className = "tn-btns";
+    const lab = document.createElement("small"); lab.textContent = t("tn.train"); btns.appendChild(lab);
+    FOCI.forEach(([f, key]) => {
+      const b = document.createElement("button"); b.type = "button";
+      const on = here && cur === f;
+      b.textContent = (on ? "✓ " : "") + t(key);
+      b.className = on ? "on" : "";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.disabled = on || isFlying || !!duelCtx;
+      b.onclick = () => putInTunnel(c.id, f);
+      btns.appendChild(b);
+    });
+    row.append(sp, btns);
     box.appendChild(row);
   });
 }
@@ -2109,7 +2138,7 @@ function updateTunnelStatus() {
   else {
     const el = Math.min(TUNNEL_MS, Math.max(0, Date.now() - tunnel.since)), left = Math.ceil((TUNNEL_MS - el) / 1000);
     pct = el / TUNNEL_MS * 100;
-    txt = t("tn.status", { n: c.name, l: c.lvl || 0, m: TUNNEL_MAX, t: Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0"), g: nextGain(c.lvl || 0) });
+    txt = t("tn.status", { n: c.name, l: c.lvl || 0, m: TUNNEL_MAX, t: Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0"), g: nextGain(tunnel.focus) });
   }
   if (st.textContent !== txt) st.textContent = txt;
   bar.style.width = pct.toFixed(1) + "%";

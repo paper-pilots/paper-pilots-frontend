@@ -17,7 +17,7 @@
 1. Erststart: Spitzname-Dialog (min. 2 Zeichen, nicht schließbar). Danach öffnet sich sofort das Faltblatt mit Anleitung (nur neue Spieler, `tutorialDone`).
 2. Anleitung: 4 geführte Falten (`GSTEPS`, Ringe als Ziel). Danach „Flieger übernehmen", dann 3 Übungswürfe mit gestrichelter Mittellinie (`throwHint`, `practiceThrows`).
 3. Werfen: Flieger mit der Maus greifen, nach hinten ziehen, nach vorne schwingen, loslassen. Es gibt keinen Wurfknopf mehr. Der Flug startet genau an der Loslass-Stelle; Weite wird ab `launchX` gemessen.
-4. Münzen = `floor(Weite/10)`. Damit kauft man Wurfstärke, Boosts, besseres Papier, Lack, Sticker. (Doppelmünzen wurden auf Wunsch komplett entfernt; ein alter Wert `coinLevel` im Speicherstand wird ignoriert.)
+4. Münzen = `floor(Bildpunkte/10)` (nicht die angezeigten Meter, siehe „Weite in Metern“). Damit kauft man Wurfstärke, Boosts, besseres Papier, Lack, Sticker. (Doppelmünzen wurden auf Wunsch komplett entfernt; ein alter Wert `coinLevel` im Speicherstand wird ignoriert.)
 
 ## Wichtige Konstanten und Formeln
 - Terrasse: `SX = 150` (Startmitte), Terrasse 300 px breit, Boden `groundY = 380`, Canvas 800×400. Kamera folgt ab `W/2`.
@@ -46,6 +46,12 @@
 - Ohne Flieger passiert beim Werfen nichts; das Spielfeld und die Flugzeug-Reihe zeigen `noPlane` („Tippe oben auf Flieger basteln …“), trainieren alle im Windkanal, zeigt das Spielfeld `allTraining`. Beim ersten Start führt die Anleitung sowieso zuerst zum Falten.
 - `PAPERS` bleibt als Liste der Papier-Sorten für das Papier-Upgrade (`heft` = Grundpapier jedes Fliegers), nicht mehr als Flugzeug.
 - Alte Spielstände: Wer „heft“ ausgewählt hatte, bekommt den ersten selbstgebauten Flieger. Globale Boosts (`attached`) gehen an den ausgewählten oder ersten Flieger, das beste früher gekaufte Papier wird bei allen selbstgebauten Fliegern zum Papier-Upgrade, wenn es besser ist als ihr jetziges.
+## Weite in Metern (realistisch gestaucht)
+- Der Flieger fliegt weiter in Bildpunkten (`px = plane.x − launchX`), angezeigt wird `toMeters(px) = 75 · (1 − e^(−px/1450))` (`DIST_MAX` 75, `DIST_L` 1450). Ein normaler Wurf (450 px) gibt etwa 20 m, 1500 px 48 m, 5000 px 72,6 m; die Grenze 75 m liegt knapp über dem Weltrekord für Papierflieger (69 m). Auf Wunsch des Nutzers, weil 5 km „voll unrealistisch“ waren.
+- Münzen zählen weiter nach den Bildpunkten: `floor(px / 10)`, damit sich die Spielwirtschaft nicht ändert. `best` und Duell-Weiten (`cDist`, `oDist`) sind in Metern (eine Nachkommastelle, `round1`, Anzeige mit `fmtM` im Zahlenformat der Sprache).
+- Entfernungsmarken am Boden stehen bei 10, 20, … 70, 73 m an der Stelle `SX + toPx(m)`; der Abstand wächst, je näher man der Grenze kommt.
+- Höhenanzeige: 20 Bildpunkte = 1 m (Sterne dann etwa ab 70 bis 90 m Höhe).
+- Alte Spielstände (ohne `distScale: 2`): der Rekord wird beim Laden von Bildpunkten in Meter umgerechnet. Alte Duell-Weiten in der Datenbank bleiben unverändert.
 ## Höhe: Ballons, Wolken, Sterne
 - Steigt der Flieger über den oberen Spielfeldrand, fährt die Kamera mit (`camY`, ≤ 0; in `animate`: Ziel `plane.y − 160`, weich nachgeführt, ohne Flug 0). Alles Gezeichnete läuft in `drawWorld` in Weltkoordinaten (`ctx.translate(0, −camY)`); y = 0 ist der obere Rand am Start, je kleiner y, desto höher.
 - Schichten (`drawHighLayers`, deterministisch per `hash2`, mit Parallaxe): Heißluftballons etwa 170 bis 690 über dem Rand (bunt gestreift, wippen), dicke Wolken 800 bis 1800, darüber Sterne (erscheinen ab ca. 1400, funkeln) und ein Mond (Sichel, ca. 2750). Der Himmel (`skyAt`) wird mit der Höhe erst satter blau, ab ca. 1500 dunkel.
@@ -73,7 +79,7 @@
 - Alte Spielstände: Das beste früher gekaufte Papier (Glanz/Pergament/Carbon) wird beim Laden zum Papier-Upgrade des Schulheftpapiers (`pupg.heft.pap`); war so ein Papier ausgewählt, wird das Schulheftpapier ausgewählt. `buyPaper`/`renderShop` und die zwei Läden sind entfernt.
 ## Windkanal
 - Knopf „Windkanal“ zwischen „Duell“ und „Spieler“. Dialog `tunnel-dialog` mit Canvas (Glasröhre, Ventilator vorne und hinten, Flieger schwebt in der Mitte).
-- Ein selbstgebauter Flieger (`custom[]`) liegt im Windkanal (`tunnel = {id, since}`, gespeichert). Alle `TUNNEL_MS` (3 Minuten) steigt er eine Stufe (`lvl`, höchstens `TUNNEL_MAX` = 20): ungerade Stufen Tempo +0,03, gerade Stufen Gleitflug +5 % (`gravity × 0,95`, mindestens 0,02). Die Zeit läuft per Zeitstempel auch bei geschlossenem Fenster und beim Neuladen weiter (`tickTunnel`).
+- Ein selbstgebauter Flieger liegt im Windkanal (`tunnel = {id, since, focus}`, gespeichert). Beim Hineinlegen wählt man, was trainiert wird: **Tempo** (`focus: "speed"`), **Gleitflug** (`"glide"`, weniger Fall) oder **Abwurf** (`"launch"`, höherer Abwurf wie beim Raketenstart), alles als Knöpfe (`FOCI`) in der Zeile des Fliegers (der aktive trägt ein ✓; ein anderer Knopf auf demselben Flieger wechselt nur das Ziel, die angefangene Zeit bleibt). Alle `TUNNEL_MS` (3 Minuten) steigt er eine Stufe (`lvl`, höchstens `TUNNEL_MAX` = 20), und der gewählte Wert wird um **3 %** besser: Tempo `speed × 1,03`, Gleitflug `gravity ÷ 1,03` (mindestens 0,02), also Gleitflug-% × 1,03, Abwurf `c.lvlLift`++ (jede Stufe = 3 % des Grund-Abwurfs `1 + Wurfstärke·0,2`, in `effStats` als `lift` eingerechnet, ausgewiesen als „Abwurf +n %“ auf der Flugzeug-Seite; geht beim Duell mit). Alte Windkanal-Einträge ohne `focus` trainieren Tempo. Die Zeit läuft per Zeitstempel auch bei geschlossenem Fenster und beim Neuladen weiter (`tickTunnel`).
 - Es liegt höchstens ein Flieger im Windkanal. Beim Herausnehmen bleibt die angefangene Zeit im Flieger (`prog`). Ein Flieger im Windkanal ist gesperrt: Auf seiner Seite steht „Trainiert gerade" statt „Auswählen", er kann nicht gelöscht und nicht ins Duell gesetzt werden. Beim Hineinlegen wird er abgewählt (Standardpapier). Herausnehmen gibt ihn wieder frei. `lvl` wird beim Duell mitgegeben (`planePack`).
 - Idee für später: Symmetrie/Stabilität als weitere Werte (heute nur beim Falten berechnet und nicht gespeichert), Offline-Obergrenze.
 
