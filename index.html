@@ -76,7 +76,7 @@ dialog { max-height: 92vh; overflow-y: auto; }
 #pl-canvas { background: var(--sky); margin-bottom: 8px; }
 #pl-up h3 { margin: 14px 0 4px; font-size: 1rem; }
 #pl-up small { display: block; color: var(--muted); }
-#paint-row, #sticker-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+#paint-row, #sticker-row, #paint-res, #sticker-res { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
 .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
 .stk { padding: 4px 8px; font-size: 1.1rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); }
 .sw.on, .stk.on { outline: 3px solid var(--accent); outline-offset: 1px; }
@@ -258,6 +258,12 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
     <strong data-i18n="craft.paint"></strong><div id="paint-row"></div>
     <strong data-i18n="craft.sticker"></strong><div id="sticker-row"></div>
     <span id="sticker-hint" style="color:var(--muted)"></span>
+    <div style="margin-top:12px"><strong data-i18n="srch.title"></strong></div>
+    <div class="name-row">
+      <input id="style-q" type="text" maxlength="60" data-i18n-ph="srch.ph" data-i18n-aria="srch.title" autocomplete="off">
+      <button id="style-go" class="small" type="button" data-i18n="srch.go"></button>
+    </div>
+    <div id="style-res"></div>
   </div>
   <div class="dlg-actions">
     <button id="craft-done" type="button" disabled data-i18n="craft.done"></button>
@@ -291,6 +297,7 @@ const I18N = {
     "best": "Bester Wurf: {n} Meter", "lang.label": "Sprache", "close": "Schließen",
     "sound.on": "🔊 Ton an", "sound.off": "🔇 Ton aus",
     "bd.title": "Abzeichen", "bd.hint": "Tippe auf ein erreichtes Abzeichen, um es auf dem Flugzeug anzubringen (höchstens {n}). Jedes Abzeichen gehört nur dem Flugzeug, das es sich verdient hat.", "bd.count": "{a} von {b} erreicht", "bd.new": "Neues Abzeichen: {n}!", "bd.full": "Es sind schon {n} Abzeichen angebracht. Nimm erst eins ab.", "bd.maxed": "Alle erreicht!", "bd.t0": "Bronze", "bd.t1": "Silber", "bd.t2": "Gold", "bd.t3": "Platin", "bd.t4": "Diamant", "bd.c.dist": "Weitflieger", "bd.c.throws": "Dauerflieger", "bd.c.duels": "Duell-Held", "bd.c.best": "Rekordwurf", "bd.c.perfect": "Volltreffer", "bd.c.height": "Höhenflieger", "bd.c.train": "Windkanal-Profi", "bd.p.dist": "Insgesamt geflogen: {v} von {g} km", "bd.p.throws": "Würfe: {v} von {g}", "bd.p.duels": "Duelle gewonnen: {v} von {g}", "bd.p.best": "Bester Wurf: {v} von {g} m", "bd.p.perfect": "Perfekte Würfe: {v} von {g}", "bd.p.height": "Höchste Höhe: {v} von {g} m", "bd.p.train": "Windkanal-Stufen: {v} von {g}",
+    "srch.title": "Wunsch suchen (teurer)", "srch.ph": "z. B. rot, grün und ein Autoreifen", "srch.go": "Suchen", "srch.colors": "Farben (je {n} Münzen)", "srch.stickers": "Sticker (je {n} Münzen)", "srch.none": "Dazu habe ich nichts gefunden. Probier zum Beispiel „türkis“, „Rakete“ oder „Katze“.",
     "set.title": "Einstellungen", "set.howto": "So wird gespielt",
     "how.1": "Wirf deinen Flieger: Zieh ihn auf dem Spielfeld nach hinten, schwing nach vorne und lass los. Wer genau auf der Linie loslässt, wirft perfekt.",
     "how.2": "Bastle zuerst einen Flieger: Tippe auf „Flieger basteln“ und zieh die Ecken des Papiers, bis er fertig gefaltet ist. Du kannst ihn lackieren und bekleben.",
@@ -374,6 +381,7 @@ const I18N = {
     "best": "Best throw: {n} meters", "lang.label": "Language", "close": "Close",
     "sound.on": "🔊 Sound on", "sound.off": "🔇 Sound off",
     "bd.title": "Badges", "bd.hint": "Tap an earned badge to put it on this plane (at most {n}). Each badge belongs only to the plane that earned it.", "bd.count": "{a} of {b} earned", "bd.new": "New badge: {n}!", "bd.full": "{n} badges are already on. Take one off first.", "bd.maxed": "All earned!", "bd.t0": "Bronze", "bd.t1": "Silver", "bd.t2": "Gold", "bd.t3": "Platinum", "bd.t4": "Diamond", "bd.c.dist": "Long Hauler", "bd.c.throws": "Frequent Flyer", "bd.c.duels": "Duel Hero", "bd.c.best": "Record Throw", "bd.c.perfect": "Bullseye", "bd.c.height": "High Flyer", "bd.c.train": "Wind Tunnel Pro", "bd.p.dist": "Total distance flown: {v} of {g} km", "bd.p.throws": "Throws: {v} of {g}", "bd.p.duels": "Duels won: {v} of {g}", "bd.p.best": "Best throw: {v} of {g} m", "bd.p.perfect": "Perfect throws: {v} of {g}", "bd.p.height": "Highest altitude: {v} of {g} m", "bd.p.train": "Wind tunnel levels: {v} of {g}",
+    "srch.title": "Search your wish (costs more)", "srch.ph": "e.g. red, green and a car tyre", "srch.go": "Search", "srch.colors": "Colors (each {n} coins)", "srch.stickers": "Stickers (each {n} coins)", "srch.none": "I found nothing for that. Try “turquoise”, “rocket” or “cat”.",
     "set.title": "Settings", "set.howto": "How to play",
     "how.1": "Throw your plane: pull it back on the playing field, swing forward and let go. Let go exactly on the line for a perfect throw.",
     "how.2": "Build a plane first: tap “Build a plane” and drag the corners of the paper until it is folded. You can paint it and add stickers.",
@@ -457,6 +465,7 @@ const I18N = {
     "best": "Mejor lanzamiento: {n} metros", "lang.label": "Idioma", "close": "Cerrar",
     "sound.on": "🔊 Sonido activado", "sound.off": "🔇 Sonido desactivado",
     "bd.title": "Insignias", "bd.hint": "Toca una insignia conseguida para ponerla en este avión (máximo {n}). Cada insignia pertenece solo al avión que la ganó.", "bd.count": "{a} de {b} conseguidas", "bd.new": "¡Nueva insignia: {n}!", "bd.full": "Ya hay {n} insignias puestas. Quita una primero.", "bd.maxed": "¡Todas conseguidas!", "bd.t0": "Bronce", "bd.t1": "Plata", "bd.t2": "Oro", "bd.t3": "Platino", "bd.t4": "Diamante", "bd.c.dist": "Gran viajero", "bd.c.throws": "Vuelo constante", "bd.c.duels": "Héroe de duelos", "bd.c.best": "Lanzamiento récord", "bd.c.perfect": "En el blanco", "bd.c.height": "Vuelo alto", "bd.c.train": "Pro del túnel", "bd.p.dist": "Distancia total volada: {v} de {g} km", "bd.p.throws": "Lanzamientos: {v} de {g}", "bd.p.duels": "Duelos ganados: {v} de {g}", "bd.p.best": "Mejor lanzamiento: {v} de {g} m", "bd.p.perfect": "Lanzamientos perfectos: {v} de {g}", "bd.p.height": "Altura máxima: {v} de {g} m", "bd.p.train": "Niveles del túnel de viento: {v} de {g}",
+    "srch.title": "Buscar tu deseo (cuesta más)", "srch.ph": "p. ej. rojo, verde y una rueda de coche", "srch.go": "Buscar", "srch.colors": "Colores ({n} monedas cada uno)", "srch.stickers": "Pegatinas ({n} monedas cada una)", "srch.none": "No encontré nada. Prueba con «turquesa», «cohete» o «gato».",
     "set.title": "Ajustes", "set.howto": "Cómo se juega",
     "how.1": "Lanza tu avión: tira de él hacia atrás en el campo, balancea hacia delante y suelta. Si sueltas justo en la línea, el lanzamiento es perfecto.",
     "how.2": "Primero crea un avión: toca «Crear avión» y arrastra las esquinas del papel hasta doblarlo. Puedes pintarlo y ponerle pegatinas.",
@@ -540,6 +549,7 @@ const I18N = {
     "best": "Meilleur lancer : {n} mètres", "lang.label": "Langue", "close": "Fermer",
     "sound.on": "🔊 Son activé", "sound.off": "🔇 Son coupé",
     "bd.title": "Badges", "bd.hint": "Appuie sur un badge obtenu pour le poser sur cet avion (au maximum {n}). Chaque badge appartient uniquement à l’avion qui l’a mérité.", "bd.count": "{a} sur {b} obtenus", "bd.new": "Nouveau badge : {n} !", "bd.full": "{n} badges sont déjà posés. Retires-en un d’abord.", "bd.maxed": "Tous obtenus !", "bd.t0": "Bronze", "bd.t1": "Argent", "bd.t2": "Or", "bd.t3": "Platine", "bd.t4": "Diamant", "bd.c.dist": "Grand voyageur", "bd.c.throws": "Vols en série", "bd.c.duels": "Héros des duels", "bd.c.best": "Lancer record", "bd.c.perfect": "En plein dans le mille", "bd.c.height": "Haut vol", "bd.c.train": "Pro de la soufflerie", "bd.p.dist": "Distance totale parcourue : {v} sur {g} km", "bd.p.throws": "Lancers : {v} sur {g}", "bd.p.duels": "Duels gagnés : {v} sur {g}", "bd.p.best": "Meilleur lancer : {v} sur {g} m", "bd.p.perfect": "Lancers parfaits : {v} sur {g}", "bd.p.height": "Altitude maximale : {v} sur {g} m", "bd.p.train": "Niveaux de soufflerie : {v} sur {g}",
+    "srch.title": "Chercher ton idée (plus cher)", "srch.ph": "p. ex. rouge, vert et un pneu", "srch.go": "Chercher", "srch.colors": "Couleurs ({n} pièces chacune)", "srch.stickers": "Autocollants ({n} pièces chacun)", "srch.none": "Je n’ai rien trouvé. Essaie « turquoise », « fusée » ou « chat ».",
     "set.title": "Réglages", "set.howto": "Comment jouer",
     "how.1": "Lance ton avion : tire-le en arrière sur le terrain, balance vers l’avant et lâche. Si tu lâches exactement sur la ligne, le lancer est parfait.",
     "how.2": "Fabrique d’abord un avion : appuie sur « Fabriquer un avion » et tire les coins du papier jusqu’à ce qu’il soit plié. Tu peux le peindre et le décorer d’autocollants.",
@@ -623,6 +633,7 @@ const I18N = {
     "best": "Miglior lancio: {n} metri", "lang.label": "Lingua", "close": "Chiudi",
     "sound.on": "🔊 Audio attivo", "sound.off": "🔇 Audio spento",
     "bd.title": "Distintivi", "bd.hint": "Tocca un distintivo ottenuto per metterlo su questo aereo (al massimo {n}). Ogni distintivo appartiene solo all’aereo che lo ha guadagnato.", "bd.count": "{a} di {b} ottenuti", "bd.new": "Nuovo distintivo: {n}!", "bd.full": "Ci sono già {n} distintivi. Togline prima uno.", "bd.maxed": "Tutti ottenuti!", "bd.t0": "Bronzo", "bd.t1": "Argento", "bd.t2": "Oro", "bd.t3": "Platino", "bd.t4": "Diamante", "bd.c.dist": "Gran viaggiatore", "bd.c.throws": "Volo costante", "bd.c.duels": "Eroe dei duelli", "bd.c.best": "Lancio record", "bd.c.perfect": "Centro perfetto", "bd.c.height": "Alto volo", "bd.c.train": "Pro della galleria", "bd.p.dist": "Distanza totale volata: {v} di {g} km", "bd.p.throws": "Lanci: {v} di {g}", "bd.p.duels": "Duelli vinti: {v} di {g}", "bd.p.best": "Miglior lancio: {v} di {g} m", "bd.p.perfect": "Lanci perfetti: {v} di {g}", "bd.p.height": "Altezza massima: {v} di {g} m", "bd.p.train": "Livelli della galleria del vento: {v} di {g}",
+    "srch.title": "Cerca il tuo desiderio (costa di più)", "srch.ph": "es. rosso, verde e uno pneumatico", "srch.go": "Cerca", "srch.colors": "Colori ({n} monete l’uno)", "srch.stickers": "Adesivi ({n} monete l’uno)", "srch.none": "Non ho trovato nulla. Prova «turchese», «razzo» o «gatto».",
     "set.title": "Impostazioni", "set.howto": "Come si gioca",
     "how.1": "Lancia il tuo aereo: tiralo indietro sul campo, oscilla in avanti e rilascia. Rilascia esattamente sulla linea per un lancio perfetto.",
     "how.2": "Costruisci prima un aereo: tocca «Costruisci un aereo» e trascina gli angoli della carta finché non è piegato. Puoi verniciarlo e attaccare adesivi.",
@@ -706,6 +717,7 @@ const I18N = {
     "best": "Melhor lançamento: {n} metros", "lang.label": "Idioma", "close": "Fechar",
     "sound.on": "🔊 Som ligado", "sound.off": "🔇 Som desligado",
     "bd.title": "Insígnias", "bd.hint": "Toque numa insígnia conquistada para colocá-la neste avião (no máximo {n}). Cada insígnia pertence só ao avião que a conquistou.", "bd.count": "{a} de {b} conquistadas", "bd.new": "Nova insígnia: {n}!", "bd.full": "Já há {n} insígnias colocadas. Tire uma primeiro.", "bd.maxed": "Todas conquistadas!", "bd.t0": "Bronze", "bd.t1": "Prata", "bd.t2": "Ouro", "bd.t3": "Platina", "bd.t4": "Diamante", "bd.c.dist": "Grande viajante", "bd.c.throws": "Voo constante", "bd.c.duels": "Herói dos duelos", "bd.c.best": "Lançamento recorde", "bd.c.perfect": "Na mosca", "bd.c.height": "Voo alto", "bd.c.train": "Pro do túnel", "bd.p.dist": "Distância total voada: {v} de {g} km", "bd.p.throws": "Lançamentos: {v} de {g}", "bd.p.duels": "Duelos vencidos: {v} de {g}", "bd.p.best": "Melhor lançamento: {v} de {g} m", "bd.p.perfect": "Lançamentos perfeitos: {v} de {g}", "bd.p.height": "Altura máxima: {v} de {g} m", "bd.p.train": "Níveis do túnel de vento: {v} de {g}",
+    "srch.title": "Procurar o seu desejo (custa mais)", "srch.ph": "ex.: vermelho, verde e um pneu", "srch.go": "Procurar", "srch.colors": "Cores ({n} moedas cada)", "srch.stickers": "Adesivos ({n} moedas cada)", "srch.none": "Não encontrei nada. Tente “turquesa”, “foguete” ou “gato”.",
     "set.title": "Configurações", "set.howto": "Como jogar",
     "how.1": "Lance o seu avião: puxe-o para trás no campo, balance para a frente e solte. Soltando exatamente na linha, o lançamento é perfeito.",
     "how.2": "Primeiro construa um avião: toque em “Construir avião” e arraste os cantos do papel até dobrá-lo. Você pode pintá-lo e colar adesivos.",
@@ -789,6 +801,7 @@ const I18N = {
     "best": "En iyi atış: {n} metre", "lang.label": "Dil", "close": "Kapat",
     "sound.on": "🔊 Ses açık", "sound.off": "🔇 Ses kapalı",
     "bd.title": "Rozetler", "bd.hint": "Kazanılmış bir rozete dokun, bu uçağa tak (en fazla {n}). Her rozet yalnızca onu kazanan uçağa aittir.", "bd.count": "{a}/{b} kazanıldı", "bd.new": "Yeni rozet: {n}!", "bd.full": "Zaten {n} rozet takılı. Önce birini çıkar.", "bd.maxed": "Hepsi kazanıldı!", "bd.t0": "Bronz", "bd.t1": "Gümüş", "bd.t2": "Altın", "bd.t3": "Platin", "bd.t4": "Elmas", "bd.c.dist": "Uzun Menzil", "bd.c.throws": "Sık Uçan", "bd.c.duels": "Düello Kahramanı", "bd.c.best": "Rekor Atış", "bd.c.perfect": "Tam İsabet", "bd.c.height": "Yüksek Uçuş", "bd.c.train": "Rüzgar Tüneli Ustası", "bd.p.dist": "Toplam uçulan mesafe: {v} / {g} km", "bd.p.throws": "Atışlar: {v} / {g}", "bd.p.duels": "Kazanılan düellolar: {v} / {g}", "bd.p.best": "En iyi atış: {v} / {g} m", "bd.p.perfect": "Mükemmel atışlar: {v} / {g}", "bd.p.height": "En yüksek irtifa: {v} / {g} m", "bd.p.train": "Rüzgar tüneli seviyeleri: {v} / {g}",
+    "srch.title": "İsteğini ara (daha pahalı)", "srch.ph": "örn. kırmızı, yeşil ve bir lastik", "srch.go": "Ara", "srch.colors": "Renkler (tanesi {n} jeton)", "srch.stickers": "Çıkartmalar (tanesi {n} jeton)", "srch.none": "Bir şey bulamadım. “turkuaz”, “roket” ya da “kedi” dene.",
     "set.title": "Ayarlar", "set.howto": "Nasıl oynanır",
     "how.1": "Uçağını fırlat: Oyun alanında geriye çek, öne doğru salla ve bırak. Tam çizginin üstünde bırakırsan atış mükemmel olur.",
     "how.2": "Önce bir uçak yap: “Uçak yap” düğmesine dokun ve kağıdın köşelerini katlanana kadar sürükle. Boyayabilir ve çıkartma yapıştırabilirsin.",
@@ -1187,7 +1200,7 @@ function drawShape(ls, c, g) {
   });
   if (c && c.stickers && c.stickers.length) {
     g.textAlign = "center"; g.textBaseline = "middle"; g.font = "11px sans-serif";
-    c.stickers.forEach(st => g.fillText(st.e, -(st.y - my) * s, (st.x - mx) * s));
+    c.stickers.forEach(st => drawSticker(g, st.e, -(st.y - my) * s, (st.x - mx) * s, 11));
     g.textBaseline = "alphabetic";
   }
   return true;
@@ -1426,7 +1439,10 @@ function applyOrder(o) {
 const PAINTS = ["#ffffff", "#ff6b6b", "#ffb347", "#ffe066", "#69db7c", "#4dabf7", "#b197fc", "#ff8ad8", "#495057"];
 const STICKERS = ["⭐", "❤️", "⚡", "🔥", "🚀", "😎"];
 const PAINT_COST = 30, STICKER_COST = 10;
-function styleCost() { return (craftPaint ? PAINT_COST : 0) + craftStickers.length * STICKER_COST; }
+const PAINT_COST_PLUS = 60, STICKER_COST_PLUS = 25;   // Treffer aus der Wunsch-Suche kosten mehr
+const paintCostOf = c => (!c ? 0 : PAINTS.includes(c) ? PAINT_COST : PAINT_COST_PLUS);
+const stickerCostOf = e => (STICKERS.includes(e) ? STICKER_COST : STICKER_COST_PLUS);
+function styleCost() { return paintCostOf(craftPaint) + craftStickers.reduce((s, x) => s + stickerCostOf(x.e), 0); }
 function shade(h, f, add) {
   let c;
   if (h[0] === "#") { const n = parseInt(h.slice(1), 16); c = [n >> 16, (n >> 8) & 255, n & 255]; }
@@ -1439,39 +1455,238 @@ function craftFill(back) {
 }
 function placeSticker(p) {
   if (!pendingSticker || !layers.some(l => inside(l.pts, p[0], p[1]))) return;
-  if (craftStickers.length < 8 && coins < styleCost() + STICKER_COST) { document.getElementById("sticker-hint").textContent = t("sticker.poor"); return; }
+  if (craftStickers.length < 8 && coins < styleCost() + stickerCostOf(pendingSticker)) { document.getElementById("sticker-hint").textContent = t("sticker.poor"); return; }
   if (craftStickers.length >= 8) craftStickers.shift();
   craftStickers.push({ e: pendingSticker, x: p[0], y: p[1] });
   drawCraft();
 }
 function refreshStyleUI() {
-  document.querySelectorAll("#paint-row .sw").forEach(b => b.classList.toggle("on", (b.dataset.c === "#ffffff" ? null : b.dataset.c) === craftPaint));
-  document.querySelectorAll("#sticker-row .stk").forEach(b => b.classList.toggle("on", b.dataset.e === pendingSticker));
-  document.querySelectorAll("#paint-row .sw").forEach(b => b.setAttribute("aria-label", t("aria.color", { c: b.dataset.c })));
+  document.querySelectorAll("#paint-row .sw, #paint-res .sw").forEach(b => b.classList.toggle("on", (b.dataset.c === "#ffffff" ? null : b.dataset.c) === craftPaint));
+  document.querySelectorAll("#sticker-row .stk, #sticker-res .stk").forEach(b => b.classList.toggle("on", b.dataset.e === pendingSticker));
+  document.querySelectorAll("#paint-row .sw, #paint-res .sw").forEach(b => b.setAttribute("aria-label", t("aria.color", { c: b.dataset.c })));
   document.getElementById("sticker-hint").textContent = t(pendingSticker ? "sticker.hintOn" : "sticker.hintOff") + " " + t("sticker.cost", { c: styleCost(), h: Math.floor(coins) });
+}
+function addSwatch(parent, c) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "sw"; b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", t("aria.color", { c }));
+  b.onclick = () => {
+    if (c !== "#ffffff" && coins < styleCost() - paintCostOf(craftPaint) + paintCostOf(c)) { document.getElementById("sticker-hint").textContent = t("paint.poor"); return; }
+    craftPaint = c === "#ffffff" ? null : c; refreshStyleUI(); drawCraft();
+  };
+  parent.appendChild(b);
+}
+function addStickerBtn(parent, e) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "stk"; b.dataset.e = e;
+  const pv = stickerPreview(e);
+  if (pv) b.appendChild(pv); else b.textContent = e;
+  b.onclick = () => { pendingSticker = pendingSticker === e ? null : e; refreshStyleUI(); };
+  parent.appendChild(b);
 }
 (function buildStyle() {
   const pr = document.getElementById("paint-row"), sr = document.getElementById("sticker-row");
-  PAINTS.forEach(c => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "sw"; b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", t("aria.color", { c }));
-    b.onclick = () => {
-      if (c !== "#ffffff" && !craftPaint && coins < styleCost() + PAINT_COST) { document.getElementById("sticker-hint").textContent = t("paint.poor"); return; }
-      craftPaint = c === "#ffffff" ? null : c; refreshStyleUI(); drawCraft();
-    };
-    pr.appendChild(b);
-  });
-  STICKERS.forEach(e => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "stk"; b.dataset.e = e; b.textContent = e;
-    b.onclick = () => { pendingSticker = pendingSticker === e ? null : e; refreshStyleUI(); };
-    sr.appendChild(b);
-  });
+  PAINTS.forEach(c => addSwatch(pr, c));
+  STICKERS.forEach(e => addStickerBtn(sr, e));
   const x = document.createElement("button");
   x.type = "button"; x.className = "stk"; x.dataset.i18n = "sticker.none"; x.textContent = t("sticker.none");
   x.onclick = () => { craftStickers = []; drawCraft(); };
   sr.appendChild(x);
 })();
+
+// ---------- Wunsch-Suche: Farben und Sticker aus einem Satz ----------
+// Ohne Server: Wörter in allen 7 Sprachen werden Farben und Emoji zugeordnet (Schreibweise ohne Akzente). Treffer kosten mehr.
+const COLOR_WORDS = [
+  ["#e03131", "rot,red,rojo,rouge,rosso,vermelho,kirmizi,rote,roter,rotes"],
+  ["#2f9e44", "gruen,grun,green,verde,vert,yesil"],
+  ["#1c7ed6", "blau,blue,azul,bleu,blu,mavi"],
+  ["#fcc419", "gelb,yellow,amarillo,jaune,giallo,amarelo,sari"],
+  ["#f76707", "orange,naranja,laranja,arancione,turuncu"],
+  ["#7048e8", "lila,violett,violet,purple,morado,viola,roxo,mor,purpur"],
+  ["#f783ac", "rosa,pink,rose,pembe"],
+  ["#212529", "schwarz,black,negro,noir,nero,preto,preta,siyah"],
+  ["#f8f9fa", "weiss,white,blanco,blanc,bianco,branco,beyaz"],
+  ["#868e96", "grau,gray,grey,gris,grigio,cinza,gri"],
+  ["#8d5524", "braun,brown,marron,brun,marrone,castanho,kahverengi"],
+  ["#12b886", "tuerkis,turkis,turquoise,turquesa,turchese,turkuaz"],
+  ["#e0a800", "gold,golden,dorado,dore,oro,dourado,altin"],
+  ["#adb5bd", "silber,silver,plata,argent,argento,prata,gumus"],
+  ["#74c0fc", "hellblau,lightblue,cyan,celeste,ciano,camgobegi,himmelblau"],
+  ["#1b2f6b", "dunkelblau,navy,marine,marino,lacivert,darkblue"],
+  ["#e8d9b5", "beige,sand,creme,cream,crema,krem"],
+  ["#94d82d", "lime,limette,limone,limon"],
+  ["#862e3b", "bordeaux,weinrot,burgundy,burdeos,bordo"]
+];
+// ---------- Gemalte Mini-Bilder als Sticker ----------
+// Id "p:name". Jedes Bild wird in einem Feld von -10 bis 10 gemalt (y nach unten), mit dunklem Rand; drawSticker skaliert es.
+const PICS = (() => {
+  const dark = "#1f2a44";
+  const fin = (g, f) => { if (f) { g.fillStyle = f; g.fill(); } g.stroke(); };
+  const circ = (g, x, y, r, f) => { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); fin(g, f); };
+  const ell = (g, x, y, rx, ry, f, rot) => { g.beginPath(); g.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2); fin(g, f); };
+  const poly = (g, pts, f) => { g.beginPath(); pts.forEach((q, i) => g[i ? "lineTo" : "moveTo"](q[0], q[1])); g.closePath(); fin(g, f); };
+  const line = (g, x1, y1, x2, y2) => { g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
+  const star = (g, r1, r2, n, f) => { const p = []; for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, r = i % 2 ? r2 : r1; p.push([Math.cos(a) * r, Math.sin(a) * r]); } poly(g, p, f); };
+  const face = (g, y, dx) => { circ(g, -dx, y, 0.9, dark); circ(g, dx, y, 0.9, dark); };
+  return {
+    tyre: g => { circ(g, 0, 0, 9, "#343a40"); circ(g, 0, 0, 5.4, "#ced4da"); for (let i = 0; i < 5; i++) { const a = i * 1.2566; line(g, 0, 0, Math.cos(a) * 5.4, Math.sin(a) * 5.4); } circ(g, 0, 0, 1.7, "#868e96"); },
+    car: g => { poly(g, [[-9, 3], [-9, -1], [-5, -1], [-3, -5], [4, -5], [7, -1], [9, -1], [9, 3]], "#e03131"); poly(g, [[-2.6, -1], [-1.5, -4], [3.4, -4], [5, -1]], "#bfe3ff"); circ(g, -5, 3.5, 2.5, "#343a40"); circ(g, 5, 3.5, 2.5, "#343a40"); },
+    rocket: g => { poly(g, [[-3, 1], [-7, 7], [-3, 5]], "#e03131"); poly(g, [[3, 1], [7, 7], [3, 5]], "#e03131"); poly(g, [[-2, 5], [0, 10], [2, 5]], "#ffa94d"); poly(g, [[0, -10], [3.2, -4], [3.2, 5], [-3.2, 5], [-3.2, -4]], "#f1f3f5"); poly(g, [[0, -10], [3.2, -4], [-3.2, -4]], "#e03131"); circ(g, 0, 0, 1.8, "#74c0fc"); },
+    sun: g => { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; line(g, Math.cos(a) * 6, Math.sin(a) * 6, Math.cos(a) * 9, Math.sin(a) * 9); } circ(g, 0, 0, 4.8, "#ffd43b"); },
+    moon: g => { g.beginPath(); g.arc(0, 0, 8, 0.918, 5.365, false); g.arc(3.5, 0, 6.5, 4.924, 1.36, true); g.closePath(); fin(g, "#ffe066"); },
+    cloud: g => { const c = [[-4.5, 2, 3.8], [0, -1, 4.8], [4.5, 2, 3.8]]; c.forEach(q => circ(g, q[0], q[1], q[2], "#f8f9fa")); g.fillStyle = "#f8f9fa"; c.forEach(q => { g.beginPath(); g.arc(q[0], q[1], q[2] - 0.3, 0, Math.PI * 2); g.fill(); }); g.fillRect(-4.5, 1, 9, 4.6); line(g, -4.5, 5.8, 4.5, 5.8); },
+    flower: g => { for (let i = 0; i < 5; i++) { const a = i * 1.2566 - 1.57; circ(g, Math.cos(a) * 4.6, Math.sin(a) * 4.6, 3.3, "#f783ac"); } circ(g, 0, 0, 2.8, "#ffd43b"); },
+    tree: g => { poly(g, [[-1.4, 2], [1.4, 2], [1.4, 9], [-1.4, 9]], "#8d5524"); poly(g, [[0, -10], [6, -2], [-6, -2]], "#2f9e44"); poly(g, [[0, -6], [7.5, 4], [-7.5, 4]], "#37b24d"); },
+    crown: g => { poly(g, [[-8.5, 6], [-8.5, -4], [-4.2, 0], [0, -7], [4.2, 0], [8.5, -4], [8.5, 6]], "#fcc419"); circ(g, -8.5, -4, 1.3, "#e03131"); circ(g, 0, -7, 1.3, "#e03131"); circ(g, 8.5, -4, 1.3, "#e03131"); },
+    diamond: g => { poly(g, [[-5, -5], [5, -5], [9, 0], [0, 9], [-9, 0]], "#74c0fc"); line(g, -9, 0, 9, 0); line(g, -3, 0, 0, 9); line(g, 3, 0, 0, 9); line(g, -5, -5, -3, 0); line(g, 5, -5, 3, 0); },
+    skull: g => { circ(g, 0, -1.5, 7, "#f1f3f5"); poly(g, [[-3.5, 4], [3.5, 4], [3.5, 8.5], [-3.5, 8.5]], "#f1f3f5"); circ(g, -2.8, -1, 2, dark); circ(g, 2.8, -1, 2, dark); poly(g, [[0, 2], [-1, 3.6], [1, 3.6]], dark); line(g, -1.2, 4.5, -1.2, 8.5); line(g, 1.2, 4.5, 1.2, 8.5); },
+    ghost: g => { g.beginPath(); g.arc(0, -1, 6.5, Math.PI, 0); g.lineTo(6.5, 8.5); g.lineTo(3.2, 6); g.lineTo(0, 8.5); g.lineTo(-3.2, 6); g.lineTo(-6.5, 8.5); g.closePath(); fin(g, "#f8f9fa"); circ(g, -2.4, -1.5, 1.3, dark); circ(g, 2.4, -1.5, 1.3, dark); ell(g, 0, 2.5, 1.3, 1.7, dark); },
+    robot: g => { line(g, 0, -4.5, 0, -8); circ(g, 0, -8.6, 1.2, "#e03131"); poly(g, [[-6.5, -4.5], [6.5, -4.5], [6.5, 6.5], [-6.5, 6.5]], "#adb5bd"); circ(g, -2.8, -0.5, 1.9, "#74c0fc"); circ(g, 2.8, -0.5, 1.9, "#74c0fc"); line(g, -3.5, 3.8, 3.5, 3.8); poly(g, [[-9, -1], [-6.5, -1], [-6.5, 3], [-9, 3]], "#868e96"); poly(g, [[9, -1], [6.5, -1], [6.5, 3], [9, 3]], "#868e96"); },
+    fish: g => { poly(g, [[4, 0], [9.5, -4.5], [9.5, 4.5]], "#ff922b"); ell(g, -1.5, 0, 7.5, 5, "#ffa94d"); circ(g, -5, -1, 1, dark); line(g, 1, -4, 1, 4); },
+    shark: g => { poly(g, [[-9.5, 1], [-5, -2.5], [1, -3.5], [3, -9], [5, -3.5], [9.5, -7], [8, 0], [9.5, 6], [4, 3], [-5, 4.5]], "#868e96"); circ(g, -5.8, -0.2, 0.9, dark); line(g, -9, 2.2, -6, 2.6); },
+    cat: g => { poly(g, [[-6.5, -2], [-6, -9], [-1.5, -5]], "#ffa94d"); poly(g, [[6.5, -2], [6, -9], [1.5, -5]], "#ffa94d"); circ(g, 0, 1, 7, "#ffa94d"); face(g, -0.5, 2.7); poly(g, [[0, 2], [-1, 3], [1, 3]], "#f783ac"); line(g, -7.5, 2, -3.5, 2.8); line(g, 7.5, 2, 3.5, 2.8); },
+    dog: g => { ell(g, -6.5, 1.5, 2.6, 5, "#8d5524", 0.2); ell(g, 6.5, 1.5, 2.6, 5, "#8d5524", -0.2); circ(g, 0, 0, 6.5, "#e8c9a0"); face(g, -1.5, 2.5); ell(g, 0, 3.2, 1.7, 1.3, dark); line(g, 0, 4.5, 0, 6); },
+    bird: g => { poly(g, [[-4, 1], [-9.5, -2], [-8.5, 3.5]], "#1c7ed6"); circ(g, -0.5, 1.5, 5.5, "#4dabf7"); circ(g, 4, -3, 3.3, "#4dabf7"); poly(g, [[6.8, -3.8], [9.8, -2.6], [6.8, -1.6]], "#ffa94d"); circ(g, 4.6, -3.6, 0.8, dark); ell(g, -1, 2, 3, 1.8, "#1c7ed6", 0.5); },
+    butterfly: g => { circ(g, -4.8, -3, 4.2, "#f783ac"); circ(g, 4.8, -3, 4.2, "#f783ac"); circ(g, -3.7, 3.7, 3.2, "#da77f2"); circ(g, 3.7, 3.7, 3.2, "#da77f2"); ell(g, 0, 0, 1, 6, dark); line(g, 0, -5, -2.5, -9); line(g, 0, -5, 2.5, -9); },
+    pizza: g => { poly(g, [[-8, -6], [8, -6], [0, 9.5]], "#fcc419"); poly(g, [[-8.4, -7.5], [8.4, -7.5], [8, -5], [-8, -5]], "#d9a066"); circ(g, -2.5, -2, 1.7, "#e03131"); circ(g, 2.8, -1.5, 1.7, "#e03131"); circ(g, 0, 3, 1.6, "#e03131"); },
+    icecream: g => { poly(g, [[-4.5, 0], [4.5, 0], [0, 9.5]], "#e8b97a"); line(g, -2.2, 1.5, 2, 4.5); line(g, 2.2, 1.5, -2, 4.5); circ(g, 0, -2.5, 5.2, "#f783ac"); circ(g, 0, -7, 2.4, "#f783ac"); circ(g, 0, -9.3, 0.9, "#e03131"); },
+    apple: g => { line(g, 0, -4.5, 1, -8); poly(g, [[1, -6], [5, -8.5], [4.5, -4.8]], "#2f9e44"); circ(g, -2.8, 2, 5, "#e03131"); circ(g, 2.8, 2, 5, "#e03131"); g.fillStyle = "#e03131"; g.fillRect(-4, -1, 8, 7); },
+    strawberry: g => { poly(g, [[-6.5, -4], [6.5, -4], [4, 3], [0, 9.5], [-4, 3]], "#e03131"); poly(g, [[-5, -4], [0, -8.5], [5, -4], [0, -5.2]], "#2f9e44"); [[-2.5, -1], [2.5, -1], [0, 2], [-1.5, 5], [1.5, 5]].forEach(q => circ(g, q[0], q[1], 0.6, "#ffe066")); },
+    cake: g => { line(g, 0, -8, 0, -3.5); ell(g, 0, -9, 1, 1.6, "#ffa94d"); poly(g, [[-8, -1], [8, -1], [8, 8.5], [-8, 8.5]], "#f3c892"); poly(g, [[-8.4, -3.5], [8.4, -3.5], [8.4, 0.5], [-8.4, 0.5]], "#f783ac"); circ(g, -3, 4.5, 0.9, "#e03131"); circ(g, 3, 4.5, 0.9, "#e03131"); },
+    ball: g => { circ(g, 0, 0, 8.8, "#fff"); star(g, 3.4, 3.4, 5, dark); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 1.2566; line(g, Math.cos(a) * 3.4, Math.sin(a) * 3.4, Math.cos(a) * 8.6, Math.sin(a) * 8.6); } },
+    ship: g => { poly(g, [[-0.5, -9.5], [-0.5, 2], [7, 2]], "#f8f9fa"); poly(g, [[-1.8, -7], [-1.8, 2], [-7.5, 2]], "#f1f3f5"); line(g, -0.8, -10, -0.8, 3); poly(g, [[-9.5, 3], [9.5, 3], [6.5, 8.5], [-6.5, 8.5]], "#c92a2a"); },
+    plane: g => { poly(g, [[-1, 0], [-5.5, -8], [-3, -8], [3, 0]], "#4dabf7"); poly(g, [[-1, 0], [-5.5, 8], [-3, 8], [3, 0]], "#4dabf7"); poly(g, [[-9.5, 0], [-3, -2], [9.5, 0], [-3, 2]], "#f1f3f5"); poly(g, [[-8, 0], [-9.5, -3.5], [-7.5, -3.5], [-5, 0]], "#e03131"); },
+    balloon: g => { poly(g, [[-1.2, 5], [1.2, 5], [0, 6.4]], "#e03131"); g.beginPath(); g.moveTo(0, 6.4); g.quadraticCurveTo(-2, 8, 0, 10); g.stroke(); ell(g, 0, -2, 5.6, 7, "#ff6b6b"); ell(g, -2, -4, 1.1, 2, "#ffc9c9", 0.4); },
+    gift: g => { poly(g, [[-7, -2], [7, -2], [7, 8.5], [-7, 8.5]], "#4dabf7"); poly(g, [[-8.4, -5.5], [8.4, -5.5], [8.4, -2], [-8.4, -2]], "#339af0"); poly(g, [[-1.3, -5.5], [1.3, -5.5], [1.3, 8.5], [-1.3, 8.5]], "#ffe066"); ell(g, -2.8, -7.4, 2.8, 1.8, "#ffe066", -0.4); ell(g, 2.8, -7.4, 2.8, 1.8, "#ffe066", 0.4); },
+    music: g => { poly(g, [[-0.5, -6], [7, -8.5], [7, -5], [-0.5, -2.5]], dark); line(g, -0.5, 5, -0.5, -6); line(g, 7, 3, 7, -8.5); ell(g, -3, 5.8, 3.2, 2.4, dark, -0.3); ell(g, 4.5, 3.8, 3.2, 2.4, dark, -0.3); },
+    trophy: g => { g.beginPath(); g.arc(-6, -3.5, 3, Math.PI / 2, Math.PI * 1.5); g.stroke(); g.beginPath(); g.arc(6, -3.5, 3, -Math.PI / 2, Math.PI / 2); g.stroke(); poly(g, [[-6, -8], [6, -8], [5, 0], [0, 3.5], [-5, 0]], "#fcc419"); poly(g, [[-1.2, 3], [1.2, 3], [1.2, 6.2], [-1.2, 6.2]], "#e0a800"); poly(g, [[-4.5, 6.2], [4.5, 6.2], [4.5, 9], [-4.5, 9]], "#e0a800"); },
+    rainbow: g => { g.lineWidth = 2.4; ["#e03131", "#fcc419", "#339af0"].forEach((c, i) => { g.strokeStyle = c; g.beginPath(); g.arc(0, 5.5, 8 - i * 2.6, Math.PI, 0); g.stroke(); }); },
+    snowflake: g => { g.strokeStyle = "#4dabf7"; g.lineWidth = 1.5; for (let i = 0; i < 3; i++) { const a = i * Math.PI / 3, c = Math.cos(a), s = Math.sin(a); line(g, -c * 9, -s * 9, c * 9, s * 9); [-1, 1].forEach(k => { line(g, c * 6 * k, s * 6 * k, c * 6 * k - s * 2.4 - c * 1.6 * k, s * 6 * k + c * 2.4 - s * 1.6 * k); line(g, c * 6 * k, s * 6 * k, c * 6 * k + s * 2.4 - c * 1.6 * k, s * 6 * k - c * 2.4 - s * 1.6 * k); }); } },
+    eye: g => { ell(g, 0, 0, 9, 5.8, "#fff"); circ(g, 0, 0, 3.8, "#339af0"); circ(g, 0, 0, 1.7, dark); circ(g, 1, -1, 0.7, "#fff"); },
+    smiley: g => { circ(g, 0, 0, 8.6, "#ffd43b"); circ(g, -3, -2.5, 1.2, dark); circ(g, 3, -2.5, 1.2, dark); g.beginPath(); g.arc(0, 1, 4.8, 0.25, Math.PI - 0.25); g.stroke(); },
+    gear: g => { star(g, 8.5, 6.4, 8, "#adb5bd"); circ(g, 0, 0, 3, "#f1f3f5"); },
+    star: g => { star(g, 9.4, 4, 5, "#fcc419"); },
+    heart: g => { g.beginPath(); g.moveTo(0, 8.5); g.bezierCurveTo(-12, 0, -7, -8.5, 0, -3); g.bezierCurveTo(7, -8.5, 12, 0, 0, 8.5); fin(g, "#e03131"); },
+    flame: g => { g.beginPath(); g.moveTo(0, -9.5); g.bezierCurveTo(2, -4, 7, -2, 6.2, 3); g.bezierCurveTo(5.6, 8.5, -5.6, 8.5, -6.2, 3); g.bezierCurveTo(-6.6, 0, -3, -2, -2, -6.5); g.bezierCurveTo(-1, -4, 0, -6, 0, -9.5); fin(g, "#ff922b"); ell(g, 0, 4.5, 2.7, 3.6, "#ffe066"); },
+    bolt: g => { poly(g, [[2, -9.5], [-6.5, 1], [-1, 1], [-3, 9.5], [6.5, -2], [1, -2]], "#fcc419"); },
+    bear: g => { circ(g, -5.5, -5.5, 2.8, "#a9744f"); circ(g, 5.5, -5.5, 2.8, "#a9744f"); circ(g, 0, 0, 7.5, "#a9744f"); circ(g, 0, 2.5, 3.2, "#e8c9a0"); face(g, -1.8, 2.8); ell(g, 0, 1.3, 1.3, 0.9, dark); },
+    lion: g => { circ(g, 0, 0, 9.3, "#e8590c"); circ(g, 0, 0, 6.2, "#ffc078"); face(g, -1.5, 2.4); poly(g, [[0, 1], [-1.2, 2.4], [1.2, 2.4]], dark); line(g, 0, 2.4, 0, 4.2); },
+    snake: g => { g.strokeStyle = dark; g.lineWidth = 4.8; g.lineCap = "round"; g.beginPath(); g.moveTo(-8, 6); g.bezierCurveTo(-5, -5, -1, -5, 0, 0); g.bezierCurveTo(1, 5, 5, 5, 8, -4); g.stroke(); g.strokeStyle = "#51cf66"; g.lineWidth = 3; g.stroke(); circ(g, 8, -4.5, 1.9, "#51cf66"); circ(g, 8.5, -5, 0.5, dark); }
+  };
+})();
+function drawSticker(g, e, x, y, size) {
+  const pic = typeof e === "string" && e.startsWith("p:") && PICS[e.slice(2)];
+  if (pic) {
+    const k = size * 1.2 / 20;
+    g.save(); g.translate(x, y); g.scale(k, k);
+    g.strokeStyle = "#1f2a44"; g.lineWidth = 1.1; g.lineJoin = "round"; g.lineCap = "round";
+    pic(g); g.restore();
+    return;
+  }
+  g.font = size + "px sans-serif"; g.fillText(e, x, y);
+}
+// Kleine Vorschau eines Stickers für die Knöpfe
+function stickerPreview(e) {
+  if (!String(e).startsWith("p:")) return null;
+  const c = document.createElement("canvas"); c.width = 56; c.height = 56; c.style.cssText = "width:28px;height:28px;display:block;border:0;background:none;margin:0";
+  const g = c.getContext("2d"); g.setTransform(2, 0, 0, 2, 0, 0); drawSticker(g, e, 14, 14, 22);
+  return c;
+}
+
+const STICKER_WORDS = [
+  ["p:tyre p:car p:gear p:rocket p:trophy", "reifen,autoreifen,tyre,tire,wheel,neumatico,rueda,roue,pneu,pneumatico,lastik,roda,tekerlek"],
+  ["p:car p:tyre p:trophy p:plane p:ship", "auto,car,coche,carro,voiture,macchina,araba,otomobil,wagen"],
+  ["p:rocket p:moon p:star p:plane p:sun", "rakete,rocket,cohete,fusee,razzo,foguete,roket,weltall,space,espacio,espace,spazio,espaco,uzay"],
+  ["p:star p:sun p:moon p:diamond p:crown", "stern,sterne,star,estrella,etoile,stella,estrela,yildiz"],
+  ["p:heart p:flower p:gift p:smiley p:butterfly", "herz,heart,corazon,coeur,cuore,coracao,kalp,liebe,love,amor,amour,amore"],
+  ["p:flame p:bolt p:sun", "feuer,flamme,fire,flame,fuego,feu,fuoco,fogo,ates,llama"],
+  ["p:bolt p:cloud p:flame", "blitz,lightning,rayo,eclair,fulmine,relampago,raio,simsek"],
+  ["p:dog p:cat p:bear p:bird p:fish", "hund,dog,perro,chien,cane,cachorro,kopek,welpe,puppy"],
+  ["p:cat p:dog p:lion p:bear p:butterfly", "katze,cat,gato,chat,gatto,kedi,kitten"],
+  ["p:bird p:butterfly p:plane p:cloud", "vogel,bird,pajaro,oiseau,uccello,passaro,eule,owl,eagle,adler,aguila,aigle,aquila,aguia,kartal"],
+  ["p:fish p:shark p:ship", "fisch,fish,pez,poisson,pesce,peixe,balik"],
+  ["p:shark p:fish p:ship", "hai,shark,tiburon,requin,squalo,tubarao"],
+  ["p:lion p:cat p:bear p:sun", "loewe,lowe,lion,leon,leone,leao,aslan,tiger,tigre,kaplan"],
+  ["p:bear p:lion p:dog p:cat", "baer,bear,oso,ours,orso,urso,panda"],
+  ["p:butterfly p:flower p:bird", "schmetterling,butterfly,mariposa,papillon,farfalla,borboleta,kelebek,biene,bee,abeja,abeille,abelha,kaefer,beetle"],
+  ["p:snake p:lion p:fish", "schlange,snake,serpiente,serpent,serpente,cobra,yilan"],
+  ["p:sun p:cloud p:rainbow p:moon", "sonne,sun,sol,soleil,sole,gunes"],
+  ["p:moon p:star p:cloud", "mond,moon,luna,lune,lua"],
+  ["p:cloud p:sun p:rainbow p:bolt", "wolke,cloud,nube,nuage,nuvola,nuvem,bulut"],
+  ["p:rainbow p:cloud p:sun", "regenbogen,rainbow,arcoiris,arcobaleno,gokkusagi"],
+  ["p:snowflake p:cloud p:sun", "schnee,snow,nieve,neige,neve,winter,invierno,hiver,inverno"],
+  ["p:flower p:butterfly p:tree p:sun", "blume,flower,flor,fleur,fiore,cicek,tulpe,tulip"],
+  ["p:tree p:flower p:bird p:sun", "baum,tree,arbol,arbre,albero,arvore,agac,palme,palm"],
+  ["p:crown p:diamond p:trophy p:star", "krone,crown,corona,couronne,coroa,koenig,king,rey"],
+  ["p:diamond p:crown p:star", "diamant,diamond,diamante,elmas,edelstein"],
+  ["p:skull p:ghost p:robot", "totenkopf,skull,calavera,crane,teschio,caveira,kafatasi,geist,ghost,fantasma,fantome,hayalet"],
+  ["p:robot p:gear p:rocket p:ghost", "roboter,robot,robo,alien,ausserirdisch,extraterrestre,ufo"],
+  ["p:pizza p:icecream p:cake p:apple", "pizza,burger,essen,food,comida,cibo,yemek,hamburger"],
+  ["p:icecream p:cake p:pizza", "eiscreme,icecream,helado,glace,gelato,sorvete,dondurma"],
+  ["p:apple p:strawberry p:cake", "apfel,apple,manzana,pomme,mela,maca,elma,banane,banana,obst,fruit,fruta,frutta,meyve"],
+  ["p:strawberry p:apple p:cake", "erdbeere,strawberry,fresa,fraise,fragola,morango,cilek,kirsche,cherry"],
+  ["p:cake p:icecream p:gift p:balloon", "kuchen,cake,pastel,gateau,torta,bolo,donut,keks,cookie"],
+  ["p:ball p:trophy p:car", "ball,fussball,football,soccer,futbol,calcio,futebol"],
+  ["p:music p:star p:smiley", "musik,music,musica,musique,muzik,gitarre,guitar,guitarra,guitare,chitarra,gitar"],
+  ["p:ship p:plane p:fish", "schiff,ship,boot,boat,barco,bateau,nave,navio,gemi,segel,sail"],
+  ["p:plane p:cloud p:rocket p:balloon", "flugzeug,plane,airplane,avion,aereo,aviao,ucak,flieger,hubschrauber,helicopter,helicoptero,helicoptere,elicottero,helikopter"],
+  ["p:car p:trophy p:tyre", "rennen,race,carrera,course,corsa,corrida,yaris"],
+  ["p:trophy p:crown p:star p:ball", "pokal,trophy,trofeo,trophee,trofeu,kupa,sieger,winner,gewinner,medal,medaille,medalla"],
+  ["p:balloon p:gift p:cake p:smiley", "feier,party,fiesta,fete,festa,parti,ballon,balloon,globo,balao,balon"],
+  ["p:gift p:balloon p:cake", "geschenk,gift,present,regalo,cadeau,presente,hediye"],
+  ["p:eye p:smiley", "auge,eye,ojo,oeil,occhio,olho,goz"],
+  ["p:smiley p:heart p:star p:sun", "smiley,lachen,smile,sonrisa,sourire,sorriso,gulumse,froh,happy,lustig,funny,cool,sonnenbrille,sunglasses"],
+  ["p:gear p:robot p:car", "werkzeug,tool,herramienta,outil,attrezzo,ferramenta,alet,zahnrad,gear,motor,engine"]
+];
+const stripTxt = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ß/g, "ss").replace(/ı/g, "i");
+// liefert die Einträge der Tabelle, deren Wörter im Text vorkommen, in der Reihenfolge des Textes (längere Wörter zuerst, damit "hellblau" nicht als "blau" zählt)
+function findWords(text, table) {
+  let s = stripTxt(text);
+  const keys = [];
+  table.forEach((e, i) => e[1].split(",").forEach(k => { k = stripTxt(k); if (k.length >= 3) keys.push([k, i]); }));
+  keys.sort((a, b) => b[0].length - a[0].length);
+  const hits = [];
+  keys.forEach(([k, i]) => {
+    const pos = s.indexOf(k);
+    if (pos < 0) return;
+    s = s.slice(0, pos) + " ".repeat(k.length) + s.slice(pos + k.length);
+    hits.push([pos, i]);
+  });
+  hits.sort((a, b) => a[0] - b[0]);
+  return [...new Set(hits.map(h => h[1]))].map(i => table[i]);
+}
+const hex6 = (r, g, b) => "#" + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+const rgbOfHex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+function colorResults(text) {
+  const base = findWords(text, COLOR_WORDS).map(e => e[0]);
+  (String(text).match(/#[0-9a-f]{6}\b/gi) || []).forEach(h => base.push(h.toLowerCase()));
+  const out = [...new Set(base)].slice(0, 5);
+  if (out.length && out.length < 5) {
+    const a = rgbOfHex(out[0]);
+    if (out.length > 1) { const b = rgbOfHex(out[1]); out.push(hex6((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2)); }   // Mischfarbe
+    out.push(hex6(...a.map(v => v + (255 - v) * 0.35)));   // heller
+    out.push(hex6(...a.map(v => v * 0.7)));                 // dunkler
+  }
+  return [...new Set(out)].slice(0, 5);
+}
+function stickerResults(text) {
+  const lists = findWords(text, STICKER_WORDS).map(e => e[0].split(" ").filter(x => !STICKERS.includes(x)));
+  const own = (String(text).match(/\p{Extended_Pictographic}\uFE0F?/gu) || []).filter(x => !STICKERS.includes(x));   // selbst getippte Emoji zuerst
+  const out = [...new Set(own)].slice(0, 5);
+  for (let i = 0; out.length < 5 && lists.some(l => i < l.length); i++) lists.forEach(l => { if (i < l.length && !out.includes(l[i]) && out.length < 5) out.push(l[i]); });   // reihum, damit jede Idee vorkommt
+  return out;
+}
+function runStyleSearch() {
+  const q = document.getElementById("style-q").value, res = document.getElementById("style-res");
+  res.innerHTML = "";
+  const cols = colorResults(q), stks = stickerResults(q);
+  const label = (txt) => { const s = document.createElement("small"); s.style.cssText = "display:block;color:var(--muted);margin-top:6px"; s.textContent = txt; res.appendChild(s); };
+  if (!cols.length && !stks.length) { label(q.trim() ? t("srch.none") : ""); return; }
+  if (cols.length) { label(t("srch.colors", { n: PAINT_COST_PLUS })); const r = document.createElement("div"); r.id = "paint-res"; res.appendChild(r); cols.forEach(c => addSwatch(r, c)); }
+  if (stks.length) { label(t("srch.stickers", { n: STICKER_COST_PLUS })); const r = document.createElement("div"); r.id = "sticker-res"; res.appendChild(r); stks.forEach(e => addStickerBtn(r, e)); }
+  refreshStyleUI();
+}
+document.getElementById("style-go").addEventListener("click", runStyleSearch);
+document.getElementById("style-q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); runStyleSearch(); } });
 
 // ---------- 3D-Ansicht ----------
 const v3 = document.getElementById("view3d"), g3 = v3.getContext("2d");
@@ -1564,8 +1779,7 @@ function draw3d() {
       if (top !== i) return;
       const q = proj(st.x - cxm, -(st.y - cym), camber(Math.abs(st.x - cxm)) + lift + 1);
       const s = scr(q), fz = 900 / (900 - q[2]);
-      g3.font = Math.round(17 * fz) + "px sans-serif";
-      g3.fillText(st.e, s[0], s[1]);
+      drawSticker(g3, st.e, s[0], s[1], Math.round(17 * fz));
     });
   });
 }
@@ -1719,8 +1933,8 @@ function drawCraft() {
     cx.fillStyle = craftFill(l.back);
     cx.fill(); cx.stroke();
   });
-  cx.font = "22px sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
-  craftStickers.forEach(st => cx.fillText(st.e, st.x + OX, st.y + OY));
+  cx.textAlign = "center"; cx.textBaseline = "middle";
+  craftStickers.forEach(st => drawSticker(cx, st.e, st.x + OX, st.y + OY, 22));
   cx.textBaseline = "alphabetic";
   cx.fillStyle = css("--accent");
   const g = guideStep();
