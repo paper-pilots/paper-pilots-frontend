@@ -139,7 +139,7 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
   #craft-canvas, #view3d { width: 80%; }
 }
 /* Handy im Querformat: nur das Spielfeld, so groß wie der Bildschirm es zulässt */
-@media (orientation: landscape) and (max-height: 520px) {
+@media (orientation: landscape) and (max-height: 520px) and (hover: none) and (pointer: coarse) {
   html, body { height: 100vh; height: 100dvh; overflow: hidden; }
   main { max-width: none; height: 100%; padding: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left)); display: flex; align-items: center; justify-content: center; }
   main > :not(.stage) { display: none; }
@@ -314,6 +314,7 @@ const I18N = {
     "wind.calm": "Windstill", "wind.head": "Gegenwind", "wind.tail": "Rückenwind",
     "tn.stageOf": "Stufe {n} von {m}", "tn.nextIn": "Nächste Stufe in {t}",
     "fs.enter": "Vollbild", "fs.exit": "Vollbild beenden",
+    "aria.sticker": "Sticker {n}",
     "set.title": "Einstellungen", "set.howto": "So wird gespielt",
     "how.1": "Wirf deinen Flieger: Zieh ihn auf dem Spielfeld nach hinten, schwing nach vorne und lass los. Wer genau auf der Linie loslässt, wirft perfekt.",
     "how.2": "Bastle zuerst einen Flieger: Tippe auf „Flieger basteln“ und zieh die Ecken des Papiers, bis er fertig gefaltet ist. Du kannst ihn lackieren und bekleben.",
@@ -403,6 +404,7 @@ const I18N = {
     "wind.calm": "Calm", "wind.head": "Headwind", "wind.tail": "Tailwind",
     "tn.stageOf": "Level {n} of {m}", "tn.nextIn": "Next level in {t}",
     "fs.enter": "Full screen", "fs.exit": "Exit full screen",
+    "aria.sticker": "Sticker {n}",
     "set.title": "Settings", "set.howto": "How to play",
     "how.1": "Throw your plane: pull it back on the playing field, swing forward and let go. Let go exactly on the line for a perfect throw.",
     "how.2": "Build a plane first: tap “Build a plane” and drag the corners of the paper until it is folded. You can paint it and add stickers.",
@@ -492,6 +494,7 @@ const I18N = {
     "wind.calm": "Sin viento", "wind.head": "Viento en contra", "wind.tail": "Viento a favor",
     "tn.stageOf": "Nivel {n} de {m}", "tn.nextIn": "Siguiente nivel en {t}",
     "fs.enter": "Pantalla completa", "fs.exit": "Salir de pantalla completa",
+    "aria.sticker": "Pegatina {n}",
     "set.title": "Ajustes", "set.howto": "Cómo se juega",
     "how.1": "Lanza tu avión: tira de él hacia atrás en el campo, balancea hacia delante y suelta. Si sueltas justo en la línea, el lanzamiento es perfecto.",
     "how.2": "Primero crea un avión: toca «Crear avión» y arrastra las esquinas del papel hasta doblarlo. Puedes pintarlo y ponerle pegatinas.",
@@ -581,6 +584,7 @@ const I18N = {
     "wind.calm": "Calme", "wind.head": "Vent de face", "wind.tail": "Vent arrière",
     "tn.stageOf": "Niveau {n} sur {m}", "tn.nextIn": "Niveau suivant dans {t}",
     "fs.enter": "Plein écran", "fs.exit": "Quitter le plein écran",
+    "aria.sticker": "Autocollant {n}",
     "set.title": "Réglages", "set.howto": "Comment jouer",
     "how.1": "Lance ton avion : tire-le en arrière sur le terrain, balance vers l’avant et lâche. Si tu lâches exactement sur la ligne, le lancer est parfait.",
     "how.2": "Fabrique d’abord un avion : appuie sur « Fabriquer un avion » et tire les coins du papier jusqu’à ce qu’il soit plié. Tu peux le peindre et le décorer d’autocollants.",
@@ -670,6 +674,7 @@ const I18N = {
     "wind.calm": "Calma", "wind.head": "Vento contrario", "wind.tail": "Vento a favore",
     "tn.stageOf": "Livello {n} di {m}", "tn.nextIn": "Prossimo livello tra {t}",
     "fs.enter": "Schermo intero", "fs.exit": "Esci da schermo intero",
+    "aria.sticker": "Adesivo {n}",
     "set.title": "Impostazioni", "set.howto": "Come si gioca",
     "how.1": "Lancia il tuo aereo: tiralo indietro sul campo, oscilla in avanti e rilascia. Rilascia esattamente sulla linea per un lancio perfetto.",
     "how.2": "Costruisci prima un aereo: tocca «Costruisci un aereo» e trascina gli angoli della carta finché non è piegato. Puoi verniciarlo e attaccare adesivi.",
@@ -759,6 +764,7 @@ const I18N = {
     "wind.calm": "Sem vento", "wind.head": "Vento contra", "wind.tail": "Vento a favor",
     "tn.stageOf": "Nível {n} de {m}", "tn.nextIn": "Próximo nível em {t}",
     "fs.enter": "Tela cheia", "fs.exit": "Sair da tela cheia",
+    "aria.sticker": "Adesivo {n}",
     "set.title": "Configurações", "set.howto": "Como jogar",
     "how.1": "Lance o seu avião: puxe-o para trás no campo, balance para a frente e solte. Soltando exatamente na linha, o lançamento é perfeito.",
     "how.2": "Primeiro construa um avião: toque em “Construir avião” e arraste os cantos do papel até dobrá-lo. Você pode pintá-lo e colar adesivos.",
@@ -848,6 +854,7 @@ const I18N = {
     "wind.calm": "Rüzgarsız", "wind.head": "Karşıdan rüzgar", "wind.tail": "Arkadan rüzgar",
     "tn.stageOf": "Seviye {n}/{m}", "tn.nextIn": "Sonraki seviye: {t}",
     "fs.enter": "Tam ekran", "fs.exit": "Tam ekrandan çık",
+    "aria.sticker": "Çıkartma {n}",
     "set.title": "Ayarlar", "set.howto": "Nasıl oynanır",
     "how.1": "Uçağını fırlat: Oyun alanında geriye çek, öne doğru salla ve bırak. Tam çizginin üstünde bırakırsan atış mükemmel olur.",
     "how.2": "Önce bir uçak yap: “Uçak yap” düğmesine dokun ve kağıdın köşelerini katlanana kadar sürükle. Boyayabilir ve çıkartma yapıştırabilirsin.",
@@ -1643,7 +1650,7 @@ function addStickerBtn(parent, e) {
   const b = document.createElement("button");
   b.type = "button"; b.className = "stk"; b.dataset.e = e;
   const pv = stickerPreview(e);
-  if (pv) b.appendChild(pv); else b.textContent = e;
+  if (pv) { b.appendChild(pv); b.setAttribute("aria-label", t("aria.sticker", { n: e.slice(2) })); b.title = e.slice(2); } else b.textContent = e;
   b.onclick = () => { pendingSticker = pendingSticker === e ? null : e; refreshStyleUI(); };
   parent.appendChild(b);
 }
