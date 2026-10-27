@@ -49,7 +49,7 @@
 ## Weite in Metern (realistisch gestaucht)
 - Der Flieger fliegt weiter in Bildpunkten (`px = plane.x − launchX`), angezeigt wird `toMeters(px) = 75 · (1 − e^(−px/1450))` (`DIST_MAX` 75, `DIST_L` 1450). Ein normaler Wurf (450 px) gibt etwa 20 m, 1500 px 48 m, 5000 px 72,6 m; die Grenze 75 m liegt knapp über dem Weltrekord für Papierflieger (69 m). Auf Wunsch des Nutzers, weil 5 km „voll unrealistisch“ waren.
 - Münzen zählen weiter nach den Bildpunkten: `floor(px / 10)`, damit sich die Spielwirtschaft nicht ändert. `best` und Duell-Weiten (`cDist`, `oDist`) sind in Metern (eine Nachkommastelle, `round1`, Anzeige mit `fmtM` im Zahlenformat der Sprache).
-- Entfernungsmarken am Boden stehen bei 10, 20, … 70, 73 m an der Stelle `SX + toPx(m)`; der Abstand wächst, je näher man der Grenze kommt.
+- Entfernungsmarken am Boden stehen bei 10, 20, … 70, 73 m an der Stelle `marksBase + toPx(m)` (`marksBase` = Abwurfstelle `launchX` des letzten Wurfs; vor dem ersten Wurf und nach dem nächsten Greifen des Fliegers `SX`; früher fest `SX`, dadurch standen die Striche falsch, wenn man weiter vorne losließ: „Landung bei 20 m, Anzeige 14 m“); der Abstand wächst, je näher man der Grenze kommt.
 - Höhenanzeige: 20 Bildpunkte = 1 m (Sterne dann etwa ab 70 bis 90 m Höhe).
 - Alte Spielstände (ohne `distScale: 2`): der Rekord wird beim Laden von Bildpunkten in Meter umgerechnet. Alte Duell-Weiten in der Datenbank bleiben unverändert.
 ## Höhe: Ballons, Wolken, Sterne

@@ -1195,6 +1195,7 @@ function drawHighLayers() {
 // Der Wind wechselt langsam von selbst: Rückenwind (+, weht in Flugrichtung), Gegenwind (−) oder Flaute. Er wirkt als kleiner
 // Schub auf das Tempo, solange der Flieger fliegt (Stärke beim Abwurf, höchstens etwa ±10 % Weite). Im Duell gibt es keinen
 // Wind, damit beide Spieler gleiche Bedingungen haben.
+let marksBase = SX;   // Von hier aus zählen die Meter-Striche am Boden: die Abwurfstelle des letzten Wurfs (beim nächsten Greifen wieder SX)
 let wind = (Math.random() * 2 - 1) * 0.6, windTarget = wind, windNext = 0, flightWind = 0, flagSide = wind >= 0 ? 1 : -1, windDir = wind >= 0 ? 1 : -1;
 const WIND_PUSH = 0.012;
 const windNow = () => (duelCtx ? 0 : wind);
@@ -1235,8 +1236,8 @@ function drawWorld() {  const sky = ctx.createLinearGradient(0, 0, 0, canvas.hei
   ctx.font = "600 " + uiFont(9) + "px Fredoka, sans-serif";
   ctx.textAlign = "center";
   for (const m of [10, 20, 30, 40, 50, 60, 65, 70, 73]) {
-    const sx = SX + toPx(m) - camX;
-    if (sx < -30 || sx > W + 30 || SX + toPx(m) <= SX * 2) continue;
+    const sx = marksBase + toPx(m) - camX;   // gezählt ab der Abwurfstelle, denn dort beginnt die Messung
+    if (sx < -30 || sx > W + 30 || marksBase + toPx(m) <= SX * 2) continue;
     ctx.fillRect(sx - 1, groundY, 2, 6);
     ctx.fillText(m + " m", sx, groundY + 17);
   }
@@ -1368,7 +1369,7 @@ canvas.addEventListener("pointerdown", e => {
   if (isFlying || !paper()) return;
   const p = gpos(e);
   if (Math.hypot(p[0] - plane.x, p[1] - plane.y) < Math.max(50, 34 / viewScale())) {
-    pull = p; samples = [[performance.now(), p[0], p[1]]]; pulledBack = p[0] <= SX - 25;
+    pull = p; samples = [[performance.now(), p[0], p[1]]]; pulledBack = p[0] <= SX - 25; marksBase = SX;
     canvas.setPointerCapture(e.pointerId);
   }
 });
@@ -1419,7 +1420,7 @@ function throwPlane(pm, tm, lp) {
   flightPerfect = pendingPerfect; pendingPerfect = false; flightMaxH = 0;
   resultEl.hidden = true;
   const p = paper();
-  plane.x = lp ? lp[0] : SX; plane.y = lp ? lp[1] : 300; launchX = plane.x; camX = 0;
+  plane.x = lp ? lp[0] : SX; plane.y = lp ? lp[1] : 300; launchX = plane.x; marksBase = launchX; camX = 0;
   const e = effStats(p);   // Werte des Fliegers samt Papier und Boosts aus seinen Upgrades
   plane.vx = (2 + strength * 0.5) * e.speed * pm;
   plane.vy = (-1 - strength * 0.2 - e.lift) * tm;
