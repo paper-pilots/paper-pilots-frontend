@@ -86,6 +86,12 @@ dialog { max-height: 92vh; overflow-y: auto; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 .chips button { padding: 6px 10px; font-size: 0.9rem; background: var(--bg); color: var(--ink); border: 1px solid var(--muted); font-weight: 400; }
 .chips button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.set-row { margin: 0 0 10px; }
+.set-row .small { background: transparent; color: var(--ink); border: 1px solid var(--muted); font-weight: 400; padding: 8px 14px; }
+#settings-btn { font-size: 1.3rem; line-height: 1; padding: 6px 12px; background: transparent; color: var(--ink); border: 1px solid var(--muted); }
+dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
+.howto { margin: 0; padding-left: 20px; font-size: 0.9rem; color: var(--muted); }
+.howto li { margin-bottom: 6px; }
 .langhead { margin: 0 0 6px; font-weight: 600; font-size: 0.95rem; }
 .langsel { font-size: 0.9rem; color: var(--muted); }
 .langsel select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
@@ -159,13 +165,21 @@ dialog { max-height: 92vh; overflow-y: auto; }
   </div>
 
   <div class="actions">
-    <button id="reset-btn" class="small" type="button" data-i18n="reset"></button>
-    <button id="sound-btn" class="small" type="button" aria-pressed="true"></button>
-    <label class="langsel"><span data-i18n="lang.label"></span> <select id="lang-select"></select></label>
+    <button id="settings-btn" class="small" type="button" data-i18n-aria="set.title" title="Einstellungen">⚙</button>
     <span class="best" id="best-line"></span>
   </div>
 
 </main>
+
+<dialog id="settings-dialog" data-i18n-aria="set.title">
+  <h2><span aria-hidden="true">⚙</span> <span data-i18n="set.title"></span></h2>
+  <div class="set-row"><button id="sound-btn" class="small" type="button" aria-pressed="true"></button></div>
+  <div class="set-row"><label class="langsel"><span data-i18n="lang.label"></span> <select id="lang-select"></select></label></div>
+  <div class="set-row"><button id="reset-btn" class="small" type="button" data-i18n="reset"></button></div>
+  <h3 data-i18n="set.howto"></h3>
+  <ol class="howto"><li data-i18n="how.1"></li><li data-i18n="how.2"></li><li data-i18n="how.3"></li><li data-i18n="how.4"></li><li data-i18n="how.5"></li><li data-i18n="how.6"></li><li data-i18n="how.7"></li></ol>
+  <div class="dlg-actions"><button id="settings-close" class="small" type="button" data-i18n="close"></button></div>
+</dialog>
 
 <dialog id="login-dialog" data-i18n-aria="login.dlg">
   <h2 data-i18n="login.title"></h2>
@@ -267,6 +281,14 @@ const I18N = {
     "reset": "Spielstand zurücksetzen", "reset.sure": "Wirklich zurücksetzen?", "reset.done": "Spielstand zurückgesetzt.",
     "best": "Bester Wurf: {n} Meter", "lang.label": "Sprache", "close": "Schließen",
     "sound.on": "🔊 Ton an", "sound.off": "🔇 Ton aus",
+    "set.title": "Einstellungen", "set.howto": "So wird gespielt",
+    "how.1": "Wirf deinen Flieger: Zieh ihn auf dem Spielfeld nach hinten, schwing nach vorne und lass los. Wer genau auf der Linie loslässt, wirft perfekt.",
+    "how.2": "Bastle zuerst einen Flieger: Tippe auf „Flieger basteln“ und zieh die Ecken des Papiers, bis er fertig gefaltet ist. Du kannst ihn lackieren und bekleben.",
+    "how.3": "Für jede Weite bekommst du Münzen. Damit kaufst du mehr Wurfstärke.",
+    "how.4": "Tippe oben auf ein Flugzeug: Dort wählst du es aus, kaufst Boosts und besseres Papier und kannst es umbenennen.",
+    "how.5": "Im Windkanal trainiert ein Flieger: Du wählst Tempo, Gleitflug oder Abwurf, und alle 3 Minuten wird der Wert 3 % besser. Währenddessen kannst du ihn nicht werfen.",
+    "how.6": "Wirf besonders hoch, dann siehst du Heißluftballons, Wolken und ganz oben Sterne und den Mond.",
+    "how.7": "Im Duell setzt du einen Flieger ein: Wer weiter fliegt, gewinnt den Flieger des anderen. (Nur auf claude.ai möglich.)",
     "login.title": "Willkommen!", "login.text": "Gib dir einen Spitznamen, bevor es losgeht. Du brauchst ihn, um zu spielen.",
     "login.ph": "Dein Spitzname", "login.aria": "Spitzname", "login.go": "Los geht’s", "login.err": "Der Spitzname braucht mindestens 2 Zeichen.",
     "login.lang": "Sprache wählen", "login.dlg": "Anmeldung",
@@ -341,6 +363,14 @@ const I18N = {
     "reset": "Reset game", "reset.sure": "Really reset?", "reset.done": "Game reset.",
     "best": "Best throw: {n} meters", "lang.label": "Language", "close": "Close",
     "sound.on": "🔊 Sound on", "sound.off": "🔇 Sound off",
+    "set.title": "Settings", "set.howto": "How to play",
+    "how.1": "Throw your plane: pull it back on the playing field, swing forward and let go. Let go exactly on the line for a perfect throw.",
+    "how.2": "Build a plane first: tap “Build a plane” and drag the corners of the paper until it is folded. You can paint it and add stickers.",
+    "how.3": "You earn coins for every distance. Use them to buy more throwing power.",
+    "how.4": "Tap a plane at the top: there you select it, buy boosts and better paper, and rename it.",
+    "how.5": "A plane trains in the wind tunnel: you choose speed, glide or launch, and every 3 minutes that value gets 3 % better. You can’t throw it meanwhile.",
+    "how.6": "Throw really high to see hot-air balloons, clouds and, right at the top, stars and the moon.",
+    "how.7": "In a duel you stake a plane: whoever flies farther wins the other’s plane. (Only works on claude.ai.)",
     "login.title": "Welcome!", "login.text": "Pick a nickname before you start. You need it to play.",
     "login.ph": "Your nickname", "login.aria": "Nickname", "login.go": "Let’s go", "login.err": "The nickname needs at least 2 characters.",
     "login.lang": "Choose your language", "login.dlg": "Sign in",
@@ -415,6 +445,14 @@ const I18N = {
     "reset": "Reiniciar partida", "reset.sure": "¿Reiniciar de verdad?", "reset.done": "Partida reiniciada.",
     "best": "Mejor lanzamiento: {n} metros", "lang.label": "Idioma", "close": "Cerrar",
     "sound.on": "🔊 Sonido activado", "sound.off": "🔇 Sonido desactivado",
+    "set.title": "Ajustes", "set.howto": "Cómo se juega",
+    "how.1": "Lanza tu avión: tira de él hacia atrás en el campo, balancea hacia delante y suelta. Si sueltas justo en la línea, el lanzamiento es perfecto.",
+    "how.2": "Primero crea un avión: toca «Crear avión» y arrastra las esquinas del papel hasta doblarlo. Puedes pintarlo y ponerle pegatinas.",
+    "how.3": "Ganas monedas por cada distancia. Con ellas compras más fuerza de lanzamiento.",
+    "how.4": "Toca un avión arriba: allí lo eliges, compras boosts y mejor papel, y puedes renombrarlo.",
+    "how.5": "Un avión entrena en el túnel de viento: eliges velocidad, planeo o lanzamiento, y cada 3 minutos ese valor mejora un 3 %. Mientras tanto no puedes lanzarlo.",
+    "how.6": "Lanza muy alto y verás globos aerostáticos, nubes y, arriba del todo, estrellas y la luna.",
+    "how.7": "En un duelo apuestas un avión: quien vuele más lejos gana el avión del otro. (Solo funciona en claude.ai.)",
     "login.title": "¡Bienvenido!", "login.text": "Elige un apodo antes de empezar. Lo necesitas para jugar.",
     "login.ph": "Tu apodo", "login.aria": "Apodo", "login.go": "¡Vamos!", "login.err": "El apodo necesita al menos 2 caracteres.",
     "login.lang": "Elige tu idioma", "login.dlg": "Inicio",
@@ -489,6 +527,14 @@ const I18N = {
     "reset": "Réinitialiser la partie", "reset.sure": "Vraiment réinitialiser ?", "reset.done": "Partie réinitialisée.",
     "best": "Meilleur lancer : {n} mètres", "lang.label": "Langue", "close": "Fermer",
     "sound.on": "🔊 Son activé", "sound.off": "🔇 Son coupé",
+    "set.title": "Réglages", "set.howto": "Comment jouer",
+    "how.1": "Lance ton avion : tire-le en arrière sur le terrain, balance vers l’avant et lâche. Si tu lâches exactement sur la ligne, le lancer est parfait.",
+    "how.2": "Fabrique d’abord un avion : appuie sur « Fabriquer un avion » et tire les coins du papier jusqu’à ce qu’il soit plié. Tu peux le peindre et le décorer d’autocollants.",
+    "how.3": "Chaque distance te rapporte des pièces. Avec elles, tu achètes plus de puissance de lancer.",
+    "how.4": "Appuie sur un avion en haut : tu le choisis, achètes des boosts et un meilleur papier et peux le renommer.",
+    "how.5": "Un avion s’entraîne dans la soufflerie : tu choisis vitesse, plané ou lancer, et toutes les 3 minutes cette valeur s’améliore de 3 %. Pendant ce temps, tu ne peux pas le lancer.",
+    "how.6": "Lance très haut pour voir des montgolfières, des nuages et, tout en haut, des étoiles et la lune.",
+    "how.7": "En duel, tu mises un avion : celui qui vole le plus loin gagne l’avion de l’autre. (Seulement sur claude.ai.)",
     "login.title": "Bienvenue !", "login.text": "Choisis un pseudo avant de commencer. Il te faut un pseudo pour jouer.",
     "login.ph": "Ton pseudo", "login.aria": "Pseudo", "login.go": "C’est parti", "login.err": "Le pseudo doit comporter au moins 2 caractères.",
     "login.lang": "Choisis ta langue", "login.dlg": "Connexion",
@@ -563,6 +609,14 @@ const I18N = {
     "reset": "Azzera la partita", "reset.sure": "Azzerare davvero?", "reset.done": "Partita azzerata.",
     "best": "Miglior lancio: {n} metri", "lang.label": "Lingua", "close": "Chiudi",
     "sound.on": "🔊 Audio attivo", "sound.off": "🔇 Audio spento",
+    "set.title": "Impostazioni", "set.howto": "Come si gioca",
+    "how.1": "Lancia il tuo aereo: tiralo indietro sul campo, oscilla in avanti e rilascia. Rilascia esattamente sulla linea per un lancio perfetto.",
+    "how.2": "Costruisci prima un aereo: tocca «Costruisci un aereo» e trascina gli angoli della carta finché non è piegato. Puoi verniciarlo e attaccare adesivi.",
+    "how.3": "Ogni distanza ti fa guadagnare monete. Con quelle compri più forza di lancio.",
+    "how.4": "Tocca un aereo in alto: lì lo scegli, compri boost e carta migliore e puoi rinominarlo.",
+    "how.5": "Un aereo si allena nella galleria del vento: scegli velocità, planata o lancio, e ogni 3 minuti quel valore migliora del 3 %. Nel frattempo non puoi lanciarlo.",
+    "how.6": "Lancia molto in alto per vedere mongolfiere, nuvole e, in cima, stelle e luna.",
+    "how.7": "In un duello metti in palio un aereo: chi vola più lontano vince l’aereo dell’altro. (Funziona solo su claude.ai.)",
     "login.title": "Benvenuto!", "login.text": "Scegli un soprannome prima di iniziare. Ti serve per giocare.",
     "login.ph": "Il tuo soprannome", "login.aria": "Soprannome", "login.go": "Si parte", "login.err": "Il soprannome deve avere almeno 2 caratteri.",
     "login.lang": "Scegli la tua lingua", "login.dlg": "Accesso",
@@ -637,6 +691,14 @@ const I18N = {
     "reset": "Reiniciar jogo", "reset.sure": "Reiniciar mesmo?", "reset.done": "Jogo reiniciado.",
     "best": "Melhor lançamento: {n} metros", "lang.label": "Idioma", "close": "Fechar",
     "sound.on": "🔊 Som ligado", "sound.off": "🔇 Som desligado",
+    "set.title": "Configurações", "set.howto": "Como jogar",
+    "how.1": "Lance o seu avião: puxe-o para trás no campo, balance para a frente e solte. Soltando exatamente na linha, o lançamento é perfeito.",
+    "how.2": "Primeiro construa um avião: toque em “Construir avião” e arraste os cantos do papel até dobrá-lo. Você pode pintá-lo e colar adesivos.",
+    "how.3": "Cada distância rende moedas. Com elas você compra mais força de lançamento.",
+    "how.4": "Toque em um avião no alto: lá você o escolhe, compra boosts e papel melhor e pode renomeá-lo.",
+    "how.5": "Um avião treina no túnel de vento: você escolhe velocidade, planeio ou lançamento, e a cada 3 minutos esse valor melhora 3 %. Enquanto isso, não dá para lançá-lo.",
+    "how.6": "Lance bem alto para ver balões de ar quente, nuvens e, lá em cima, estrelas e a lua.",
+    "how.7": "No duelo você aposta um avião: quem voar mais longe ganha o avião do outro. (Só funciona no claude.ai.)",
     "login.title": "Bem-vindo!", "login.text": "Escolha um apelido antes de começar. Você precisa dele para jogar.",
     "login.ph": "Seu apelido", "login.aria": "Apelido", "login.go": "Vamos lá", "login.err": "O apelido precisa de pelo menos 2 caracteres.",
     "login.lang": "Escolha seu idioma", "login.dlg": "Entrada",
@@ -711,6 +773,14 @@ const I18N = {
     "reset": "Oyunu sıfırla", "reset.sure": "Gerçekten sıfırlansın mı?", "reset.done": "Oyun sıfırlandı.",
     "best": "En iyi atış: {n} metre", "lang.label": "Dil", "close": "Kapat",
     "sound.on": "🔊 Ses açık", "sound.off": "🔇 Ses kapalı",
+    "set.title": "Ayarlar", "set.howto": "Nasıl oynanır",
+    "how.1": "Uçağını fırlat: Oyun alanında geriye çek, öne doğru salla ve bırak. Tam çizginin üstünde bırakırsan atış mükemmel olur.",
+    "how.2": "Önce bir uçak yap: “Uçak yap” düğmesine dokun ve kağıdın köşelerini katlanana kadar sürükle. Boyayabilir ve çıkartma yapıştırabilirsin.",
+    "how.3": "Her mesafe için jeton kazanırsın. Onlarla daha fazla atış gücü satın alırsın.",
+    "how.4": "Yukarıdaki bir uçağa dokun: Orada onu seçer, boost ve daha iyi kağıt satın alır ve adını değiştirebilirsin.",
+    "how.5": "Bir uçak rüzgar tünelinde antrenman yapar: hız, süzülme ya da fırlatmayı seçersin ve her 3 dakikada bu değer %3 artar. O sırada uçağı fırlatamazsın.",
+    "how.6": "Çok yükseğe fırlat: sıcak hava balonları, bulutlar ve en tepede yıldızlar ile ay görünür.",
+    "how.7": "Düelloda bir uçağı bahse koyarsın: daha uzağa uçan, diğerinin uçağını kazanır. (Sadece claude.ai’da çalışır.)",
     "login.title": "Hoş geldin!", "login.text": "Başlamadan önce bir takma ad seç. Oynamak için buna ihtiyacın var.",
     "login.ph": "Takma adın", "login.aria": "Takma ad", "login.go": "Başlayalım", "login.err": "Takma ad en az 2 karakter olmalı.",
     "login.lang": "Dilini seç", "login.dlg": "Giriş",
@@ -1296,11 +1366,15 @@ function resetGame() {
   rb.dataset.armed = ""; rb.textContent = t("reset");
   coins = 0; strength = 1; upgradeCost = 10; best = 0; owned = ["heft"]; equipped = ""; craftQ = 0; ownedBoosts = []; attached = []; orderQ = null; shapes = {}; custom = []; nick = ""; tutorialDone = false; throwHint = false; practiceThrows = 0; tunnel = null; pupg = {};
   refreshNames();
+  if (settingsDlg.open) settingsDlg.close();
   save(); updateUI(); showResult(t("reset.done")); askNick();
 }
 
 document.getElementById("upgrade-btn").addEventListener("click", buyUpgrade);
 document.getElementById("reset-btn").addEventListener("click", resetGame);
+const settingsDlg = document.getElementById("settings-dialog");
+document.getElementById("settings-btn").addEventListener("click", () => { if (!settingsDlg.open) settingsDlg.showModal(); });
+document.getElementById("settings-close").addEventListener("click", () => settingsDlg.close());
 
 let pendingDelete = null;
 function addCustom(name, speed, gravity, shape, paint, stk) {
@@ -2333,6 +2407,7 @@ function applyLang() {
   document.querySelectorAll("[data-i18n-aria]").forEach(e => { e.setAttribute("aria-label", t(e.dataset.i18nAria)); });
   refreshNames();
   updateSoundBtn();
+  document.getElementById("settings-btn").title = t("set.title");
   document.getElementById("lang-select").value = lang;
   document.querySelectorAll("#lang-chips button").forEach(b => {
     const on = b.dataset.lang === lang;
