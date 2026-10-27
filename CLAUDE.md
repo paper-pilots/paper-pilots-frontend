@@ -16,7 +16,7 @@
 ## Spielablauf (Kurzfassung)
 1. Erststart: Spitzname-Dialog (min. 2 Zeichen, nicht schließbar). Danach öffnet sich sofort das Faltblatt mit Anleitung (nur neue Spieler, `tutorialDone`).
 2. Anleitung: 4 geführte Falten (`GSTEPS`, Ringe als Ziel). Danach „Flieger übernehmen", dann 3 Übungswürfe mit gestrichelter Mittellinie (`throwHint`, `practiceThrows`).
-3. Werfen: Flieger mit der Maus greifen, nach hinten ziehen, nach vorne schwingen, loslassen. Es gibt keinen Wurfknopf mehr. Der Flug startet genau an der Loslass-Stelle; Weite wird ab `launchX` gemessen.
+3. Werfen: Flieger mit der Maus greifen, **zuerst nach hinten ziehen (Pflicht: mindestens 25 px links von `SX`, Merker `pulledBack`)**, dann nach vorne schwingen, loslassen. Nur nach vorne wischen wirft nicht; es erscheint `note.pullFirst`. Wunsch des Nutzers. Es gibt keinen Wurfknopf mehr. Der Flug startet genau an der Loslass-Stelle; Weite wird ab `launchX` gemessen.
 4. Münzen = `floor(Bildpunkte/10)` (nicht die angezeigten Meter, siehe „Weite in Metern“). Damit kauft man Wurfstärke, Boosts, besseres Papier, Lack, Sticker. (Doppelmünzen wurden auf Wunsch komplett entfernt; ein alter Wert `coinLevel` im Speicherstand wird ignoriert.)
 
 ## Wichtige Konstanten und Formeln
