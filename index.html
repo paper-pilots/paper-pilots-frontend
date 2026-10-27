@@ -54,6 +54,14 @@ button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hangar-house .hn { display: block; font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hangar-house .hs { display: block; font-size: 0.8rem; color: var(--muted); }
 .stage { position: relative; }
+.fs { position: absolute; right: 8px; bottom: 8px; width: 38px; height: 38px; min-height: 0; padding: 0; border-radius: 10px; background: rgba(255,255,255,0.78); color: #1f2a44; border: 1px solid rgba(31,42,68,0.35); display: flex; align-items: center; justify-content: center; }
+.fs:hover:not(:disabled) { filter: none; background: rgba(255,255,255,0.95); }
+@media (hover: none) and (pointer: coarse) { .fs { display: none; } }   /* nur am Computer: am Handy dreht man einfach das Gerät */
+.fs svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* Vollbild des Spielfelds: das Feld liegt fest in der Mitte des Bildschirms, der Rest wird mit der Hintergrundfarbe zugedeckt */
+.stage.full { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(100vw, 200vh); width: min(100vw, 200dvh); margin: 0; z-index: 100; box-shadow: 0 0 0 100vmax var(--bg); }
+.stage.full canvas { border-radius: 0; border: 0; }
+body.has-full { overflow: hidden; }
 #gameCanvas { touch-action: none; }
 *, *::before, *::after { touch-action: manipulation; }   /* kein Doppeltipp-Zoom und keine Verzoegerung auf dem Handy */
 html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
@@ -172,6 +180,7 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
     <div class="hud"><span id="live">0</span> m</div>
     <div class="hud alt" id="alt-hud" hidden></div>
     <div class="result" id="result" role="status" hidden></div>
+    <button id="fs-btn" class="fs" type="button"></button>
   </div>
 
   <div class="actions">
@@ -279,7 +288,7 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const resultEl = document.getElementById("result");
-const W = canvas.width, groundY = 380;
+const LW = 800, LH = 400, W = LW, groundY = 380;   // logische Spielfeldgroesse; die Zeichenflaeche selbst ist je nach Anzeigegroesse groesser (fitCanvas)
 
 // ---------- Sprachen ----------
 // Alle Texte stehen hier. Neue Sprache: LANGS, I18N und NAMEDATA um einen Eintrag ergänzen.
@@ -304,6 +313,7 @@ const I18N = {
     "duel.forfeit": "Du hast den Duell-Flug nicht zu Ende gebracht: {p} geht an den Herausforderer.",
     "wind.calm": "Windstill", "wind.head": "Gegenwind", "wind.tail": "Rückenwind",
     "tn.stageOf": "Stufe {n} von {m}", "tn.nextIn": "Nächste Stufe in {t}",
+    "fs.enter": "Vollbild", "fs.exit": "Vollbild beenden",
     "set.title": "Einstellungen", "set.howto": "So wird gespielt",
     "how.1": "Wirf deinen Flieger: Zieh ihn auf dem Spielfeld nach hinten, schwing nach vorne und lass los. Wer genau auf der Linie loslässt, wirft perfekt.",
     "how.2": "Bastle zuerst einen Flieger: Tippe auf „Flieger basteln“ und zieh die Ecken des Papiers, bis er fertig gefaltet ist. Du kannst ihn lackieren und bekleben.",
@@ -392,6 +402,7 @@ const I18N = {
     "duel.forfeit": "You did not finish the duel flight: {p} goes to the challenger.",
     "wind.calm": "Calm", "wind.head": "Headwind", "wind.tail": "Tailwind",
     "tn.stageOf": "Level {n} of {m}", "tn.nextIn": "Next level in {t}",
+    "fs.enter": "Full screen", "fs.exit": "Exit full screen",
     "set.title": "Settings", "set.howto": "How to play",
     "how.1": "Throw your plane: pull it back on the playing field, swing forward and let go. Let go exactly on the line for a perfect throw.",
     "how.2": "Build a plane first: tap “Build a plane” and drag the corners of the paper until it is folded. You can paint it and add stickers.",
@@ -480,6 +491,7 @@ const I18N = {
     "duel.forfeit": "No terminaste el vuelo del duelo: {p} pasa al retador.",
     "wind.calm": "Sin viento", "wind.head": "Viento en contra", "wind.tail": "Viento a favor",
     "tn.stageOf": "Nivel {n} de {m}", "tn.nextIn": "Siguiente nivel en {t}",
+    "fs.enter": "Pantalla completa", "fs.exit": "Salir de pantalla completa",
     "set.title": "Ajustes", "set.howto": "Cómo se juega",
     "how.1": "Lanza tu avión: tira de él hacia atrás en el campo, balancea hacia delante y suelta. Si sueltas justo en la línea, el lanzamiento es perfecto.",
     "how.2": "Primero crea un avión: toca «Crear avión» y arrastra las esquinas del papel hasta doblarlo. Puedes pintarlo y ponerle pegatinas.",
@@ -568,6 +580,7 @@ const I18N = {
     "duel.forfeit": "Tu n’as pas terminé le vol du duel : {p} revient au challenger.",
     "wind.calm": "Calme", "wind.head": "Vent de face", "wind.tail": "Vent arrière",
     "tn.stageOf": "Niveau {n} sur {m}", "tn.nextIn": "Niveau suivant dans {t}",
+    "fs.enter": "Plein écran", "fs.exit": "Quitter le plein écran",
     "set.title": "Réglages", "set.howto": "Comment jouer",
     "how.1": "Lance ton avion : tire-le en arrière sur le terrain, balance vers l’avant et lâche. Si tu lâches exactement sur la ligne, le lancer est parfait.",
     "how.2": "Fabrique d’abord un avion : appuie sur « Fabriquer un avion » et tire les coins du papier jusqu’à ce qu’il soit plié. Tu peux le peindre et le décorer d’autocollants.",
@@ -656,6 +669,7 @@ const I18N = {
     "duel.forfeit": "Non hai finito il volo del duello: {p} va allo sfidante.",
     "wind.calm": "Calma", "wind.head": "Vento contrario", "wind.tail": "Vento a favore",
     "tn.stageOf": "Livello {n} di {m}", "tn.nextIn": "Prossimo livello tra {t}",
+    "fs.enter": "Schermo intero", "fs.exit": "Esci da schermo intero",
     "set.title": "Impostazioni", "set.howto": "Come si gioca",
     "how.1": "Lancia il tuo aereo: tiralo indietro sul campo, oscilla in avanti e rilascia. Rilascia esattamente sulla linea per un lancio perfetto.",
     "how.2": "Costruisci prima un aereo: tocca «Costruisci un aereo» e trascina gli angoli della carta finché non è piegato. Puoi verniciarlo e attaccare adesivi.",
@@ -744,6 +758,7 @@ const I18N = {
     "duel.forfeit": "Você não terminou o voo do duelo: {p} vai para o desafiante.",
     "wind.calm": "Sem vento", "wind.head": "Vento contra", "wind.tail": "Vento a favor",
     "tn.stageOf": "Nível {n} de {m}", "tn.nextIn": "Próximo nível em {t}",
+    "fs.enter": "Tela cheia", "fs.exit": "Sair da tela cheia",
     "set.title": "Configurações", "set.howto": "Como jogar",
     "how.1": "Lance o seu avião: puxe-o para trás no campo, balance para a frente e solte. Soltando exatamente na linha, o lançamento é perfeito.",
     "how.2": "Primeiro construa um avião: toque em “Construir avião” e arraste os cantos do papel até dobrá-lo. Você pode pintá-lo e colar adesivos.",
@@ -832,6 +847,7 @@ const I18N = {
     "duel.forfeit": "Düello uçuşunu bitirmedin: {p} meydan okuyana gidiyor.",
     "wind.calm": "Rüzgarsız", "wind.head": "Karşıdan rüzgar", "wind.tail": "Arkadan rüzgar",
     "tn.stageOf": "Seviye {n}/{m}", "tn.nextIn": "Sonraki seviye: {t}",
+    "fs.enter": "Tam ekran", "fs.exit": "Tam ekrandan çık",
     "set.title": "Ayarlar", "set.howto": "Nasıl oynanır",
     "how.1": "Uçağını fırlat: Oyun alanında geriye çek, öne doğru salla ve bırak. Tam çizginin üstünde bırakırsan atış mükemmel olur.",
     "how.2": "Önce bir uçak yap: “Uçak yap” düğmesine dokun ve kağıdın köşelerini katlanana kadar sürükle. Boyayabilir ve çıkartma yapıştırabilirsin.",
@@ -1151,7 +1167,7 @@ function drawBigCloud(x, y, s) {
   ctx.restore();
 }
 function drawHighLayers() {
-  const top = camY, bottom = camY + canvas.height, now = performance.now();
+  const top = camY, bottom = camY + LH, now = performance.now();
   // Sterne: tauchen mit der Höhe nach und nach auf und funkeln
   if (top < -1200) {
     const cell = 140, par = 0.08, j0 = Math.floor(top / cell), j1 = Math.floor(bottom / cell), i0 = Math.floor(camX * par / cell), i1 = i0 + Math.ceil(W / cell) + 1;
@@ -1217,10 +1233,10 @@ function windStep(now) {
   wind += (windTarget - wind) * 0.004;
   flagSide += ((wind >= 0 ? 1 : -1) - flagSide) * 0.04;   // der Wimpel dreht sich weich um den Mast, wenn der Wind dreht
 }
-function drawWorld() {  const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  for (let i = 0; i <= 4; i++) sky.addColorStop(i / 4, skyAt(camY + canvas.height * i / 4));
+function drawWorld() {  const sky = ctx.createLinearGradient(0, 0, 0, LH);
+  for (let i = 0; i <= 4; i++) sky.addColorStop(i / 4, skyAt(camY + LH * i / 4));
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, canvas.height);
+  ctx.fillRect(0, 0, W, LH);
   ctx.save();
   ctx.translate(0, -camY);   // ab hier Weltkoordinaten
   if (camY < -60) drawHighLayers();
@@ -1238,7 +1254,7 @@ function drawWorld() {  const sky = ctx.createLinearGradient(0, 0, 0, canvas.hei
 
   // Boden
   ctx.fillStyle = css("--grass");
-  ctx.fillRect(0, groundY, W, canvas.height - groundY);
+  ctx.fillRect(0, groundY, W, LH - groundY);
 
   // Entfernungsmarken in Metern: je weiter, desto größer der Abstand (die angezeigte Weite ist gestaucht)
   ctx.fillStyle = css("--ink");
@@ -1330,7 +1346,20 @@ function pullPos() {
   return [clamp(pull[0], 12, SX + 160), clamp(pull[1], 170, TERRACE_Y - 14)];
 }
 // Auf kleinen Bildschirmen wird das Spielfeld verkleinert: Schrift und Greifzone wachsen mit.
-function viewScale() { return Math.min(1, canvas.getBoundingClientRect().width / canvas.width || 1); }
+// Scharf auch im Vollbild: Die Zeichenfläche hat so viele Bildpunkte, wie das Feld auf dem Bildschirm braucht (inkl. Retina),
+// gezeichnet wird weiter in 800 × 400 (Transformation `gScale` am Anfang jedes Bildes).
+let gScale = 1;
+function fitCanvas() {
+  const r = canvas.getBoundingClientRect();
+  if (!r.width) return;
+  const s = Math.max(1, Math.min(3, Math.ceil(r.width * (window.devicePixelRatio || 1) / LW * 4) / 4));   // in Viertelschritten, damit es nicht ständig umspringt
+  const w = Math.round(LW * s), h = Math.round(LH * s);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  gScale = s;
+}
+if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(canvas); else window.addEventListener("resize", fitCanvas);
+window.addEventListener("resize", fitCanvas);
+function viewScale() { return Math.min(1, canvas.getBoundingClientRect().width / LW || 1); }
 function uiFont(px) { return Math.max(14, Math.round(px / viewScale() * 1.15)); }
 function wrapLines(text, maxW) {
   const lines = []; let cur = "";
@@ -1342,7 +1371,7 @@ function wrapLines(text, maxW) {
   return lines;
 }
 function drawText(text, x, y, up, hud) {
-  const f = uiFont(11), lh = Math.round(f * 1.2), lines = wrapLines(text, canvas.width - x - 10 - (hud ? 84 / viewScale() : 0));
+  const f = uiFont(11), lh = Math.round(f * 1.2), lines = wrapLines(text, LW - x - 10 - (hud ? 84 / viewScale() : 0));
   const y0 = up ? y - (lines.length - 1) * lh : y;
   lines.forEach((l, i) => ctx.fillText(l, x, y0 + i * lh));
 }
@@ -1371,7 +1400,7 @@ function drawOverlay() {
 }
 function gpos(e) {
   const r = canvas.getBoundingClientRect();
-  return [(e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height];
+  return [(e.clientX - r.left) * LW / r.width, (e.clientY - r.top) * LH / r.height];
 }
 let samples = [], pulledBack = false;   // pulledBack: der Flieger wurde erst nach hinten gezogen (Pflicht vor dem Wurf)
 canvas.addEventListener("pointerdown", e => {
@@ -1480,6 +1509,7 @@ function animate() {
   }
   windTick();
   if (!isFlying) { camY = 0; document.getElementById("alt-hud").hidden = true; }
+  ctx.setTransform(gScale, 0, 0, gScale, 0, 0);
   drawWorld();
   drawOverlay();
   drawPlane();
@@ -1510,6 +1540,35 @@ function resetGame() {
 
 document.getElementById("upgrade-btn").addEventListener("click", buyUpgrade);
 document.getElementById("reset-btn").addEventListener("click", resetGame);
+// ---------- Vollbild für das Spielfeld ----------
+// Der Knopf rechts unten im Spielfeld legt das Feld über den ganzen Bildschirm (Klasse "full") und, wo der Browser es kann,
+// in echten Vollbildmodus. Nur am Computer: auf Touch-Geräten ist der Knopf ausgeblendet (dort dreht man das Handy).
+const stageEl = document.querySelector(".stage"), fsBtn = document.getElementById("fs-btn");
+const FS_ICONS = {
+  enter: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  exit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>'
+};
+const isFull = () => stageEl.classList.contains("full");
+function updateFsLabel() {
+  const on = isFull(), label = t(on ? "fs.exit" : "fs.enter");
+  fsBtn.setAttribute("aria-label", label); fsBtn.title = label; fsBtn.setAttribute("aria-pressed", on ? "true" : "false");
+  fsBtn.innerHTML = FS_ICONS[on ? "exit" : "enter"];
+}
+function setFull(on) {
+  stageEl.classList.toggle("full", on); document.body.classList.toggle("has-full", on);
+  updateFsLabel();
+  try {
+    if (on) {
+      const rq = stageEl.requestFullscreen || stageEl.webkitRequestFullscreen;
+      if (rq && !document.fullscreenElement) { const p = rq.call(stageEl); if (p && p.catch) p.catch(() => {}); }
+    } else {
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    }
+  } catch (e) {}
+}
+fsBtn.addEventListener("click", () => setFull(!isFull()));
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && isFull()) setFull(false); });   // Esc im echten Vollbild
+document.addEventListener("keydown", e => { if (e.key === "Escape" && isFull() && !document.querySelector("dialog[open]")) setFull(false); });
 const settingsDlg = document.getElementById("settings-dialog");
 document.getElementById("settings-btn").addEventListener("click", () => { if (!settingsDlg.open) settingsDlg.showModal(); });
 document.getElementById("settings-close").addEventListener("click", () => settingsDlg.close());
@@ -2950,6 +3009,7 @@ function applyLang() {
   refreshNames();
   updateSoundBtn();
   document.getElementById("settings-btn").title = t("set.title");
+  updateFsLabel();
   document.getElementById("lang-select").value = lang;
   document.querySelectorAll("#lang-chips button").forEach(b => {
     const on = b.dataset.lang === lang;
