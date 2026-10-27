@@ -63,6 +63,8 @@ button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .stage.full canvas { border-radius: 0; border: 0; }
 body.has-full { overflow: hidden; }
 #gameCanvas { touch-action: none; }
+/* Beim langen Drücken (Handy) oder mit der rechten Maustaste soll auf den Zeichenflächen kein Menü und keine Textauswahl aufgehen */
+canvas, .stage, .hangar-house { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 *, *::before, *::after { touch-action: manipulation; }   /* kein Doppeltipp-Zoom und keine Verzoegerung auf dem Handy */
 html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
 canvas { display: block; width: 100%; height: auto; border-radius: 14px; border: 2px solid var(--line); background: var(--sky); }
@@ -1547,6 +1549,13 @@ function resetGame() {
 
 document.getElementById("upgrade-btn").addEventListener("click", buyUpgrade);
 document.getElementById("reset-btn").addEventListener("click", resetGame);
+// Kein Kontextmenü beim Falten, Werfen und Drehen der 3D-Ansicht (langes Drücken am Handy, rechte Maustaste am Computer)
+["gameCanvas", "craft-canvas", "view3d", "pl-canvas", "tunnel-canvas"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("contextmenu", e => e.preventDefault());
+});
+document.getElementById("hangar").addEventListener("contextmenu", e => e.preventDefault());
+
 // ---------- Vollbild für das Spielfeld ----------
 // Der Knopf rechts unten im Spielfeld legt das Feld über den ganzen Bildschirm (Klasse "full") und, wo der Browser es kann,
 // in echten Vollbildmodus. Nur am Computer: auf Touch-Geräten ist der Knopf ausgeblendet (dort dreht man das Handy).
