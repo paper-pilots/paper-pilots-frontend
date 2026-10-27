@@ -1937,7 +1937,7 @@ const dlg = document.getElementById("craft-dialog");
 const cc = document.getElementById("craft-canvas");
 const cx = cc.getContext("2d");
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-let layers, hist, drag, from;
+let layers, hist, drag, from, dragTouch = false;
 
 function applyCraft(q) {
   const p = PAPERS.find(x => x.id === "eigen");
@@ -2062,23 +2062,42 @@ function drawCraft() {
   craftStickers.forEach(st => drawSticker(cx, st.e, st.x + OX, st.y + OY, 22));
   cx.textBaseline = "alphabetic";
   cx.fillStyle = css("--accent");
-  const g = guideStep();
+  const g = guideStep(), K = touchScale();   // am Handy sind Ziele und Griffpunkte größer, damit man sie unter dem Finger findet
   if (g) {
-    cx.strokeStyle = css("--accent"); cx.lineWidth = 3;
-    cx.beginPath(); cx.arc(g.b[0] + OX, g.b[1] + OY, 13, 0, 7); cx.stroke();
-    if (!drag) { cx.beginPath(); cx.arc(g.a[0] + OX, g.a[1] + OY, 8, 0, 7); cx.fill(); }
-  } else if (!drag) layers.forEach(l => l.pts.forEach(p => { cx.beginPath(); cx.arc(p[0] + OX, p[1] + OY, 4, 0, 7); cx.fill(); }));
+    cx.strokeStyle = css("--accent"); cx.lineWidth = 3 * Math.min(K, 1.4);
+    cx.beginPath(); cx.arc(g.b[0] + OX, g.b[1] + OY, 13 * K, 0, 7); cx.stroke();
+    if (!drag) { cx.beginPath(); cx.arc(g.a[0] + OX, g.a[1] + OY, 8 * K, 0, 7); cx.fill(); }
+  } else if (!drag) layers.forEach(l => l.pts.forEach(p => { cx.beginPath(); cx.arc(p[0] + OX, p[1] + OY, 4 * K, 0, 7); cx.fill(); }));
   if (drag && from) {
-    cx.beginPath(); cx.arc(from[0] + OX, from[1] + OY, 6, 0, 7); cx.fill();
-    cx.beginPath(); cx.arc(drag[0] + OX, drag[1] + OY, 9, 0, 7); cx.fill();
+    cx.beginPath(); cx.arc(from[0] + OX, from[1] + OY, 6 * K, 0, 7); cx.fill();
+    cx.beginPath(); cx.arc(drag[0] + OX, drag[1] + OY, 9 * K, 0, 7); cx.fill();
+    if (dragTouch) drawLoupe(drag[0] + OX, drag[1] + OY);
   }
+}
+// Touch (Handy): alles etwas größer
+function touchScale() { return dragTouch || (window.matchMedia && matchMedia("(pointer: coarse)").matches) ? 1.7 : 1; }
+// Lupe: Der Finger verdeckt die Stelle, an der man die Ecke loslässt. Darum zeigt eine kleine Lupe die Umgebung des Fingers
+// zweifach vergrößert, ein Stück darüber (oder darunter, wenn oben kein Platz ist).
+function drawLoupe(px, py) {
+  const R = 46, Z = 2;
+  let lx = Math.max(R + 4, Math.min(cc.width - R - 4, px)), ly = py - 100;
+  if (ly < R + 4) ly = py + 100;
+  ly = Math.max(R + 4, Math.min(cc.height - R - 4, ly));
+  cx.save();
+  cx.beginPath(); cx.arc(lx, ly, R, 0, Math.PI * 2); cx.clip();
+  cx.fillStyle = css("--surface"); cx.fillRect(lx - R, ly - R, 2 * R, 2 * R);
+  cx.drawImage(cc, px - R / Z, py - R / Z, 2 * R / Z, 2 * R / Z, lx - R, ly - R, 2 * R, 2 * R);
+  cx.restore();
+  cx.strokeStyle = css("--accent"); cx.lineWidth = 3;
+  cx.beginPath(); cx.arc(lx, ly, R, 0, Math.PI * 2); cx.stroke();
+  cx.strokeStyle = "#ffffff"; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(lx - 8, ly); cx.lineTo(lx + 8, ly); cx.moveTo(lx, ly - 8); cx.lineTo(lx, ly + 8); cx.stroke();
 }
 function cpos(e) {
   const r = cc.getBoundingClientRect();
   return [(e.clientX - r.left) * cc.width / r.width - OX, (e.clientY - r.top) * cc.height / r.height - OY];
 }
 function pick(p) {
-  let best = null, bd = 24;
+  let best = null, bd = 24 * touchScale();
   for (let i = layers.length - 1; i >= 0; i--) for (const v of layers[i].pts) {
     const d = Math.hypot(v[0] - p[0], v[1] - p[1]);
     if (d < bd - 0.5) { bd = d; best = v; }
@@ -2088,15 +2107,16 @@ function pick(p) {
 cc.addEventListener("pointerdown", e => {
   if (pendingSticker) { placeSticker(cpos(e)); return; }
   const p = cpos(e), g = guideStep();
-  const v = g ? (Math.hypot(p[0] - g.a[0], p[1] - g.a[1]) < 28 ? g.a : null) : pick(p);
-  if (v) { from = v; drag = p; cc.setPointerCapture(e.pointerId); drawCraft(); }
+  dragTouch = e.pointerType !== "mouse";
+  const v = g ? (Math.hypot(p[0] - g.a[0], p[1] - g.a[1]) < 28 * touchScale() ? g.a : null) : pick(p);
+  if (v) { from = v; drag = p; try { cc.setPointerCapture(e.pointerId); } catch (err) {} drawCraft(); }
 });
 cc.addEventListener("pointermove", e => { if (drag) { drag = cpos(e); drawCraft(); } });
 cc.addEventListener("pointerup", e => {
   if (!drag || !from) return;
   const p = cpos(e), g = guideStep();
   if (g) {
-    if (Math.hypot(p[0] - g.b[0], p[1] - g.b[1]) < 30) { hist.push(layers); layers = foldLayers(layers, g.a, g.b); gstep++; craftStickers = []; }
+    if (Math.hypot(p[0] - g.b[0], p[1] - g.b[1]) < 30 * touchScale()) { hist.push(layers); layers = foldLayers(layers, g.a, g.b); gstep++; craftStickers = []; }
   } else if (Math.hypot(p[0] - from[0], p[1] - from[1]) > 14) {
     const next = foldLayers(layers, from, p);
     if (next.length && next.length < 80) { hist.push(layers); layers = next; craftStickers = []; }
