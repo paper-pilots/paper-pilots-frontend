@@ -1698,7 +1698,14 @@ document.getElementById("style-go").addEventListener("click", runStyleSearch);
 document.getElementById("style-q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); runStyleSearch(); } });
 
 // ---------- 3D-Ansicht ----------
-const v3 = document.getElementById("view3d"), g3 = v3.getContext("2d");
+// Konvexe Hülle (Monotone Chain) für den Grundriss des Fliegers
+function convexHull(points) {
+  const p = points.map(q => [q[0], q[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (p.length < 3) return p;
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const build = arr => { const h = []; arr.forEach(q => { while (h.length > 1 && cross(h[h.length - 2], h[h.length - 1], q) <= 0) h.pop(); h.push(q); }); h.pop(); return h; };
+  return build(p).concat(build(p.slice().reverse()));
+}const v3 = document.getElementById("view3d"), g3 = v3.getContext("2d");
 v3.width = 640; v3.height = 440;   // doppelte Auflösung für ein scharfes Bild (gezeichnet wird in 320×220)
 let yaw = 0.6, pitch = 1.0, drag3 = null, auto3 = true;
 function draw3d() {
@@ -1709,7 +1716,7 @@ function draw3d() {
   const bob = Math.sin(performance.now() / 700) * 3;
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   layers.forEach(l => l.pts.forEach(p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }));
-  const cxm = (x0 + x1) / 2, cym = (y0 + y1) / 2, sc = 168 / Math.max(x1 - x0, y1 - y0, 1);
+  const cxm = (x0 + x1) / 2, cym = (y0 + y1) / 2, sc = 186 / Math.max(x1 - x0, y1 - y0, 1);
   const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const proj = (a, b, c) => { const a2 = a * cyw - b * syw, b2 = a * syw + b * cyw; return [a2, c * cp + b2 * sp, c * sp - b2 * cp]; };
   const ox = W3 / 2, oy = H3 / 2 - 4 + bob;
@@ -1742,7 +1749,7 @@ function draw3d() {
     const nl = Math.hypot(nx, ny, nz) || 1;
     const d1 = Math.abs((nx * L1[0] + ny * L1[1] + nz * L1[2]) / (nl * l1));
     const d2 = Math.abs((nx * L2[0] + ny * L2[1] + nz * L2[2]) / (nl * l2));
-    return { light: 0.5 + 0.42 * d1 + 0.14 * d2, spec: Math.pow(d1, 7) * 0.3 };
+    return { light: 0.6 + 0.4 * d1 + 0.14 * d2, spec: Math.pow(d1, 7) * 0.3 };
   };
   const path = (pts, dy) => {
     g3.beginPath();
@@ -1759,37 +1766,52 @@ function draw3d() {
     g3.strokeStyle = c; g3.lineWidth = 0.8; g3.lineJoin = "round"; g3.stroke();
   };
 
-  // Lagen von unten nach oben; je Lage die fernere Hälfte zuerst
+  // Aus dem gefalteten Blatt wird ein sauberes Modell: Grundriss = Hülle aller Lagen, die Flügel stehen im flachen V,
+  // darunter hängt der Kiel. Die einzelnen Lagen zeigen sich nur als umgeklappte Flächen und feine Faltkanten.
   g3.textAlign = "center"; g3.textBaseline = "middle";
-  const STEP = 14;
-  layers.forEach((l, i) => {
-    const lift = i * 0.25;
-    [1, -1].map(s => {
-      const h = clip(l.pts, p => p[0] - cxm, s);
-      if (h.length < 3) return null;
-      const u = p => s * (p[0] - cxm);
-      const P = p => proj(p[0] - cxm, -(p[1] - cym), camber(Math.max(0, u(p))) + lift);
-      const maxU = Math.max(...h.map(u)), bands = [];
-      for (let a = 0; a < maxU; a += STEP) {
-        const b = clip(clip(h, p => u(p) - a, 1), p => a + STEP - u(p), 1);
-        if (b.length > 2) bands.push(b.map(P));
-      }
-      const outline = h.map(P);
-      return { bands, outline, z: outline.reduce((t, q) => t + q[2], 0) / outline.length };
-    }).filter(Boolean).sort((a, b) => a.z - b.z).forEach(o => {
-      const col = l.back ? backC : front, op = o.outline.map(scr);
-      path(op, 1.6); g3.fillStyle = "rgba(20,30,60,0.22)"; g3.fill();   // Papierkante
-      o.bands.forEach(b => fillBand(b, col));
-      path(op); g3.strokeStyle = shade(col, 0.5); g3.lineWidth = 1.1; g3.lineJoin = "round"; g3.stroke();
-    });
-    craftStickers.forEach(st => {
-      let top = -1;
-      layers.forEach((m, j) => { if (inside(m.pts, st.x, st.y)) top = j; });
-      if (top !== i) return;
-      const q = proj(st.x - cxm, -(st.y - cym), camber(Math.abs(st.x - cxm)) + lift + 1);
-      const s = scr(q), fz = 900 / (900 - q[2]);
-      drawSticker(g3, st.e, s[0], s[1], Math.round(17 * fz));
-    });
+  const hull = convexHull(layers.flatMap(l => l.pts));
+  if (hull.length < 3) return;
+  const DIH = 0.3, span = Math.max(x1 - x0, 1);
+  const surf = p => proj(p[0] - cxm, -(p[1] - cym), DIH * Math.abs(p[0] - cxm));
+  const objs = [1, -1].map(s => {
+    const half = clip(hull, p => p[0] - cxm, s);
+    if (half.length < 3) return null;
+    const pts3 = half.map(surf), z = pts3.reduce((a, q) => a + q[2], 0) / pts3.length;
+    return { z, draw() {
+      const n = normalLight(pts3), op = pts3.map(scr);
+      path(op, 1.8); g3.fillStyle = "rgba(20,30,60,0.22)"; g3.fill();   // Papierkante
+      const topC = shade(front, n.light, 255 * n.spec);
+      path(op); g3.fillStyle = topC; g3.fill();
+      // umgeklappte Teile (Rückseite oben)
+      layers.forEach(l => {
+        if (!l.back) return;
+        const h = clip(l.pts, p => s * (p[0] - cxm), 1);
+        if (h.length < 3) return;
+        path(h.map(surf).map(scr)); g3.fillStyle = shade(backC, n.light, 255 * n.spec * 0.6); g3.fill();
+      });
+      // Faltkanten
+      g3.strokeStyle = "rgba(20,30,70," + (0.22 * Math.min(1, 6 / layers.length)).toFixed(3) + ")"; g3.lineWidth = 0.8; g3.lineJoin = "round";
+      layers.forEach(l => {
+        const h = clip(l.pts, p => s * (p[0] - cxm), 1);
+        if (h.length > 2) { path(h.map(surf).map(scr)); g3.stroke(); }
+      });
+      path(op); g3.strokeStyle = shade(front, 0.5); g3.lineWidth = 1.2; g3.stroke();
+    } };
+  }).filter(Boolean);
+  // Kiel: hängt unter der Mittellinie, vorne flach, hinten volle Tiefe
+  const yN = Math.min(...hull.map(p => p[1])), yT = Math.max(...hull.map(p => p[1])), dmax = 0.2 * span;
+  const keel3 = [[0, yN, 0], [0, yT, 0], [0, yT - 0.08 * (yT - yN), -dmax * 0.7], [0, yN + 0.5 * (yT - yN), -dmax]].map(q => proj(0, -(q[1] - cym), q[2]));
+  objs.push({ z: keel3.reduce((a, q) => a + q[2], 0) / keel3.length - 0.5, draw() {
+    const n = normalLight(keel3), op = keel3.map(scr), c = shade(front, 0.82 * n.light, 255 * n.spec * 0.5);
+    path(op); g3.fillStyle = c; g3.fill();
+    g3.strokeStyle = shade(front, 0.5); g3.lineWidth = 1.1; g3.lineJoin = "round"; g3.stroke();
+  } });
+  objs.sort((a, b) => a.z - b.z).forEach(o => o.draw());
+  craftStickers.forEach(st => {
+    if (!layers.some(m => inside(m.pts, st.x, st.y))) return;
+    const q = proj(st.x - cxm, -(st.y - cym), DIH * Math.abs(st.x - cxm) + 0.8);
+    const s = scr(q), fz = 900 / (900 - q[2]);
+    drawSticker(g3, st.e, s[0], s[1], Math.round(17 * fz));
   });
 }
 function loop3d() {
@@ -2571,7 +2593,7 @@ function drawFan(g, x, y, a, fast) {
   g.restore();
 }
 function drawTunnel() {
-  const g = tg, k = tc.width / 320, t = performance.now(), c = tunnelPlane();
+  const g = tg, k = tc.width / 320, now = performance.now(), c = tunnelPlane();
   g.setTransform(k, 0, 0, k, 0, 0);
   g.clearRect(0, 0, 320, 180);
   // Röhre aus Glas
@@ -2583,14 +2605,14 @@ function drawTunnel() {
     g.save(); tubePath(g, 56, 40, 208, 100, 18); g.clip();
     g.strokeStyle = "rgba(91,103,133,0.45)"; g.lineWidth = 2; g.lineCap = "round";
     for (let i = 0; i < 7; i++) {
-      const x = 40 + ((t * 0.18 + i * 61) % 260), y = 52 + i * 13;
+      const x = 40 + ((now * 0.18 + i * 61) % 260), y = 52 + i * 13;
       g.beginPath(); g.moveTo(x, y); g.lineTo(x + 24, y); g.stroke();
     }
     g.restore();
   }
   tubePath(g, 56, 40, 208, 100, 18); g.strokeStyle = "#5b6785"; g.lineWidth = 3; g.stroke();
   if (c) {
-    g.save(); g.translate(160, 90 + Math.sin(t / 380) * 5); g.rotate(Math.sin(t / 700) * 0.05); g.scale(1.9, 1.9);
+    g.save(); g.translate(160, 90 + Math.sin(now / 380) * 5); g.rotate(Math.sin(now / 700) * 0.05); g.scale(1.9, 1.9);
     if (!drawShape(c.shape, c, g)) {   // ohne gespeicherte Form: einfaches Papierflugzeug
       g.scale(1.7, 1.7);
       g.fillStyle = c.paint || c.color || "#ffffff"; g.strokeStyle = "#1f2a44"; g.lineWidth = 1; g.lineJoin = "round";
@@ -2602,7 +2624,7 @@ function drawTunnel() {
     g.fillText(t("tn.empty"), 160, 95);
   }
   // Ventilatoren vorne und hinten
-  const a = t * (c ? 0.02 : 0.002);
+  const a = now * (c ? 0.02 : 0.002);
   drawFan(g, 35, 90, a, !!c); drawFan(g, 285, 90, -a, !!c);
   if (c) { g.fillStyle = css("--ink"); g.font = "600 13px Fredoka, sans-serif"; g.textAlign = "center"; g.fillText(t("tn.stage", { n: c.lvl || 0 }), 160, 162); }
 }

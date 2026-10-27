@@ -33,7 +33,7 @@
 - Werte aus der Form (`analyze`): Symmetrie, Schlankheit, Stabilität, Auftrieb → `speed`, `gravity`.
 - Gespeichert in `custom[]`: `{id, name, speed, gravity, shape, paint, stickers, color, custom:true}`. Löschen per Zwei-Klick-Knopf („Wirklich löschen?").
 - Im Spiel gezeichnet über `drawShape(shape, entry)` (Form um 90° gedreht, Spitze = Flugrichtung).
-- 3D-Ansicht (`draw3d`): Canvas-Painter-Algorithmus, Lagen von unten nach oben, V-Flügel, Kiel, Perspektive. Schleife `loop3d` startet erst am Ende des Skripts (Falle bei `const`/`let` und Reihenfolge der Deklarationen beachten).
+- 3D-Ansicht (`draw3d`): Canvas-Painter-Algorithmus mit Perspektive. Neu aufgebaut, weil sie bei vielen Lagen (z. B. 5 und mehr) „grottenhässlich“ war (jede Lage einzeln gestapelt, zerfranst, klein): Jetzt ist der Grundriss die konvexe Hülle aller Lagen (`convexHull`), zwei Flügelhälften stehen im flachen V (`DIH` = 0,3), unten hängt ein Kiel; die Lagen erscheinen nur als umgeklappte Rückseiten-Flächen und feine Faltkanten (schwächer bei vielen Lagen). Flache Schattierung je Fläche (`normalLight`), Stickers liegen auf der Oberfläche. Ein ganz wild gefaltetes Blatt wird dadurch zu einem eher klobigen Umriss (Hülle). Schleife `loop3d` startet erst am Ende des Skripts (Falle bei `const`/`let` und Reihenfolge der Deklarationen beachten).
 - Katalog A1–Z20 und Flugzeug-Suche im Basteln-Fenster wurden entfernt (Wunsch des Nutzers). Nur `applyOrder`/`orderQ` bleiben, damit alte Spielstände mit bestellten Fliegern weiter geladen werden. Bereits bestellte Flieger liegen als normale `custom[]`-Einträge vor.
 
 ## Meine Flugzeuge (früher „Hangar“)
