@@ -92,6 +92,14 @@ dialog { max-height: 92vh; overflow-y: auto; }
 dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
 .howto { margin: 0; padding-left: 20px; font-size: 0.9rem; color: var(--muted); }
 .howto li { margin-bottom: 6px; }
+.bd-cat { margin: 0 0 10px; }
+.bd-title { font-weight: 600; font-size: 0.9rem; }
+.bd-strip { display: flex; gap: 6px; margin: 4px 0 2px; }
+.bd-b { width: 38px; height: 38px; min-height: 0; border-radius: 50%; padding: 0; font-size: 1.15rem; line-height: 1; background: #fffdf5; color: #000; border: 4px solid; }
+.bd-b:disabled { filter: grayscale(1); opacity: 0.35; cursor: default; }
+.bd-b.on { box-shadow: 0 0 0 3px var(--accent); }
+.bd-cat small { display: block; color: var(--muted); font-size: 0.8rem; }
+#bd-note { margin: 0 0 8px; min-height: 1.2em; font-size: 0.85rem; color: var(--muted); }
 .langhead { margin: 0 0 6px; font-weight: 600; font-size: 0.95rem; }
 .langsel { font-size: 0.9rem; color: var(--muted); }
 .langsel select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
@@ -216,6 +224,7 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
   <canvas id="pl-canvas" width="640" height="320" data-i18n-aria="pl.img"></canvas>
   <p id="pl-stats" style="margin:0 0 8px"></p>
   <div class="dlg-actions" style="margin-top:0"><button id="pl-select" type="button"></button></div>
+  <div id="pl-badges"></div>
   <div id="pl-up"></div>
   <div class="dlg-actions"><button id="pl-close" class="small" type="button" data-i18n="close"></button></div>
 </dialog>
@@ -281,6 +290,7 @@ const I18N = {
     "reset": "Spielstand zurücksetzen", "reset.sure": "Wirklich zurücksetzen?", "reset.done": "Spielstand zurückgesetzt.",
     "best": "Bester Wurf: {n} Meter", "lang.label": "Sprache", "close": "Schließen",
     "sound.on": "🔊 Ton an", "sound.off": "🔇 Ton aus",
+    "bd.title": "Abzeichen", "bd.hint": "Tippe auf ein erreichtes Abzeichen, um es auf dem Flugzeug anzubringen (höchstens {n}). Jedes Abzeichen gehört nur dem Flugzeug, das es sich verdient hat.", "bd.count": "{a} von {b} erreicht", "bd.new": "Neues Abzeichen: {n}!", "bd.full": "Es sind schon {n} Abzeichen angebracht. Nimm erst eins ab.", "bd.maxed": "Alle erreicht!", "bd.t0": "Bronze", "bd.t1": "Silber", "bd.t2": "Gold", "bd.t3": "Platin", "bd.t4": "Diamant", "bd.c.dist": "Weitflieger", "bd.c.throws": "Dauerflieger", "bd.c.duels": "Duell-Held", "bd.c.best": "Rekordwurf", "bd.c.perfect": "Volltreffer", "bd.c.height": "Höhenflieger", "bd.c.train": "Windkanal-Profi", "bd.p.dist": "Insgesamt geflogen: {v} von {g} km", "bd.p.throws": "Würfe: {v} von {g}", "bd.p.duels": "Duelle gewonnen: {v} von {g}", "bd.p.best": "Bester Wurf: {v} von {g} m", "bd.p.perfect": "Perfekte Würfe: {v} von {g}", "bd.p.height": "Höchste Höhe: {v} von {g} m", "bd.p.train": "Windkanal-Stufen: {v} von {g}",
     "set.title": "Einstellungen", "set.howto": "So wird gespielt",
     "how.1": "Wirf deinen Flieger: Zieh ihn auf dem Spielfeld nach hinten, schwing nach vorne und lass los. Wer genau auf der Linie loslässt, wirft perfekt.",
     "how.2": "Bastle zuerst einen Flieger: Tippe auf „Flieger basteln“ und zieh die Ecken des Papiers, bis er fertig gefaltet ist. Du kannst ihn lackieren und bekleben.",
@@ -363,6 +373,7 @@ const I18N = {
     "reset": "Reset game", "reset.sure": "Really reset?", "reset.done": "Game reset.",
     "best": "Best throw: {n} meters", "lang.label": "Language", "close": "Close",
     "sound.on": "🔊 Sound on", "sound.off": "🔇 Sound off",
+    "bd.title": "Badges", "bd.hint": "Tap an earned badge to put it on this plane (at most {n}). Each badge belongs only to the plane that earned it.", "bd.count": "{a} of {b} earned", "bd.new": "New badge: {n}!", "bd.full": "{n} badges are already on. Take one off first.", "bd.maxed": "All earned!", "bd.t0": "Bronze", "bd.t1": "Silver", "bd.t2": "Gold", "bd.t3": "Platinum", "bd.t4": "Diamond", "bd.c.dist": "Long Hauler", "bd.c.throws": "Frequent Flyer", "bd.c.duels": "Duel Hero", "bd.c.best": "Record Throw", "bd.c.perfect": "Bullseye", "bd.c.height": "High Flyer", "bd.c.train": "Wind Tunnel Pro", "bd.p.dist": "Total distance flown: {v} of {g} km", "bd.p.throws": "Throws: {v} of {g}", "bd.p.duels": "Duels won: {v} of {g}", "bd.p.best": "Best throw: {v} of {g} m", "bd.p.perfect": "Perfect throws: {v} of {g}", "bd.p.height": "Highest altitude: {v} of {g} m", "bd.p.train": "Wind tunnel levels: {v} of {g}",
     "set.title": "Settings", "set.howto": "How to play",
     "how.1": "Throw your plane: pull it back on the playing field, swing forward and let go. Let go exactly on the line for a perfect throw.",
     "how.2": "Build a plane first: tap “Build a plane” and drag the corners of the paper until it is folded. You can paint it and add stickers.",
@@ -445,6 +456,7 @@ const I18N = {
     "reset": "Reiniciar partida", "reset.sure": "¿Reiniciar de verdad?", "reset.done": "Partida reiniciada.",
     "best": "Mejor lanzamiento: {n} metros", "lang.label": "Idioma", "close": "Cerrar",
     "sound.on": "🔊 Sonido activado", "sound.off": "🔇 Sonido desactivado",
+    "bd.title": "Insignias", "bd.hint": "Toca una insignia conseguida para ponerla en este avión (máximo {n}). Cada insignia pertenece solo al avión que la ganó.", "bd.count": "{a} de {b} conseguidas", "bd.new": "¡Nueva insignia: {n}!", "bd.full": "Ya hay {n} insignias puestas. Quita una primero.", "bd.maxed": "¡Todas conseguidas!", "bd.t0": "Bronce", "bd.t1": "Plata", "bd.t2": "Oro", "bd.t3": "Platino", "bd.t4": "Diamante", "bd.c.dist": "Gran viajero", "bd.c.throws": "Vuelo constante", "bd.c.duels": "Héroe de duelos", "bd.c.best": "Lanzamiento récord", "bd.c.perfect": "En el blanco", "bd.c.height": "Vuelo alto", "bd.c.train": "Pro del túnel", "bd.p.dist": "Distancia total volada: {v} de {g} km", "bd.p.throws": "Lanzamientos: {v} de {g}", "bd.p.duels": "Duelos ganados: {v} de {g}", "bd.p.best": "Mejor lanzamiento: {v} de {g} m", "bd.p.perfect": "Lanzamientos perfectos: {v} de {g}", "bd.p.height": "Altura máxima: {v} de {g} m", "bd.p.train": "Niveles del túnel de viento: {v} de {g}",
     "set.title": "Ajustes", "set.howto": "Cómo se juega",
     "how.1": "Lanza tu avión: tira de él hacia atrás en el campo, balancea hacia delante y suelta. Si sueltas justo en la línea, el lanzamiento es perfecto.",
     "how.2": "Primero crea un avión: toca «Crear avión» y arrastra las esquinas del papel hasta doblarlo. Puedes pintarlo y ponerle pegatinas.",
@@ -527,6 +539,7 @@ const I18N = {
     "reset": "Réinitialiser la partie", "reset.sure": "Vraiment réinitialiser ?", "reset.done": "Partie réinitialisée.",
     "best": "Meilleur lancer : {n} mètres", "lang.label": "Langue", "close": "Fermer",
     "sound.on": "🔊 Son activé", "sound.off": "🔇 Son coupé",
+    "bd.title": "Badges", "bd.hint": "Appuie sur un badge obtenu pour le poser sur cet avion (au maximum {n}). Chaque badge appartient uniquement à l’avion qui l’a mérité.", "bd.count": "{a} sur {b} obtenus", "bd.new": "Nouveau badge : {n} !", "bd.full": "{n} badges sont déjà posés. Retires-en un d’abord.", "bd.maxed": "Tous obtenus !", "bd.t0": "Bronze", "bd.t1": "Argent", "bd.t2": "Or", "bd.t3": "Platine", "bd.t4": "Diamant", "bd.c.dist": "Grand voyageur", "bd.c.throws": "Vols en série", "bd.c.duels": "Héros des duels", "bd.c.best": "Lancer record", "bd.c.perfect": "En plein dans le mille", "bd.c.height": "Haut vol", "bd.c.train": "Pro de la soufflerie", "bd.p.dist": "Distance totale parcourue : {v} sur {g} km", "bd.p.throws": "Lancers : {v} sur {g}", "bd.p.duels": "Duels gagnés : {v} sur {g}", "bd.p.best": "Meilleur lancer : {v} sur {g} m", "bd.p.perfect": "Lancers parfaits : {v} sur {g}", "bd.p.height": "Altitude maximale : {v} sur {g} m", "bd.p.train": "Niveaux de soufflerie : {v} sur {g}",
     "set.title": "Réglages", "set.howto": "Comment jouer",
     "how.1": "Lance ton avion : tire-le en arrière sur le terrain, balance vers l’avant et lâche. Si tu lâches exactement sur la ligne, le lancer est parfait.",
     "how.2": "Fabrique d’abord un avion : appuie sur « Fabriquer un avion » et tire les coins du papier jusqu’à ce qu’il soit plié. Tu peux le peindre et le décorer d’autocollants.",
@@ -609,6 +622,7 @@ const I18N = {
     "reset": "Azzera la partita", "reset.sure": "Azzerare davvero?", "reset.done": "Partita azzerata.",
     "best": "Miglior lancio: {n} metri", "lang.label": "Lingua", "close": "Chiudi",
     "sound.on": "🔊 Audio attivo", "sound.off": "🔇 Audio spento",
+    "bd.title": "Distintivi", "bd.hint": "Tocca un distintivo ottenuto per metterlo su questo aereo (al massimo {n}). Ogni distintivo appartiene solo all’aereo che lo ha guadagnato.", "bd.count": "{a} di {b} ottenuti", "bd.new": "Nuovo distintivo: {n}!", "bd.full": "Ci sono già {n} distintivi. Togline prima uno.", "bd.maxed": "Tutti ottenuti!", "bd.t0": "Bronzo", "bd.t1": "Argento", "bd.t2": "Oro", "bd.t3": "Platino", "bd.t4": "Diamante", "bd.c.dist": "Gran viaggiatore", "bd.c.throws": "Volo costante", "bd.c.duels": "Eroe dei duelli", "bd.c.best": "Lancio record", "bd.c.perfect": "Centro perfetto", "bd.c.height": "Alto volo", "bd.c.train": "Pro della galleria", "bd.p.dist": "Distanza totale volata: {v} di {g} km", "bd.p.throws": "Lanci: {v} di {g}", "bd.p.duels": "Duelli vinti: {v} di {g}", "bd.p.best": "Miglior lancio: {v} di {g} m", "bd.p.perfect": "Lanci perfetti: {v} di {g}", "bd.p.height": "Altezza massima: {v} di {g} m", "bd.p.train": "Livelli della galleria del vento: {v} di {g}",
     "set.title": "Impostazioni", "set.howto": "Come si gioca",
     "how.1": "Lancia il tuo aereo: tiralo indietro sul campo, oscilla in avanti e rilascia. Rilascia esattamente sulla linea per un lancio perfetto.",
     "how.2": "Costruisci prima un aereo: tocca «Costruisci un aereo» e trascina gli angoli della carta finché non è piegato. Puoi verniciarlo e attaccare adesivi.",
@@ -691,6 +705,7 @@ const I18N = {
     "reset": "Reiniciar jogo", "reset.sure": "Reiniciar mesmo?", "reset.done": "Jogo reiniciado.",
     "best": "Melhor lançamento: {n} metros", "lang.label": "Idioma", "close": "Fechar",
     "sound.on": "🔊 Som ligado", "sound.off": "🔇 Som desligado",
+    "bd.title": "Insígnias", "bd.hint": "Toque numa insígnia conquistada para colocá-la neste avião (no máximo {n}). Cada insígnia pertence só ao avião que a conquistou.", "bd.count": "{a} de {b} conquistadas", "bd.new": "Nova insígnia: {n}!", "bd.full": "Já há {n} insígnias colocadas. Tire uma primeiro.", "bd.maxed": "Todas conquistadas!", "bd.t0": "Bronze", "bd.t1": "Prata", "bd.t2": "Ouro", "bd.t3": "Platina", "bd.t4": "Diamante", "bd.c.dist": "Grande viajante", "bd.c.throws": "Voo constante", "bd.c.duels": "Herói dos duelos", "bd.c.best": "Lançamento recorde", "bd.c.perfect": "Na mosca", "bd.c.height": "Voo alto", "bd.c.train": "Pro do túnel", "bd.p.dist": "Distância total voada: {v} de {g} km", "bd.p.throws": "Lançamentos: {v} de {g}", "bd.p.duels": "Duelos vencidos: {v} de {g}", "bd.p.best": "Melhor lançamento: {v} de {g} m", "bd.p.perfect": "Lançamentos perfeitos: {v} de {g}", "bd.p.height": "Altura máxima: {v} de {g} m", "bd.p.train": "Níveis do túnel de vento: {v} de {g}",
     "set.title": "Configurações", "set.howto": "Como jogar",
     "how.1": "Lance o seu avião: puxe-o para trás no campo, balance para a frente e solte. Soltando exatamente na linha, o lançamento é perfeito.",
     "how.2": "Primeiro construa um avião: toque em “Construir avião” e arraste os cantos do papel até dobrá-lo. Você pode pintá-lo e colar adesivos.",
@@ -773,6 +788,7 @@ const I18N = {
     "reset": "Oyunu sıfırla", "reset.sure": "Gerçekten sıfırlansın mı?", "reset.done": "Oyun sıfırlandı.",
     "best": "En iyi atış: {n} metre", "lang.label": "Dil", "close": "Kapat",
     "sound.on": "🔊 Ses açık", "sound.off": "🔇 Ses kapalı",
+    "bd.title": "Rozetler", "bd.hint": "Kazanılmış bir rozete dokun, bu uçağa tak (en fazla {n}). Her rozet yalnızca onu kazanan uçağa aittir.", "bd.count": "{a}/{b} kazanıldı", "bd.new": "Yeni rozet: {n}!", "bd.full": "Zaten {n} rozet takılı. Önce birini çıkar.", "bd.maxed": "Hepsi kazanıldı!", "bd.t0": "Bronz", "bd.t1": "Gümüş", "bd.t2": "Altın", "bd.t3": "Platin", "bd.t4": "Elmas", "bd.c.dist": "Uzun Menzil", "bd.c.throws": "Sık Uçan", "bd.c.duels": "Düello Kahramanı", "bd.c.best": "Rekor Atış", "bd.c.perfect": "Tam İsabet", "bd.c.height": "Yüksek Uçuş", "bd.c.train": "Rüzgar Tüneli Ustası", "bd.p.dist": "Toplam uçulan mesafe: {v} / {g} km", "bd.p.throws": "Atışlar: {v} / {g}", "bd.p.duels": "Kazanılan düellolar: {v} / {g}", "bd.p.best": "En iyi atış: {v} / {g} m", "bd.p.perfect": "Mükemmel atışlar: {v} / {g}", "bd.p.height": "En yüksek irtifa: {v} / {g} m", "bd.p.train": "Rüzgar tüneli seviyeleri: {v} / {g}",
     "set.title": "Ayarlar", "set.howto": "Nasıl oynanır",
     "how.1": "Uçağını fırlat: Oyun alanında geriye çek, öne doğru salla ve bırak. Tam çizginin üstünde bırakırsan atış mükemmel olur.",
     "how.2": "Önce bir uçak yap: “Uçak yap” düğmesine dokun ve kağıdın köşelerini katlanana kadar sürükle. Boyayabilir ve çıkartma yapıştırabilirsin.",
@@ -1276,6 +1292,7 @@ canvas.addEventListener("pointerup", e => {
   if (power > 0 && !isFlying) {
     const off = Math.abs(p[0] - SX);
     const bonus = off <= 10 ? 1.8 : off <= 30 ? 1.25 : 1;
+    pendingPerfect = off <= 10;
     throwNote = off <= 10 ? " " + t("note.perfect") : off <= 30 ? " " + t("note.near") : "";
     throwPlane((0.5 + 0.7 * power) * bonus, tilt, [clamp(p[0], 12, SX + 160), clamp(p[1], 170, TERRACE_Y - 14)]);
     if (throwNote) showResult(throwNote.trim());
@@ -1293,6 +1310,7 @@ function throwPlane(pm, tm, lp) {
   }
   if (isFlying) return;
   isFlying = true;
+  flightPerfect = pendingPerfect; pendingPerfect = false; flightMaxH = 0;
   resultEl.hidden = true;
   const p = paper();
   plane.x = lp ? lp[0] : SX; plane.y = lp ? lp[1] : 300; launchX = plane.x; camX = 0;
@@ -1306,6 +1324,7 @@ function throwPlane(pm, tm, lp) {
 function finish() {
   isFlying = false;
   const px = Math.max(0, Math.floor(plane.x - launchX)), distance = round1(toMeters(px));   // distance in Metern
+  const gain = recordFlight(paper(), distance, flightPerfect, flightMaxH);   // Zähler und Abzeichen des Fliegers
   if (duelCtx) {
     const dc = duelCtx; duelCtx = null;
     plane.x = SX; plane.y = 300; camX = 0;
@@ -1317,7 +1336,7 @@ function finish() {
   coins += earned;
   const record = distance > best;
   if (record) best = distance;
-  showResult(t("land", { d: fmtM(distance), c: earned }) + (record ? " " + t("land.record") : "") + throwNote);
+  showResult(t("land", { d: fmtM(distance), c: earned }) + (record ? " " + t("land.record") : "") + throwNote + gain);
   plane.x = SX; plane.y = 300; camX = 0;
   document.getElementById("live").textContent = "0";
   save(); updateUI();
@@ -1334,6 +1353,7 @@ function animate() {
     camY += (Math.min(0, plane.y - 160) - camY) * 0.15;
     document.getElementById("live").textContent = fmtM(toMeters(Math.max(0, plane.x - launchX)));
     const ah = document.getElementById("alt-hud"), hgt = Math.round((TERRACE_Y - plane.y) / 20);   // Höhe in Metern: 20 Bildpunkte = 1 m
+    if (hgt > flightMaxH) flightMaxH = hgt;
     ah.hidden = plane.y > 150;
     if (!ah.hidden) ah.textContent = "↑ " + hgt + " m";
     // Die Terrasse ist fest: Wer sie von oben trifft, landet darauf
@@ -1789,10 +1809,13 @@ document.getElementById("duel-share").addEventListener("click", async () => {
 // ---------- Duell-Modus mit Einsatz ----------
 let duelShareLink = DUEL_LINK, dbRef = null, myId = null, duelCtx = null, duelPrevEq = null, myDuels = [];
 let joinId = (location.hash.match(/^#d_([A-Za-z0-9_~.-]+)$/) || [])[1] || null;
-const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0, lvlLift: c.lvlLift || 0, boosts: c.boosts || [], pap: c.pap || "heft" });
-function addPlaneCopy(p) {
+const planePack = c => ({ name: c.name, speed: c.speed, gravity: c.gravity, shape: c.shape, paint: c.paint || null, stickers: c.stickers || [], color: c.color || "#e8e0d0", lvl: c.lvl || 0, lvlLift: c.lvlLift || 0, boosts: c.boosts || [], pap: c.pap || "heft", st: cleanSt(c.st), badges: c.badges || [] });
+function addPlaneCopy(p, win) {
   if (!p) return;
-  custom.push({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || t("plane.default")).slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), lvlLift: clamp(Math.floor(+p.lvlLift) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", custom: true });
+  const np = ({ id: "c" + Date.now() + Math.floor(Math.random() * 1000), name: String(p.name || t("plane.default")).slice(0, 40), speed: clamp(+p.speed || 1, 0.8, 2), gravity: clamp(+p.gravity || 0.05, 0.02, 0.06), shape: Array.isArray(p.shape) ? p.shape : [], paint: typeof p.paint === "string" ? p.paint : null, stickers: Array.isArray(p.stickers) ? p.stickers.slice(0, 8) : [], color: typeof p.color === "string" ? p.color : "#e8e0d0", lvl: clamp(Math.floor(+p.lvl) || 0, 0, TUNNEL_MAX), lvlLift: clamp(Math.floor(+p.lvlLift) || 0, 0, TUNNEL_MAX), boosts: Array.isArray(p.boosts) ? p.boosts.filter(id => BOOSTS.some(b => b.id === id)).slice(0, MAX_UP) : [], pap: PAPERS.some(x => x.id === p.pap && x.cost > 0) ? p.pap : "heft", st: cleanSt(p.st), custom: true });
+  if (win) np.st.dw++;   // das eigene Flugzeug hat das Duell gewonnen
+  np.badges = (Array.isArray(p.badges) ? p.badges : []).filter((id, i, a) => earnedBadges(np).includes(id) && a.indexOf(id) === i).slice(0, MAX_BADGES);
+  custom.push(np);
 }
 function removePlane(id) { custom = custom.filter(x => x.id !== id); if (equipped === id) equipped = ""; }
 function getClaimed() { try { return JSON.parse(localStorage.getItem("pf_claimed") || "[]"); } catch (e) { return []; } }
@@ -1885,7 +1908,7 @@ async function duelDone(dc, distance) {
     const result = distance > d.cDist ? "o" : distance < d.cDist ? "c" : "draw";
     await ref.update({ status: "done", oId: myId, oNick: nick, oPlane: planePack(c), oDist: distance, result, claimed: false });
     let msg;
-    if (result === "o") { addPlaneCopy(d.cPlane); msg = t("duel.won", { a: fmtM(distance), b: fmtM(d.cDist), p: d.cPlane.name, n: d.cNick }); }
+    if (result === "o") { const before = earnedBadges(c); stOf(c).dw++; addPlaneCopy(d.cPlane); msg = t("duel.won", { a: fmtM(distance), b: fmtM(d.cDist), p: d.cPlane.name, n: d.cNick }) + badgeGain(c, before); }
     else if (result === "c") { removePlane(c.id); msg = t("duel.lost", { a: fmtM(distance), b: fmtM(d.cDist), p: c.name, n: d.cNick }); }
     else msg = t("duel.draw", { a: fmtM(distance) });
     save(); updateUI();
@@ -1911,7 +1934,7 @@ function claimDuels() {
     if (d.status !== "done" || d.claimed || done.includes(d.id)) return;
     addClaimed(d.id);
     let msg;
-    if (d.result === "c") { addPlaneCopy(d.cPlane); addPlaneCopy(d.oPlane); msg = t("duel.claimWon", { o: d.oNick, p: d.oPlane.name }); }
+    if (d.result === "c") { addPlaneCopy(d.cPlane, true); addPlaneCopy(d.oPlane); msg = t("duel.claimWon", { o: d.oNick, p: d.oPlane.name }); }
     else if (d.result === "draw") { addPlaneCopy(d.cPlane); msg = t("duel.claimDraw", { o: d.oNick }); }
     else msg = t("duel.claimLost", { o: d.oNick, p: d.cPlane.name });
     save(); updateUI();
@@ -1950,6 +1973,89 @@ async function initDuel() {
 }
 document.getElementById("duel-new").addEventListener("click", () => { document.getElementById("duel-text").hidden = true; document.getElementById("duel-share").hidden = true; renderPick("create"); });
 
+// ---------- Abzeichen ----------
+// Jedes selbstgebaute Flugzeug zählt seine eigenen Taten (p.st) und verdient daraus Abzeichen (Bronze bis Diamant).
+// Angebracht werden kann ein Abzeichen (p.badges, höchstens MAX_BADGES) nur an dem Flugzeug, das es verdient hat.
+// Es wandert mit dem Flugzeug, auch im Duell.
+const MAX_BADGES = 3;
+const TIER_COL = ["#c27a3e", "#b4bcc8", "#f0c030", "#7fd6d0", "#8fa6ff"];
+const stOf = p => (p.st = p.st || { m: 0, th: 0, dw: 0, bm: 0, pf: 0, hi: 0 });
+const BADGE_CATS = [
+  { id: "dist", icon: "🧭", goals: [1000, 3000, 10000, 30000, 100000], scale: 1000, val: p => stOf(p).m },   // Meter insgesamt, angezeigt in km
+  { id: "throws", icon: "🎯", goals: [10, 50, 200, 500, 1000], scale: 1, val: p => stOf(p).th },
+  { id: "duels", icon: "⚔️", goals: [1, 5, 10, 25, 100], scale: 1, val: p => stOf(p).dw },
+  { id: "best", icon: "🏆", goals: [20, 35, 50, 60, 70], scale: 1, val: p => stOf(p).bm },
+  { id: "perfect", icon: "⭐", goals: [1, 5, 20, 50, 100], scale: 1, val: p => stOf(p).pf },
+  { id: "height", icon: "🚀", goals: [10, 40, 70, 100, 135], scale: 1, val: p => stOf(p).hi },
+  { id: "train", icon: "🌀", goals: [1, 5, 10, 15, 20], scale: 1, val: p => p.lvl || 0 }
+];
+let pendingPerfect = false, flightPerfect = false, flightMaxH = 0, bdNote = "";
+function cleanSt(s) {
+  const n = (v, max) => (Number.isFinite(+v) ? clamp(+v, 0, max) : 0);
+  s = s && typeof s === "object" ? s : {};
+  return { m: round1(n(s.m, 1e7)), th: Math.floor(n(s.th, 1e6)), dw: Math.floor(n(s.dw, 1e5)), bm: round1(n(s.bm, DIST_MAX)), pf: Math.floor(n(s.pf, 1e6)), hi: Math.floor(n(s.hi, 1000)) };
+}
+function badgeInfo(id) { const cat = BADGE_CATS.find(c => c.id === String(id).slice(0, -1)), tier = +String(id).slice(-1); return cat && tier >= 0 && tier < 5 ? { cat, tier } : null; }
+const badgeName = id => { const b = badgeInfo(id); return t("bd.c." + b.cat.id) + " " + t("bd.t" + b.tier); };
+function earnedBadges(p) {
+  const r = [];
+  BADGE_CATS.forEach(c => { const v = c.val(p); c.goals.forEach((g, i) => { if (v >= g) r.push(c.id + i); }); });
+  return r;
+}
+function badgeGain(p, before) {
+  const now = earnedBadges(p).filter(id => !before.includes(id));
+  return now.length ? " 🏅 " + t("bd.new", { n: now.map(badgeName).join(", ") }) : "";
+}
+function recordFlight(p, distance, perfect, h) {
+  if (!p || !p.custom) return "";
+  const before = earnedBadges(p), s = stOf(p);
+  s.m = round1(s.m + distance); s.th++; s.bm = Math.max(s.bm, distance); if (perfect) s.pf++; s.hi = Math.max(s.hi, h);
+  return badgeGain(p, before);
+}
+function drawBadge(g, id, x, y, r) {
+  const b = badgeInfo(id);
+  if (!b) return;
+  g.save();
+  g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = "#fffdf5"; g.fill();
+  g.lineWidth = r * 0.3; g.strokeStyle = TIER_COL[b.tier]; g.stroke();
+  g.font = Math.round(r * 1.1) + "px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#000";
+  g.fillText(b.cat.icon, x, y + r * 0.06);
+  g.restore();
+}
+function drawBadges(g, p, x0, y, r, gap) { (p.badges || []).slice(0, MAX_BADGES).forEach((id, i) => drawBadge(g, id, x0 + i * gap, y, r)); }
+function renderBadges(p) {
+  const box = document.getElementById("pl-badges");
+  box.innerHTML = "";
+  if (!p.custom) return;
+  const got = earnedBadges(p);
+  p.badges = (p.badges || []).filter(id => got.includes(id)).slice(0, MAX_BADGES);
+  const mk = (tag, text, css) => { const e = document.createElement(tag); e.textContent = text; if (css) e.style.cssText = css; box.appendChild(e); return e; };
+  mk("h3", t("bd.title") + " · " + t("bd.count", { a: got.length, b: BADGE_CATS.length * 5 }));
+  mk("p", t("bd.hint", { n: MAX_BADGES }), "margin:0 0 6px;font-size:0.85rem;color:var(--muted)");
+  const note = mk("p", bdNote); note.id = "bd-note"; note.setAttribute("role", "status");
+  BADGE_CATS.forEach(c => {
+    const v = c.val(p), row = document.createElement("div"), strip = document.createElement("div");
+    row.className = "bd-cat"; strip.className = "bd-strip";
+    const ttl = document.createElement("div"); ttl.className = "bd-title"; ttl.textContent = c.icon + " " + t("bd.c." + c.id);
+    c.goals.forEach((g, i) => {
+      const id = c.id + i, ok = v >= g, att = p.badges.includes(id), b = document.createElement("button");
+      b.type = "button"; b.className = "bd-b" + (att ? " on" : ""); b.textContent = c.icon; b.style.borderColor = TIER_COL[i];
+      b.disabled = !ok; b.title = badgeName(id); b.setAttribute("aria-label", badgeName(id)); b.setAttribute("aria-pressed", att ? "true" : "false");
+      b.onclick = () => {
+        bdNote = "";
+        if (att) p.badges = p.badges.filter(x => x !== id);
+        else if (p.badges.length >= MAX_BADGES) bdNote = t("bd.full", { n: MAX_BADGES });
+        else p.badges.push(id);
+        save(); updateUI(); renderPlane();
+      };
+      strip.appendChild(b);
+    });
+    const next = c.goals.find(g => v < g), sm = document.createElement("small");
+    sm.textContent = next === undefined ? t("bd.maxed") : t("bd.p." + c.id, { v: fmtM(v / c.scale), g: fmtM(next / c.scale) });
+    row.append(ttl, strip, sm); box.appendChild(row);
+  });
+}
+
 // ---------- Meine Flugzeuge ----------
 // Reihe mit allen Fliegern (mit Lack und Stickern). Klick = auswählen.
 // Von den Standardfliegern (ohne eigene Form) steht nur das Schulheftpapier hier.
@@ -1967,6 +2073,7 @@ function drawHangar(cv, p, away) {
     g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
   }
   g.restore();
+  drawBadges(g, p, 14, 90, 8, 18);
   if (away) {
     g.fillStyle = css("--ink"); g.font = "700 11px Fredoka, sans-serif"; g.textAlign = "center";
     g.fillText(t("hg.away"), 60, 54);
@@ -2016,7 +2123,7 @@ function effStats(p) {
   u.boosts.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { speed *= b.speed; gravity *= b.gravity; lift += b.lift; } });
   return { speed, gravity, lift };
 }
-function openPlane(id) { planeOpenId = id; renameDirty = false; renderPlane(); if (!planeDlg.open) planeDlg.showModal(); }
+function openPlane(id) { planeOpenId = id; renameDirty = false; bdNote = ""; renderPlane(); if (!planeDlg.open) planeDlg.showModal(); }
 function renderPlane() {
   const p = planeById(planeOpenId);
   if (!p) { if (planeDlg.open) planeDlg.close(); return; }
@@ -2035,6 +2142,8 @@ function renderPlane() {
     g.beginPath(); g.moveTo(10, 0); g.lineTo(-16, 10); g.lineTo(-9, 0); g.lineTo(-16, -7); g.closePath(); g.fill(); g.stroke();
   }
   g.restore();
+  drawBadges(g, p, 26, 134, 16, 38);
+  renderBadges(p);
   document.getElementById("pl-stats").textContent = t("pl.stats", { s: e.speed.toFixed(2), g: Math.round(0.05 / e.gravity * 100) }) + (p.lvlLift ? t("pl.statsLaunch", { n: p.lvlLift * 3 }) : "") + (p.lvl ? t("pl.statsLvl", { n: p.lvl }) : "") + (u.boosts.length || u.pap !== "heft" ? t("pl.statsUp") : "");
   const sel = document.getElementById("pl-select");
   sel.textContent = away ? t("pl.training") : on ? t("pl.selected") : t("pl.select");
