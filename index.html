@@ -214,7 +214,7 @@ dialog h3 { margin: 16px 0 6px; font-size: 1rem; }
 </dialog>
 
 <dialog id="plane-dialog" data-i18n-aria="pl.dlg">
-  <h2 id="pl-name"></h2>
+  <h2 id="pl-name" tabindex="-1" style="outline:none"></h2>
   <div id="pl-rename-row" class="name-row" hidden>
     <input id="pl-rename" type="text" maxlength="24" data-i18n-aria="pl.renameAria" autocomplete="off">
     <button id="pl-rename-roll" class="small" type="button" data-i18n-aria="craft.nameRollAria">🎲</button>
@@ -2507,7 +2507,14 @@ function effStats(p) {
   u.boosts.forEach(id => { const b = BOOSTS.find(x => x.id === id); if (b) { speed *= b.speed; gravity *= b.gravity; lift += b.lift; } });
   return { speed, gravity, lift };
 }
-function openPlane(id) { planeOpenId = id; renameDirty = false; bdNote = ""; renderPlane(); if (!planeDlg.open) planeDlg.showModal(); }
+function openPlane(id) {
+  planeOpenId = id; renameDirty = false; bdNote = ""; renderPlane();
+  if (!planeDlg.open) {
+    planeDlg.showModal();
+    // showModal wählt sonst das erste Eingabefeld (den Namen) aus; am Handy ginge dann gleich die Tastatur auf. Stattdessen bekommt die Überschrift den Fokus.
+    document.getElementById("pl-name").focus({ preventScroll: true });
+  }
+}
 function renderPlane() {
   const p = planeById(planeOpenId);
   if (!p) { if (planeDlg.open) planeDlg.close(); return; }
